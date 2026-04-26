@@ -1,0 +1,14 @@
+icon.png
+size:512,128
+filter:Linear,Linear
+repeat:none
+earth
+bounds:134,2,64,64
+fire
+bounds:2,2,64,64
+lightning
+bounds:266,2,64,64
+water
+bounds:200,2,64,64
+wind
+bounds:68,2,64,64

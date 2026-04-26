@@ -1,0 +1,48 @@
+{
+  "slash": {
+    "vfx": "slash",
+    "column": 5,
+    "row": 1,
+    "duration": 0.05,
+    "choreography": [
+      "scaleTo(1.5, 1.5)",
+      "parallel(scaleTo(1.0, 1.0, 0.2, pow2Out), moveBy(20, -20, 0.2, pow2Out))",
+      "delay(0.05)"
+    ]
+  },
+  "hit": {
+    "vfx": "Hit2",
+    "column": 3,
+    "row": 1,
+    "duration": 0.05,
+    "choreography": [
+      "scaleTo(0.5, 0.5)",
+      "scaleTo(1.5, 1.5, 0.05, pow2Out)",
+      "scaleTo(1.0, 1.0, 0.1, pow2In)"
+    ]
+  },
+  "hit-fire": {
+    "vfx": "HitFire",
+    "column": 8,
+    "row": 1,
+    "duration": 0.04,
+    "choreography": [
+      "alpha(0.8)",
+      "scaleTo(0.8, 0.8)",
+      "parallel(scaleTo(2.0, 2.0, 0.32, pow2Out), sequence(delay(0.15), fadeOut(0.17)))"
+    ]
+  },
+  "punch-fire": {
+    "vfx": "punch",
+    "column": 1,
+    "row":  1,
+    "duration": 0.1,
+    "choreography": [
+      "alpha(0)",
+      "scaleTo(2.0, 2.0)",
+      "parallel(fadeIn(0.4, pow2Out), scaleTo(0.75, 0.75, 0.2, pow2Out))",
+      "delay(0.1)",
+      "fadeOut(0.2f)"
+    ]
+  }
+}

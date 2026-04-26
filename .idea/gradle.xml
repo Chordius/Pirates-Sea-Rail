@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/Backend" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/Backend" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/Frontend" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/Frontend" />
+            <option value="$PROJECT_DIR$/Frontend/core" />
+            <option value="$PROJECT_DIR$/Frontend/lwjgl3" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/Frontend/core" />
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/Frontend/lwjgl3" />
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>
