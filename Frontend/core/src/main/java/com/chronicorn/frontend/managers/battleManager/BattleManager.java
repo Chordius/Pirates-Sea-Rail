@@ -1,11 +1,14 @@
 package com.chronicorn.frontend.managers.battleManager;
 
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Queue;
 import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.battlers.Battler;
 import com.chronicorn.frontend.battlers.Enemy;
-import com.chronicorn.frontend.managers.animationManager.ActionSequenceProcessor;
 import com.chronicorn.frontend.skills.Action;
+import com.chronicorn.frontend.skills.ReactionAction;
+import com.chronicorn.frontend.skills.Skill;
+import com.chronicorn.frontend.skills.SkillDatabase;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,14 +18,17 @@ public class BattleManager {
     public enum TurnState {
         TURN_START, NEXT_BATTLER, INPUT, EXECUTE_ACTION, CHECK_BATTLE_END, BATTLE_END
     }
+    BattleDelegate followUpDelegate;
 
     private ArrayList<Battler> allBattlers;
     private Array<Battler> turnQueue;
     private ArrayList<Actor> gameParty;
     private ArrayList<Enemy> gameTroop;
+    private Queue<Action> followUpQueue;
     private TurnState currentState;
     private Battler activeBattler;
     private Action selectedAction;
+    private int turn;
 
     public BattleManager(ArrayList<Battler> allBattlers) {
         this.allBattlers = allBattlers;
@@ -30,8 +36,39 @@ public class BattleManager {
         this.currentState = TurnState.TURN_START;
         this.gameParty = new ArrayList<>();
         this.gameTroop = new ArrayList<>();
+        this.followUpQueue = new Queue<>();
+
+        followUpDelegate = new BattleDelegate() {
+            @Override
+            public void onFollowUpRequested(Battler source, String skillId, Battler target) {
+                // Construct the action here at the engine level
+                Skill followUpSkill = SkillDatabase.get(skillId);
+                Action action = new Action(source);
+                action.setSkill(followUpSkill);
+                action.setPrimaryTarget(target);
+
+                // We have access to allBattlers here
+                action.resolveTargets(BattleManager.this.allBattlers);
+
+                queueFollowUp(action);
+            }
+
+            @Override
+            public void onReactionRequested(String reactionSkillId, Battler centerTarget, int flatDamage) {
+                Skill reactionData = SkillDatabase.get(reactionSkillId);
+                ReactionAction reaction = new ReactionAction(reactionData, centerTarget, flatDamage);
+
+                // Resolve who gets hit based on the JSON scope (e.g., ALL_ENEMIES)
+                reaction.resolveTargets(BattleManager.this.allBattlers);
+
+                // Push it to the front or back of the queue
+                queueFollowUp(reaction);
+            }
+        };
 
         for (Battler a : allBattlers) {
+            a.setBattleDelegate(followUpDelegate);
+
             if (a instanceof Actor) {
                 gameParty.add((Actor) a);
             }
@@ -71,6 +108,7 @@ public class BattleManager {
         for (Battler b : allBattlers) {
             if (b.isAlive()) {
                 turnQueue.add(b);
+                b.triggerTurnStart();
             }
         }
 
@@ -87,6 +125,7 @@ public class BattleManager {
 
     private void processNextBattler() {
         if (turnQueue.size == 0) {
+            processTurnEnd();
             currentState = TurnState.TURN_START;
             return;
         }
@@ -98,12 +137,30 @@ public class BattleManager {
             return;
         }
 
+        activeBattler.triggerActionStart();
+
+        // If a start-of-turn effect killed the battler, skip their input and check for death
+        if (!activeBattler.isAlive()) {
+            currentState = TurnState.CHECK_BATTLE_END;
+            return;
+        }
+
         currentState = TurnState.INPUT;
 
         if (!activeBattler.isPlayerControlled()) {
             // Trigger AI logic immediately
             activeBattler.calculateAI(this);
         }
+    }
+
+    public void processTurnEnd() {
+        turn++;
+        for (Battler b : allBattlers) {
+            if (b.isAlive()) {
+                b.triggerTurnEnd();
+            }
+        }
+        System.out.println("Current Turn: " + turn);
     }
 
     public void submitAction(Action action) {
@@ -119,6 +176,17 @@ public class BattleManager {
 
     // Triggered when the queue is completely empty
     public void finishActionExecution() {
+        if (activeBattler != null && activeBattler.isAlive() && followUpQueue.isEmpty()) {
+            activeBattler.triggerActionEnd();
+        }
+
+        if (!followUpQueue.isEmpty()) {
+            // Pop the follow-up, set it as the active action, and execute it immediately
+            selectedAction = followUpQueue.removeFirst();
+            currentState = TurnState.EXECUTE_ACTION;
+            return; // Skip checking battle end until the follow-up finishes
+        }
+
         selectedAction = null;
         currentState = TurnState.CHECK_BATTLE_END;
     }
@@ -148,6 +216,10 @@ public class BattleManager {
         } else {
             currentState = TurnState.NEXT_BATTLER;
         }
+    }
+
+    public void queueFollowUp(Action followUpAction) {
+        this.followUpQueue.addLast(followUpAction);
     }
 
     // --- Added Getters ---

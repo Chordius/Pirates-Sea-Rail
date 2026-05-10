@@ -18,9 +18,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.chronicorn.frontend.Player;
 import com.chronicorn.frontend.eventcommands.CmdPerformCountdownReset;
 import com.chronicorn.frontend.eventcommands.CmdPerformReset;
-import com.chronicorn.frontend.managers.combatManager.CombatManager;
-import com.chronicorn.frontend.managers.combatManager.MonsterManager;
-import com.chronicorn.frontend.managers.combatManager.ProjectileManager;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
@@ -55,13 +53,11 @@ public class MapScreen implements Screen {
     private Dash dashCommand;
 
     // Managers
-    private MonsterManager monsterManager;
-    private CombatManager combatManager;
     private EventManager eventManager;
 
     // World Constants
-    private final float WORLD_WIDTH = 800;
-    private final float WORLD_HEIGHT = 600;
+    private final float WORLD_WIDTH = 910.2f;
+    private final float WORLD_HEIGHT = 512;
 
     // Important Game Flags
     private boolean isGameOverTriggered = false;
@@ -78,8 +74,6 @@ public class MapScreen implements Screen {
         player = new Player(new Vector2(0, 0));
 
         // Setup Managers
-        monsterManager = new MonsterManager();
-        combatManager = new CombatManager();
         eventManager = new EventManager();
         shapeRenderer = new ShapeRenderer();
 
@@ -89,8 +83,8 @@ public class MapScreen implements Screen {
         flexWindow = new WindowFlex();
 
         // Setup HUD
-        gameHUD = new GameHUD();
-        stage.addActor(gameHUD);
+        // gameHUD = new GameHUD();
+        //  stage.addActor(gameHUD);
         stage.addActor(textWindow);
         stage.addActor(flexWindow);
         eventManager.setUI(textWindow, flexWindow);
@@ -98,38 +92,33 @@ public class MapScreen implements Screen {
         // Setup Map
         LevelMapManager.getInstance().setMapScreen(this);
         LevelMapManager.getInstance().setPlayer(player);
-        player.addObserver(gameHUD);
+        // player.addObserver(gameHUD);
         LevelMapManager.getInstance().setEventManager(eventManager);
-        LevelMapManager.getInstance().changeLevel("LevelIntro");
-
-        // Setup events & monster awal dari Map
-        monsterManager.spawnFromMap(LevelMapManager.getInstance().getMap());
+        LevelMapManager.getInstance().changeLevel("test");
 
         // Setup Input
         this.dashCommand = new Dash(player);
         this.moveCommand = new Move(player);
 
         InputMultiplexer multiplexer = new InputMultiplexer();
-
         multiplexer.addProcessor(stage);
         Gdx.input.setInputProcessor(multiplexer);
 
-        hudFont = com.chronicorn.frontend.managers.ImageManager.font;
-
+        hudFont = ImageManager.font;
     }
 
     @Override
     public void render(float delta) {
-        TiledMap currentMap = LevelMapManager.getInstance().getMap();
         if (eventManager.isBusy()) {
             eventManager.update(delta);
-            player.isBusy = true;
+            player.isBusy = true; // Halts player movement during events
         } else {
             player.isBusy = false;
             handleInput();
         }
+
         player.update(delta);
-        ProjectileManager.getInstance().update(delta, player);
+        LevelMapManager.getInstance().updateObjects(delta);
 
         if (!player.isDead() && !isGameOverTriggered) {
             ResetManager.getInstance().update(delta);
@@ -138,33 +127,21 @@ public class MapScreen implements Screen {
             LevelMapManager.getInstance().checkGhostTriggers(delta);
         }
 
-        // Check Collision
+        // 2. Physics & Collisions
+        // Normal wall tiles
         LevelMapManager.getInstance().checkWallCollisions(delta, player);
-        LevelMapManager.getInstance().checkWallCollisions(delta, monsterManager.getMonsters());
+        // Solid Interactive Objects (NPCs, Chests, etc.)
+        LevelMapManager.getInstance().applySolidObjectPhysics(delta, player);
+
+        // 3. Events & Hazards
         LevelMapManager.getInstance().checkInteractableTriggers(delta, eventManager);
         LevelMapManager.getInstance().checkHazardTile(delta);
-
-        // Jika map berubah, spawn monster baru
-        if (LevelMapManager.getInstance().getMap() != currentMap) {
-            monsterManager.spawnFromMap(LevelMapManager.getInstance().getMap());
-        }
-
-        monsterManager.update(delta, player);
-
-        // Handle Combat (Collision & Bump)
-        combatManager.handleCombat(delta, player, monsterManager.getMonsters());
 
         // Camera Follow Player
         camera.position.set(player.getPosition().x, player.getPosition().y, 0);
         camera.update();
 
-        // [PERBAIKAN] Hapus duplikat player.update() dan projectile.update() di sini
-        // Hanya sisakan GameSession.update() untuk timer
         GameSession.getInstance().update(delta);
-
-        // --- DUPLIKAT DIHAPUS ---
-        // player.update(delta);  <-- INI PENYEBABNYA
-        // ProjectileManager.getInstance().update(delta, player); <-- INI JUGA
 
         // --- DRAW LOGIC ---
         ScreenUtils.clear(0f, 0f, 0f, 1f);
@@ -173,24 +150,10 @@ public class MapScreen implements Screen {
 
         batch.setProjectionMatrix(camera.combined);
         batch.begin();
-        LevelMapManager.getInstance().renderObjects(batch);
-        monsterManager.draw(batch);
-        player.render(batch);
-        ProjectileManager.getInstance().draw(batch);
+        LevelMapManager.getInstance().renderYSorted(batch, player);
         batch.end();
 
         LevelMapManager.getInstance().renderForeground(camera);
-
-        // --- HUD TIMER ---
-        batch.begin();
-        // Set projection matrix ke UI stage
-        batch.setProjectionMatrix(stage.getCamera().combined);
-
-        String timeText = GameSession.getInstance().getFormattedTime();
-        hudFont.setColor(1, 1, 0, 1); // Warna Kuning
-        hudFont.draw(batch, "TIME: " + timeText, 20, Gdx.graphics.getHeight() - 20);
-
-        batch.end();
 
         if (fadeAlpha > 0) {
             changeScreenFade();
@@ -204,10 +167,6 @@ public class MapScreen implements Screen {
         if (player.isDead() && !isGameOverTriggered) {
             gameOverLogic();
         }
-
-        if (GameSession.getInstance().getInt("ROOM_COUNTDOWN") == 0 && !isCountdownTriggered) {
-            countdownOverLogic();
-        };
     }
 
     private void handleInput() {
@@ -216,26 +175,6 @@ public class MapScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             SceneManager.getInstance().transitionToMenu(player);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.B)) {
-            float spawnX = player.getPosition().x;
-            float spawnY = player.getPosition().y + 150;
-            monsterManager.spawnBoss(spawnX, spawnY);
-
-            SoundManager.getInstance().playAmbient("ambients2.wav");
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Z)) {
-            float spawnX = player.getPosition().x;
-            float spawnY = player.getPosition().y + 150;
-            monsterManager.spawnZombie(spawnX, spawnY);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
-            float spawnX = player.getPosition().x;
-            float spawnY = player.getPosition().y + 150;
-            monsterManager.spawnSkeleton(spawnX, spawnY);
         }
     }
 
@@ -251,13 +190,7 @@ public class MapScreen implements Screen {
             camera.viewportWidth, camera.viewportHeight);
         shapeRenderer.end();
 
-
-
         Gdx.gl.glDisable(GL20.GL_BLEND);
-    }
-
-    public MonsterManager getMonsterManager() {
-        return this.monsterManager;
     }
 
     @Override
@@ -295,8 +228,21 @@ public class MapScreen implements Screen {
     public void dispose() {
         if (batch != null) batch.dispose();
         if (player != null) player.dispose();
-        if (monsterManager != null) monsterManager.dispose();
-        LevelMapManager.getInstance().getInstance().reset();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (stage != null) stage.dispose();
+        // Clear input processor so disposed stage doesn't continue receiving events
+        try {
+            Gdx.input.setInputProcessor(null);
+        } catch (Exception ignored) {}
+
+        // Reset level/map resources
+        LevelMapManager.getInstance().reset();
+
+        // Help the GC by nulling large references
+        batch = null;
+        player = null;
+        shapeRenderer = null;
+        stage = null;
     }
 
     public GameHUD getGameHUD() {

@@ -1,12 +1,11 @@
 package com.chronicorn.frontend.scripts;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.chronicorn.frontend.Main;
 import com.chronicorn.frontend.Player;
 import com.chronicorn.frontend.eventcommands.*;
-import com.chronicorn.frontend.managers.NetworkCallback;
-import com.chronicorn.frontend.managers.NetworkManager;
+import com.chronicorn.frontend.managers.networkManager.NetworkCallback;
+import com.chronicorn.frontend.managers.networkManager.NetworkManager;
 import com.chronicorn.frontend.managers.ResetManager;
 import com.chronicorn.frontend.managers.SceneManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
@@ -35,30 +34,10 @@ public class LevelBossScript implements MapScript {
             if (GameSession.getInstance().isSet("LB_BOSS_DEFEATED")) {
                 events.queue(new CmdToggleHUD(true));
                 Player player = LevelMapManager.getInstance().getPlayer();
-                String username = Main.currentUsername; // Ambil username yang login
                 int finalTimeScore = ResetManager.getInstance().getCurrentScore(); // Ambil Waktu
 
                 System.out.println("Uploading Score: " + finalTimeScore + " seconds...");
 
-                // Panggil API Backend
-                NetworkManager.getInstance().saveGame(
-                    username,
-                    finalTimeScore,
-                    player.getHp(),
-                    player.getAtk(),
-                    player.getDef(),
-                    new NetworkCallback() {
-                        @Override
-                        public void onSuccess(String response) {
-                            System.out.println("SERVER: " + response);
-                        }
-
-                        @Override
-                        public void onError(String errorMessage) {
-                            System.err.println("SERVER ERROR: " + errorMessage);
-                        }
-                    }
-                );
                 events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), false, 50.0f));
                 events.queue(new CmdShowText(
                     "Congratulations!\n" +

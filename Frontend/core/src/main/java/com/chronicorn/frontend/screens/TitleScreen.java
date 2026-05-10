@@ -16,8 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.chronicorn.frontend.managers.ImageManager;
-import com.chronicorn.frontend.managers.SceneManager;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.windows.WindowLogin; // <--- Import WindowLogin
 import com.chronicorn.frontend.windows.WindowSettings;

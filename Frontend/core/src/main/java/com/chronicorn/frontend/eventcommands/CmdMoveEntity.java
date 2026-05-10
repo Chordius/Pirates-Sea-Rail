@@ -1,34 +1,58 @@
 package com.chronicorn.frontend.eventcommands;
 
-import com.badlogic.gdx.math.Vector2;
-import com.chronicorn.frontend.objects.PhysicsObjects;
+import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
+import com.chronicorn.frontend.objects.InteractiveObject;
+import com.chronicorn.frontend.objects.MapEvent;
 
 public class CmdMoveEntity implements EventCommand {
-    private PhysicsObjects entity;
-    private Vector2 target;
-    private float speed = 100f;
 
-    public CmdMoveEntity(PhysicsObjects entity, float x, float y) {
-        this.entity = entity;
-        this.target = new Vector2(x, y);
+    private String entityName;
+    private int direction; // 0=Down, 1=Left, 2=Right, 3=Up
+    private float amountInTiles;
+    private boolean isWait;
+
+    private MapEvent targetEvent = null;
+    private final float TILE_SIZE = 48f; // Standardize your grid size
+
+    public CmdMoveEntity(String entityName, int direction, float amountInTiles, boolean isWait) {
+        this.entityName = entityName;
+        this.direction = direction;
+        this.amountInTiles = amountInTiles;
+        this.isWait = isWait;
     }
 
     @Override
     public void start() {
-        // Optional: Play walking animation
+        InteractiveObject obj = LevelMapManager.getInstance().getObjectByName(entityName);
+
+        if (obj instanceof MapEvent) {
+            targetEvent = (MapEvent) obj;
+
+            // 2. Tell the event to start sliding
+            targetEvent.moveGrid(direction, amountInTiles * TILE_SIZE);
+        }
+
     }
 
     @Override
     public void update(float delta) {
-        Vector2 pos = entity.getPosition();
-        Vector2 direction = new Vector2(target).sub(pos).nor();
-
-        pos.mulAdd(direction, speed * delta);
-        entity.getBounds().setPosition(pos.x, pos.y);
+        if (targetEvent != null && isWait) {
+            // In wait-mode this command owns the movement tick.
+            targetEvent.update(delta);
+        }
     }
 
     @Override
     public boolean isFinished() {
-        return entity.getPosition().dst(target) < 2f; // Stop when within 2 pixels
+        // If we couldn't find the event, skip this command
+        if (targetEvent == null) return true;
+
+        // If isWait is true, the EventManager pauses here until the NPC arrives at the tile
+        if (isWait) {
+            return !targetEvent.isMoving;
+        }
+
+        // If isWait is false, the EventManager instantly goes to the next command while the NPC walks
+        return true;
     }
 }

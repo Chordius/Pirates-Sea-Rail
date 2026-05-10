@@ -14,21 +14,22 @@ public class ObjectFactory {
             String name = rectObj.getName();
             Rectangle bounds = rectObj.getRectangle();
 
-            // DEBUG PRINT
             System.out.println("Loading Object: " + name);
 
-            // 1. Cek Property "type"
-            String type = null;
-            if (rectObj.getProperties().containsKey("type")) {
-                type = (String) rectObj.getProperties().get("type");
+            // 1. SAFELY CHECK BOTH "class" AND "type"
+            // Tiled newer versions use "class", older versions / LibGDX compat uses "type"
+            String type = rectObj.getProperties().get("class", String.class);
+
+            if (type == null) {
+                type = rectObj.getProperties().get("type", String.class);
             }
 
             if (type == null) {
-                System.err.println("ERROR: Objek '" + name + "' tidak punya custom property 'type' di Tiled!");
+                System.err.println("ERROR: Objek '" + name + "' tidak punya field Class/Type di Tiled!");
                 return null;
             }
 
-            System.out.println(" -> Type found: " + type);
+            System.out.println(" -> Class/Type found: " + type);
 
             switch (type) {
                 case "Gate":
@@ -38,7 +39,6 @@ public class ObjectFactory {
                         targetX = Float.parseFloat(rawX.toString());
                     }
 
-                    // 2. Safe extraction for Y
                     Object rawY = rectObj.getProperties().get("targetY");
                     float targetY = 0;
                     if (rawY != null) {
@@ -59,6 +59,41 @@ public class ObjectFactory {
 
                 case "BreakableWall":
                     return new BreakableWall(name, bounds.getX(), bounds.getY());
+
+                case "MapEvent":
+                    // Note: We use rectObj here for consistency
+                    String scriptId = rectObj.getProperties().get("script_id", String.class);
+
+                    Boolean solidProp = rectObj.getProperties().get("is_solid", Boolean.class);
+                    boolean isSolid = (solidProp != null) ? solidProp : true;
+
+                    // Read the File path and extract ONLY the filename
+                    String rawPath = rectObj.getProperties().get("sprite_sheet", String.class);
+                    String spriteSheet = "";
+                    if (rawPath != null) {
+                        spriteSheet = new java.io.File(rawPath).getName();
+                    }
+
+                    Boolean staticProp = rectObj.getProperties().get("is_static", Boolean.class);
+                    boolean isStatic = (staticProp != null) ? staticProp : true;
+
+                    Integer charIdxProp = rectObj.getProperties().get("character_index", Integer.class);
+                    int characterIndex = (charIdxProp != null) ? charIdxProp : 0;
+
+                    Float baseSpeedProp = rectObj.getProperties().get("base_speed", Float.class);
+                    float baseSpeed = (baseSpeedProp != null) ? baseSpeedProp : 50;
+
+                    return new MapEvent(name, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight())
+                        .scriptId(scriptId)
+                        .solid(isSolid)
+                        .spriteSheetName(spriteSheet)
+                        .isStatic(isStatic)
+                        .characterIndex(characterIndex)
+                        .baseSpeed(baseSpeed);
+
+                default:
+                    System.out.println("Warning: Unknown Object Class -> " + type);
+                    return null;
             }
         } else if (mapObj instanceof TiledMapTileMapObject) {
             TiledMapTileMapObject tileObj = (TiledMapTileMapObject) mapObj;

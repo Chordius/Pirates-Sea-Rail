@@ -1,7 +1,6 @@
 package com.chronicorn.frontend.managers;
 
 import com.chronicorn.frontend.Player;
-import com.chronicorn.frontend.managers.combatManager.ProjectileManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
@@ -30,11 +29,6 @@ public class ResetManager {
 
     private void forceRespawnEnemies() {
         MapScreen screen = LevelMapManager.getInstance().getMapScreen();
-        if (screen != null && screen.getMonsterManager() != null) {
-            screen.getMonsterManager().clear();
-            screen.getMonsterManager().spawnFromMap(LevelMapManager.getInstance().getMap());
-            System.out.println("Enemies respawned manually.");
-        }
     }
     private void clearEvents() {
         EventManager em = LevelMapManager.getInstance().getEventManager();
@@ -46,7 +40,6 @@ public class ResetManager {
     public void gameOverReset(Player player) {
         // Reset Logic Game
         GameSession.getInstance().reset();
-        player.resetStats();
 
         // Reset Timer Speedrun karena game over
         resetGameTimer();
@@ -54,7 +47,6 @@ public class ResetManager {
         String currentMap = LevelMapManager.getInstance().getCurrentMapName();
         SoundManager.getInstance().stopAllAudio();
         LevelMapManager.getInstance().changeLevel("Level1");
-        ProjectileManager.getInstance().clear();
         forceRespawnEnemies();
         resetRoomTimer();
         LevelMapManager.getInstance().spawnPlayer();
@@ -69,9 +61,7 @@ public class ResetManager {
         String currentMap = LevelMapManager.getInstance().getCurrentMapName();
         SoundManager.getInstance().stopAllAudio();
         LevelMapManager.getInstance().changeLevel(currentMap);
-        player.resetStats();
         LevelMapManager.getInstance().spawnPlayer();
-        ProjectileManager.getInstance().clear();
         forceRespawnEnemies();
         resetRoomTimer();
         MapScreen currentMapScreen = LevelMapManager.getInstance().getMapScreen();
@@ -83,9 +73,7 @@ public class ResetManager {
         // Gua gatau caranya
         String currentMap = LevelMapManager.getInstance().getCurrentMapName();
         SoundManager.getInstance().stopAllAudio();
-        player.resetStats();
         LevelMapManager.getInstance().spawnPlayer();
-        ProjectileManager.getInstance().clear();
         forceRespawnEnemies();
         resetRoomTimer();
         ResetManager.getInstance().resetRoomTimer();

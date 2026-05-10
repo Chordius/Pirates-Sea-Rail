@@ -2,27 +2,51 @@ package com.chronicorn.frontend.managers.animationManager;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Queue;
+import com.chronicorn.frontend.battlers.Battler;
+import com.chronicorn.frontend.battlers.Enemy;
 import com.chronicorn.frontend.managers.battleManager.BattleManager;
-import com.chronicorn.frontend.screens.BattleScreen;
+import com.chronicorn.frontend.managers.battleManager.ui.EnemyWidget;
 
 public class ActionSequenceProcessor {
+    public interface SequenceEventListener {
+        void onCameraZoom(float targetScale, float duration);
+        void onCameraReset();
+    }
+
     private BattleManager battleManager;
     private AnimationManager animationManager;
+    private SequenceEventListener eventListener;
 
     private Queue<String> commandQueue;
     private float waitTimer = 0f;
     private int activeAnimations = 0;
 
-    public ActionSequenceProcessor(BattleManager battleManager, AnimationManager animationManager) {
+    public ActionSequenceProcessor(BattleManager battleManager, AnimationManager animationManager, SequenceEventListener eventListener) {
         this.battleManager = battleManager;
         this.animationManager = animationManager;
+        this.eventListener = eventListener;
         this.commandQueue = new Queue<>();
     }
 
     public void startSequence(Array<String> actionList) {
         commandQueue.clear();
+        activeAnimations = 0;
+        waitTimer = 0f;
+
+        if (actionList == null || actionList.size == 0) {
+            // Fallback: ensure gameplay still progresses even if sequence data is missing.
+            commandQueue.addLast("ACTION EFFECT");
+            return;
+        }
+
         for (String cmd : actionList) {
-            commandQueue.addLast(cmd.trim());
+            if (cmd != null) {
+                commandQueue.addLast(cmd.trim());
+            }
+        }
+
+        if (commandQueue.isEmpty()) {
+            commandQueue.addLast("ACTION EFFECT");
         }
     }
 
@@ -79,9 +103,37 @@ public class ActionSequenceProcessor {
         }
         else if (upperCmd.equals("PERFORM START")) {
             // TODO: PERFORM START ANIMATION
+            Battler activeUser = battleManager.getActiveBattler();
+            if (activeUser instanceof Enemy) {
+                EnemyWidget widget = animationManager.findEnemyWidget(activeUser);
+                if (widget != null) {
+                    widget.playCastAnimation();
+                }
+            }
         }
         else if (upperCmd.equals("PERFORM FINISH")) {
             // TODO: PERFORM FINISH ANIMATION
+            Battler activeUser = battleManager.getActiveBattler();
+            if (activeUser instanceof Enemy) {
+                EnemyWidget widget = animationManager.findEnemyWidget(activeUser);
+                if (widget != null) {
+                    widget.resetCastAnimation();
+                }
+            }
+        }
+        else if (upperCmd.startsWith("CAMERA ZOOM:")) {
+            // Syntax: "CAMERA ZOOM: 1.15: 0.2"
+            String[] parts = command.split(":");
+            if (parts.length == 3 && eventListener != null) {
+                float targetScale = Float.parseFloat(parts[1].trim());
+                float duration = Float.parseFloat(parts[2].trim());
+                eventListener.onCameraZoom(targetScale, duration);
+            }
+        }
+        else if (upperCmd.equals("CAMERA RESET")) {
+            if (eventListener != null) {
+                eventListener.onCameraReset();
+            }
         }
     }
 }

@@ -5,20 +5,29 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Array;
 import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.battlers.Battler;
 import com.chronicorn.frontend.managers.ShaderManager;
 import com.chronicorn.frontend.managers.battleManager.enums.Elements;
 import com.chronicorn.frontend.observers.BattlerObserver;
+import com.chronicorn.frontend.statuseffect.StatusEffect;
 
 public class ActorCardUI extends Group implements BattlerObserver {
+    public interface Listener {
+        void onAllyClicked(Battler clickedAlly);
+        void onAllyHovered(ActorCardUI card);
+    }
+    private Listener listener;
+    private boolean isPrimaryTarget = false;
+    private boolean isSecondaryTarget = false;
+
     private Battler battler;
     private ProgressBar hpBar;
     private ProgressBar hpCatchupBar;
@@ -28,7 +37,13 @@ public class ActorCardUI extends Group implements BattlerObserver {
     private Image ultGhost;
     private Image portrait;
     private Image activeIndicator;
+    private Group reticleGroup;
 
+    private Skin skin;
+    private Table statusTable;
+    private float statusRotationTimer = 0f;
+    private int statusOffset = 0;
+    private static final float STATUS_ROTATION_INTERVAL = 2.0f;
 
     private final int SIZE_X = 330;
     private final int SIZE_Y = 240;
@@ -47,9 +62,10 @@ public class ActorCardUI extends Group implements BattlerObserver {
     private final float NORMAL_SCALE = 1.0f;
     private final float ACTIVE_SCALE = 1.2f;
 
-    public ActorCardUI(Battler battler, Skin skin) {
+    public ActorCardUI(Battler battler, Skin skin, Listener listener) {
         this.battler = battler;
-
+        this.listener = listener;
+        this.skin = skin;
         this.battler.addObserver(this);
 
         // Define the bounds of this whole card (adjust to your assets)
@@ -148,13 +164,52 @@ public class ActorCardUI extends Group implements BattlerObserver {
         hpBar.setAnimateDuration(0f);
         this.addActor(hpBar);
 
+        statusTable = new Table();
+        statusTable.left().bottom();
+        // Position X matches HP bar (3), Position Y sits just above the HP bar
+        statusTable.setPosition(3, 20);
+        statusTable.setTouchable(Touchable.disabled);
+        this.addActor(statusTable);
+
         // LAYER 1 (Top): Numbers
         String hpNumbers = String.valueOf(battler.getHp());
-        hpLabel = new Label((CharSequence) hpNumbers, skin);
-        hpLabel.setPosition(130, 15); // Placed over the right side of the HP bar
+        hpLabel = new Label((CharSequence) hpNumbers, skin, "number-style");
+        hpLabel.setPosition(124, 18); // Placed over the right side of the HP bar
         this.addActor(hpLabel);
+
+        // LAYER 0: Target
+        reticleGroup = new Group();
+        reticleGroup.setSize(96, 96);
+        reticleGroup.setOrigin(Align.center);
+        // Center the reticle directly over the middle of the enemy sprite
+        reticleGroup.setPosition(this.getWidth() / 2 - reticleGroup.getWidth() / 2, this.getHeight() * 2 / 3 - reticleGroup.getHeight() / 2);
+        reticleGroup.setVisible(false);
+        reticleGroup.setTouchable(Touchable.disabled);
+
+        Image reticle = new Image(skin.getDrawable("reticle"));
+        reticle.setOrigin(Align.center);
+        reticle.setPosition(reticleGroup.getWidth() / 2 - reticle.getWidth() / 2, reticleGroup.getHeight() / 2 - reticle.getHeight() / 2);
+        reticle.addAction(Actions.forever(Actions.rotateBy(90f, 1f)));
+
+        reticleGroup.addActor(reticle);
+        this.addActor(reticleGroup);
+
+        // Touchable Listener
+        this.setTouchable(Touchable.disabled);
+        this.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (listener != null) listener.onAllyClicked(getBattler());
+            }
+
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                if (listener != null) listener.onAllyHovered(ActorCardUI.this);
+            }
+        });
     }
 
+    // Set Card UIs to be something.
     public void setActive(boolean isActive) {
         float scale = isActive ? ACTIVE_SCALE : NORMAL_SCALE;
 
@@ -170,22 +225,37 @@ public class ActorCardUI extends Group implements BattlerObserver {
         if (isActive) this.toFront();
     }
 
+    public void setTargeted(boolean primary, boolean secondary) {
+        this.isPrimaryTarget = primary;
+        this.isSecondaryTarget = secondary;
+        reticleGroup.setVisible(primary || secondary);
+
+        // TODO: Add your visual changes here (e.g., make the card glow, move it up slightly, or show a reticle)
+        if (isPrimaryTarget) {
+            reticleGroup.setScale(1.0f);
+        } else if (isSecondaryTarget) {
+            reticleGroup.setScale(0.6f); // Smaller for adjacent targets
+        }
+    }
+
     public Battler getBattler() {
         return battler;
     }
 
     @Override
     public void onStatsUpdated() {
-
+        refreshStatusIcons();
     }
 
     @Override
-    public void onHpChange() {
+    public void onHpChange(int baseDamage, Elements element) {
         float currentHp = hpBar.getValue();
         float newHp = battler.getHp();
 
         if (newHp < currentHp) {
+            int damageTaken = (int) (currentHp - newHp);
             playHitAnimation();
+            spawnPopup(String.valueOf(damageTaken), Color.WHITE);
         }
 
         // 2. Update the progress bars
@@ -294,6 +364,59 @@ public class ActorCardUI extends Group implements BattlerObserver {
         ));
     }
 
+    // --- Status Effect Logic ---
+
+    public void refreshStatusIcons() {
+        statusTable.clearChildren();
+
+        // Assuming your Battler class holds the active states array
+        Array<StatusEffect> states = battler.getActiveStates();
+
+        if (states == null || states.size == 0) return;
+
+        // Failsafe: Reset rotation if states expired and the array shrank
+        if (states.size <= 3 || statusOffset >= states.size) {
+            statusOffset = 0;
+            statusRotationTimer = 0f;
+        }
+
+        // Draw up to 3 icons starting from the current offset
+        int count = 0;
+        for (int i = statusOffset; i < states.size && count < 3; i++) {
+            StatusEffect state = states.get(i);
+
+            // Generate the icon
+            Image icon = new Image(skin.getDrawable(state.getIconId()));
+            // Sized slightly smaller than enemies (24x24 instead of 32x32) to fit the card UI better
+            statusTable.add(icon).size(24, 24).padRight(4);
+            count++;
+        }
+        statusTable.pack();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+
+        Array<StatusEffect> states = battler.getActiveStates();
+
+        // Only run the rotation timer if there are more than 3 active states
+        if (states != null && states.size > 3) {
+            statusRotationTimer += delta;
+
+            if (statusRotationTimer >= STATUS_ROTATION_INTERVAL) {
+                statusRotationTimer = 0f;
+                statusOffset += 3; // Jump forward by 3
+
+                // Wrap around back to the beginning
+                if (statusOffset >= states.size) {
+                    statusOffset = 0;
+                }
+                refreshStatusIcons();
+            }
+        }
+    }
+
     private Color getCharacterThemeColor(Elements name) {
         switch (name) {
             case WIND:
@@ -310,6 +433,27 @@ public class ActorCardUI extends Group implements BattlerObserver {
             default:
                 return Color.BLACK;
         }
+    }
+
+    @Override
+    public void onPopupRequested(String text, Color color) {
+        spawnPopup(text, color);
+    }
+
+    private void spawnPopup(String text, Color color) {
+        if (this.getParent() == null) return; // Failsafe if widget isn't on stage yet
+
+        // Calculate spawn position (Center X, slightly above Center Y)
+        float spawnX = this.getX() + (this.getWidth() / 2) - 20; // -20 offset to center the text roughly
+        float spawnY = this.getY() + (this.getHeight() * 0.75f);
+
+        // Optional: Add slight random X offset so numbers don't perfectly overlap if hit rapidly
+        spawnX += (float) (Math.random() * 40 - 20);
+
+        FloatingPopup popup = new FloatingPopup(text, skin, "damage-style", color, spawnX, spawnY);
+
+        // Add to the parent stage so it renders freely over top of everything
+        this.getParent().addActor(popup);
     }
 
     public void dispose() {

@@ -14,7 +14,7 @@ public class Dash implements Command {
     @Override
     public void execute() {
         if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
-            if (!player.isDead() && player.isDashAchieved()) {
+            if (!player.isDead()) {
                 player.attemptDash();
             }
         }

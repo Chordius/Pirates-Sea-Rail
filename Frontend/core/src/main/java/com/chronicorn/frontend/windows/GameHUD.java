@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
-import com.chronicorn.frontend.managers.ImageManager;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.observers.PlayerObserver;
 

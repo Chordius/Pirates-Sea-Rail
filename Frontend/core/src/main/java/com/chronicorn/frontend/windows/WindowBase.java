@@ -1,19 +1,12 @@
 package com.chronicorn.frontend.windows;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.NinePatch;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.utils.NinePatchDrawable;
-import com.badlogic.gdx.utils.Align;
-import com.chronicorn.frontend.managers.ImageManager;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 
 public class WindowBase extends Window {
     private boolean isOpening;
@@ -23,7 +16,7 @@ public class WindowBase extends Window {
     protected int lineHeight = 36;
     protected int standardFontSize = 20;
     protected int standardPadding = 18;
-    protected int textPadding = 6;
+    protected int textPadding = 9;
     protected int standardBackOpacity = 192;
 
     public WindowBase(String title, int x, int y, int width, int height) {
@@ -41,9 +34,15 @@ public class WindowBase extends Window {
         updatePadding();
         createContents();
 
+        // Default windows use the standard window drawable
         Color bgColor = new Color(1, 1, 1, standardBackOpacity / 255f);
         this.setBackground(getSkin().newDrawable("window-drawable", bgColor));
     };
+
+    public void setBackgroundDrawable(String drawableName) {
+        Drawable drawable = getSkin().getDrawable(drawableName);
+        this.setBackground(drawable);
+    }
 
     public void move(int x, int y, int width, int height) {
         this.setPosition(x, y);

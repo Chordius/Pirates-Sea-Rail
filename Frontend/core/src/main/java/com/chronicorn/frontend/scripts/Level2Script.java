@@ -1,13 +1,8 @@
 package com.chronicorn.frontend.scripts;
 
 import com.badlogic.gdx.Gdx;
-import com.chronicorn.frontend.Main;
 import com.chronicorn.frontend.eventcommands.*;
-import com.chronicorn.frontend.managers.NetworkCallback;
-import com.chronicorn.frontend.managers.NetworkManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
-import com.chronicorn.frontend.managers.eventManagers.GameSession;
-import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
 
 public class Level2Script implements MapScript {
 

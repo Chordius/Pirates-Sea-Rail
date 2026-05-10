@@ -4,6 +4,7 @@ import com.chronicorn.frontend.managers.eventManagers.GameMessage;
 
 public class CmdShowText implements EventCommand {
     private String text;
+    private String speaker = null;
 
     public CmdShowText(String text) {
         this.text = text;
@@ -15,6 +16,17 @@ public class CmdShowText implements EventCommand {
         GameMessage.getInstance().setPosition(true, x, y);
     }
 
+    public CmdShowText(String speaker, String text) {
+        this.speaker = speaker;
+        this.text = text;
+        GameMessage.getInstance().setPosition(false);
+    }
+
+    public CmdShowText setSpeaker(String speaker) {
+        this.speaker = speaker;
+        return this;
+    }
+
     public CmdShowText setAlignment(int alignment) {
         GameMessage.getInstance().setAlignment(alignment);
         return this;
@@ -23,7 +35,11 @@ public class CmdShowText implements EventCommand {
     @Override
     public void start() {
         // Just dump the data into the global bucket
-        GameMessage.getInstance().setText(text);
+        if (speaker != null && !speaker.isEmpty()) {
+            GameMessage.getInstance().setText(speaker, text);
+        } else {
+            GameMessage.getInstance().setText(text);
+        }
     }
 
     @Override

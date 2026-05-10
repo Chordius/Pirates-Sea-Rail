@@ -198,20 +198,22 @@ public class TileMapManager {
         }
     }
 
-    public InteractiveObject checkObjectCollisions(float delta, PhysicsObjects player) {
+    public void applySolidObjectPhysics(float delta, PhysicsObjects player) {
         Array<Rectangle> tempCollisionList = new Array<>();
 
         for (InteractiveObject obj : interactiveObjects) {
-            if (Intersector.overlaps(player.getBounds(), obj.getBounds())) {
-                if (obj.isSolid()) {
-                    tempCollisionList.clear();
-                    tempCollisionList.add(obj.getBounds());
-                    checkWallCollisions(delta, player, tempCollisionList);
-                }
-                return obj;
+            // We only care about collision physics IF the object is solid
+            if (obj.isSolid() && Intersector.overlaps(player.getBounds(), obj.getBounds())) {
+
+                // Isolate this specific object's bounds and push the player out
+                tempCollisionList.clear();
+                tempCollisionList.add(obj.getBounds());
+                checkWallCollisions(delta, player, tempCollisionList);
+
+                // Notice we DO NOT return the object here anymore!
+                // We let the loop finish so the player can be pushed out of multiple objects if stuck in a corner.
             }
         }
-        return null;
     }
 
     public void parseHazardCollisions(TiledMap map, Player player) {

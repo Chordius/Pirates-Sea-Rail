@@ -1,21 +1,32 @@
 package com.chronicorn.frontend.managers.eventManagers;
 
+import com.badlogic.gdx.utils.Align;
+
 public class GameMessage {
     private static final GameMessage instance = new GameMessage();
     private String textToDisplay = null;
+    private String speakerToDisplay = null;
     private boolean isBusy = false;
     private float x;
     private float y;
     private boolean changePosition = false;
-    private int alignment;
+    private int alignment = Align.top;
 
     public static GameMessage getInstance() {
         return instance;
     }
 
+    public void setText(String speaker, String text) {
+        this.speakerToDisplay = speaker;
+        this.textToDisplay = text;
+        this.isBusy = true;
+        this.alignment = Align.top;
+    }
+
     public void setText(String text) {
         this.textToDisplay = text;
         this.isBusy = true; // Mark system as busy so events pause
+        this.alignment = Align.top;
     }
 
     public void setPosition(boolean bool, float x, float y) {
@@ -30,6 +41,12 @@ public class GameMessage {
 
     public void setAlignment(int align) {
         alignment = align;
+    }
+
+    public String popSpeaker() {
+        String s = speakerToDisplay;
+        speakerToDisplay = null;
+        return s;
     }
 
     public boolean getPosition() {

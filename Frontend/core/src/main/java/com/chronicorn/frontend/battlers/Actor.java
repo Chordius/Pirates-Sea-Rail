@@ -1,7 +1,11 @@
 package com.chronicorn.frontend.battlers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.utils.Array;
 import com.chronicorn.frontend.managers.battleManager.BattleManager;
 import com.chronicorn.frontend.managers.battleManager.enums.Elements;
+import com.chronicorn.frontend.skills.Skill;
+import com.chronicorn.frontend.skills.SkillDatabase;
 
 public class Actor extends Battler {
     protected int shield = 0;
@@ -38,33 +42,9 @@ public class Actor extends Battler {
         return portraitOffsetY;
     }
 
-    public double getElementalResistanceRate(Elements attackElement) {
-        // Wind and None are neutral by default for raw damage multipliers
-        if (attackElement == Elements.NONE || attackElement == Elements.WIND) {
-            return 1.0;
-        }
-
-        double finalRate = 1.0;
-
-        Elements innate = this.element;
-        // Check for Weakness (1.2x)
-        if (innate.getWeakness() == attackElement) {
-            finalRate *= 1.2;
-        }
-        // Check for Resistance (0.8x)
-        else if (innate.getResistance() == attackElement) {
-            finalRate *= 0.8;
-        }
-        // If neither, it implicitly remains 1.0x
-
-        // Apply the global RES stat modifier (e.g., a buff that lowers all elemental damage taken)
-        finalRate *= resistance;
-
-        return finalRate;
-    }
-
     public void changeLevel(int level) {
         this.level = level;
+        calculateParams(10);
     }
 
     @Override

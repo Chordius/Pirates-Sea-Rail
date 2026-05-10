@@ -11,11 +11,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.chronicorn.frontend.Player;
 import com.chronicorn.frontend.managers.ResetManager;
 import com.chronicorn.frontend.managers.SceneManager;
-import com.chronicorn.frontend.managers.ImageManager;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.SoundManager;
-import com.chronicorn.frontend.managers.combatManager.ProjectileManager;
-import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
-import com.chronicorn.frontend.screens.MapScreen;
 import com.chronicorn.frontend.screens.TitleScreen;
 
 public class WindowOptions extends WindowBase {

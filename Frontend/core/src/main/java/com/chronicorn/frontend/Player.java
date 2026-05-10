@@ -5,13 +5,11 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.MathUtils; // Pastikan import ini ada
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.chronicorn.frontend.contants.Direction;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
-import com.chronicorn.frontend.monsters.Monster;
 import com.chronicorn.frontend.objects.PhysicsObjects;
 import com.chronicorn.frontend.states.DashingState;
 import com.chronicorn.frontend.states.NormalState;
@@ -36,35 +34,34 @@ public class Player implements PhysicsObjects {
     // --- STATE & COOLDOWN ---
     private PlayerState currentState;
     private float dashCooldownTimer = 0;
-    private float invincibilityTimer = 0;
     private final float DASH_COOLDOWN = 1.0f;
-    private final float INVINCIBILITY_DURATION = 0.2f;
+    Map<Direction, Animation<TextureRegion>> runAnimations = new HashMap<>();
+    private Texture runTextureSheet;
 
     private Rectangle collider;
-    private float width = 64f;
+
+    // [FIX 1] Adjusted height to 64f to match the TextureRegion slice!
+    private float width = 48f;
     private float height = 64f;
     private Vector2 respawnPosition;
 
-    private Direction currentDirection = Direction.UP;
+    private Direction currentDirection = Direction.DOWN;
 
     // --- CONDITION FLAGS ---
     public boolean dead = false;
-    public boolean isBusy = false;
-    public boolean isInvincible = false;
+    public boolean isBusy = false; // Used to freeze player during events
+
+    // --- OVERWORLD STRIKE (NEW) ---
+    private boolean isStriking = false;
+    private float strikeTimer = 0f;
+    private final float STRIKE_DURATION = 0.2f;
 
     // --- STATS ---
     public int hp = 35;
     private int maxHp = 35;
-    private int atk = 35;
-    private int def = 25;
 
     // --- SCORE ---
     private int score = 0;
-
-    private final float BUMP_BASE_VALUE = 55f;
-
-    private boolean isHit = false;
-    private float hitTimer = 0;
 
     // --- AUDIO VARIABLES ---
     private long walkSoundId = -1;
@@ -79,6 +76,15 @@ public class Player implements PhysicsObjects {
 
     // --- GHOST TRAIL ---
     private Array<Ghost> ghosts = new Array<>();
+
+    public void takeHazardDamage(int amount) {
+        // TODO: Make Party Take Hazard DMG
+    }
+
+    public boolean isDashing() {
+        // TODO: Make Dash
+        return false;
+    }
 
     private class Ghost {
         float x, y;
@@ -96,10 +102,26 @@ public class Player implements PhysicsObjects {
     public Player(Vector2 startPosition) {
         this.position = new Vector2(startPosition);
         this.velocity = new Vector2(0, 0);
-        this.collider = new Rectangle(position.x, position.y, width - 16, height - 16);
+
+        // Push the collider down to the feet for pseudo-3D collision
+        this.collider = new Rectangle(position.x, position.y, width - 16, height / 3f);
+
         initializeAnimations();
         this.currentState = new NormalState();
         this.respawnPosition = new Vector2(startPosition);
+    }
+
+    // --- OVERWORLD STRIKE LOGIC ---
+
+    // Call this from LevelMapManager when 'Z' is pressed!
+    public void playSwingAnimation() {
+        if (!isStriking) {
+            this.isStriking = true;
+            this.strikeTimer = STRIKE_DURATION;
+
+            // You can add a sword swing sound effect here!
+            // SoundManager.getInstance().playSoundWithCooldown("swing.wav", 0.2f);
+        }
     }
 
     // --- GHOST TRAIL LOGIC ---
@@ -145,38 +167,34 @@ public class Player implements PhysicsObjects {
     }
 
     public void handleInput() {
+        if (isBusy) return; // Prevent moving while talking to NPCs
         currentState.handleInput(this);
     }
 
+    public Vector2 getVelocity() { return velocity; }
+    public float getMaxSpeed() { return maxSpeed; }
+    public boolean isDashReady() { return dashCooldownTimer <= 0; }
+
     public void attemptDash() {
+        if (isBusy) return;
         currentState.onDashCommand(this);
     }
 
     // --- MAIN UPDATE LOOP ---
     public void update(float delta) {
-        if (dashCooldownTimer > 0) dashCooldownTimer -= delta;
-
-        // Update Cooldown
         if (dashCooldownTimer > 0) {
             dashCooldownTimer -= delta;
             if (dashCooldownTimer < 0) dashCooldownTimer = 0;
             notifyDashObservers();
         }
 
-        if (isInvincible) {
-            invincibilityTimer -= delta;
-
-            if (invincibilityTimer <= 0) {
-                isInvincible = false;
-            }
+        // Handle the visual strike cooldown
+        if (isStriking) {
+            strikeTimer -= delta;
+            if (strikeTimer <= 0) isStriking = false;
         }
 
-        if (isHit) {
-            hitTimer -= delta;
-            if (hitTimer <= 0) isHit = false;
-        }
-
-        if (!dead) {
+        if (!dead && !isBusy) {
             currentState.update(this, delta);
             if (currentState instanceof NormalState) {
                 currentState.handleInput(this);
@@ -186,9 +204,9 @@ public class Player implements PhysicsObjects {
             updateGhosts(delta);
         }
 
-        if (dead) {
+        if (dead || isBusy) {
             stopWalkingSound();
-            return;
+            velocity.set(0,0); // Force stop sliding when an event starts
         }
 
         updateAnimation(delta);
@@ -264,39 +282,56 @@ public class Player implements PhysicsObjects {
         velocity.clamp(0, maxSpeed);
     }
 
-    public void setExactVelocity(float x, float y) {
-        velocity.set(x, y);
-    }
-
-    public boolean isDashReady() {
-        return dashCooldownTimer <= 0;
-    }
-
     // --- GETTERS & SETTERS ---
     public Direction getCurrentDirection() { return currentDirection; }
     public void setCurrentDirection(Direction dir) { this.currentDirection = dir; }
     public boolean isDead() { return dead; }
     public boolean isMoving() { return velocity.len() > 10f; }
-    public boolean isDashAchieved() {
-        return GameSession.getInstance().isSet("SKILL_DASH");
-    }
 
     // --- ANIMATION ---
     private void initializeAnimations() {
+        // 1. Load Walk Sheet
         textureSheet = new Texture(Gdx.files.internal("feschar_big_040.png"));
         TextureRegion[][] tmpFrames = TextureRegion.split(textureSheet, 48, 64);
-        int[] rowMap = {1, 2, 0, 3};
+
+        // 2. Load Dash Sheet
+        runTextureSheet = new Texture(Gdx.files.internal("Hero01_dash.png"));
+        int runFrameWidth = runTextureSheet.getWidth() / 3;
+        int runFrameHeight = runTextureSheet.getHeight() / 4;
+        TextureRegion[][] tmpRunFrames = TextureRegion.split(runTextureSheet, runFrameWidth, runFrameHeight);
+
+        int[] rowMap = new int[4];
+        for (int i = 0; i < Direction.values().length; i++) {
+            Direction dir = Direction.values()[i];
+            switch(dir) {
+                case DOWN:  rowMap[i] = 0; break;
+                case LEFT:  rowMap[i] = 1; break;
+                case RIGHT: rowMap[i] = 2; break;
+                case UP:    rowMap[i] = 3; break;
+            }
+        }
 
         for (int i = 0; i < Direction.values().length; i++) {
             Direction dir = Direction.values()[i];
             int rowInImage = rowMap[i];
+
+            // Build Walk Animation
             TextureRegion[] frames = new TextureRegion[4];
-            frames[0] = tmpFrames[rowInImage][0];
-            frames[1] = tmpFrames[rowInImage][1];
-            frames[2] = tmpFrames[rowInImage][2];
-            frames[3] = tmpFrames[rowInImage][3];
-            walkAnimations.put(dir, new Animation<>(1f/9f, frames));
-            idleFrames.put(dir, tmpFrames[rowInImage][0]);
+            frames[0] = tmpFrames[rowInImage][1];
+            frames[1] = tmpFrames[rowInImage][0];
+            frames[2] = tmpFrames[rowInImage][1];
+            frames[3] = tmpFrames[rowInImage][2];
+            walkAnimations.put(dir, new Animation<>(1f/6f, frames));
+            idleFrames.put(dir, tmpFrames[rowInImage][1]);
+
+            // Build Run Animation
+            TextureRegion[] rFrames = new TextureRegion[4];
+            rFrames[0] = tmpRunFrames[rowInImage][1];
+            rFrames[1] = tmpRunFrames[rowInImage][0];
+            rFrames[2] = tmpRunFrames[rowInImage][1];
+            rFrames[3] = tmpRunFrames[rowInImage][2];
+            // 1f/10f makes the animation play faster to match the run speed
+            runAnimations.put(dir, new Animation<>(1f/10f, rFrames));
         }
     }
 
@@ -306,8 +341,14 @@ public class Player implements PhysicsObjects {
         } else {
             stateTime += delta;
         }
+
         if (isMoving()) {
-            currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);
+            // Check which state is active to determine which animation sheet to pull from
+            if (currentState instanceof DashingState) {
+                currentFrame = runAnimations.get(currentDirection).getKeyFrame(stateTime, true);
+            } else {
+                currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);
+            }
         } else {
             currentFrame = idleFrames.get(currentDirection);
         }
@@ -327,175 +368,58 @@ public class Player implements PhysicsObjects {
             float drawX = position.x;
             float drawY = position.y;
 
-            if (isHit) {
-                batch.setColor(1f, 0f, 0f, 1f);
+            float frameWidth = currentFrame.getRegionWidth();
+            float frameHeight = currentFrame.getRegionHeight();
 
-                float shakeIntensity = 5.0f;
-                drawX += MathUtils.random(-shakeIntensity, shakeIntensity);
-                drawY += MathUtils.random(-shakeIntensity, shakeIntensity);
+            float offsetX = (frameWidth - this.width) / 2f;
+            float offsetY = 0f;
 
+            // Simple visual cue for striking on the overworld
+            if (isStriking) {
+                batch.setColor(1f, 0.8f, 0.8f, 1f); // Slight red flash
+
+                // Slight lunge visual effect
+                switch(currentDirection) {
+                    case UP: drawY += 5; break;
+                    case DOWN: drawY -= 5; break;
+                    case LEFT: drawX -= 5; break;
+                    case RIGHT: drawX += 5; break;
+                }
             } else {
-                batch.setColor(1f, 1f, 1f, 1f); // Warna Normal
+                batch.setColor(1f, 1f, 1f, 1f);
             }
-            batch.draw(currentFrame, drawX, drawY, width, height);
 
-            batch.setColor(1f, 1f, 1f, 1f);
+
+            batch.draw(currentFrame, drawX - offsetX, drawY - offsetY, frameWidth, frameHeight);
+            batch.setColor(1f, 1f, 1f, 1f); // Reset color for the rest of the game
         }
     }
 
     public Vector2 getPosition() { return position; }
-    public Vector2 getVelocity() { return velocity; }
     public Rectangle getBounds() { return collider; }
 
     public void setPosition(float x, float y) {
         this.position.set(x, y);
-        this.collider.setPosition(x, y);
+        updateCollider();
     }
 
     private void updateCollider() {
-        collider.setPosition(position.x, position.y);
+        // Keeps the collider at the player's feet
+        collider.setPosition(position.x + 8, position.y);
     }
 
     public void dispose() {
         textureSheet.dispose();
-    }
-
-    public float getMaxSpeed() { return maxSpeed; }
-    public boolean isDashing() { return currentState instanceof DashingState; }
-
-    public int calculateBumpDamage(Monster enemy) {
-        float baseDamage = (6 * BUMP_BASE_VALUE * ((float)this.atk / enemy.def) * 0.02f) + 2;
-        if (isDashing()) {
-            baseDamage *= 1.2f;
-        }
-        return (int) baseDamage;
+        if (runTextureSheet != null) runTextureSheet.dispose();
     }
 
     public void setSpawnPoint(float x, float y) {
-        this.position.set(x, y);
-        this.collider.setPosition(x, y);
+        this.setPosition(x, y);
         if (this.respawnPosition == null) {
             this.respawnPosition = new Vector2(x, y);
         } else {
             this.respawnPosition.set(x, y);
         }
         this.velocity.set(0, 0);
-    }
-
-    public int getAtk() { return atk; }
-    public int getDef() { return def; }
-    public int getHp() { return hp; }
-
-    public void takeDamage(int amount) {
-        if (!dead) {
-            this.hp -= amount;
-            this.isHit = true;
-            this.hitTimer = 0.2f; // Durasi getar & merah (0.2 detik)
-            notifyHealthObservers();
-            System.out.println("Player Hit! HP: " + hp);
-
-            if (this.hp <= 0) {
-                this.dead = true;
-                stopWalkingSound();
-                notifyStatusObservers();
-            }
-
-            SoundManager.getInstance().playSoundWithCooldown("horse_hit1.wav", 0.2f);
-        }
-    }
-
-    public void takeHazardDamage(int amount) {
-        if (isInvincible || isDead()) return;
-
-        if (!dead) {
-            this.hp -= amount;
-            this.isHit = true;
-            this.hitTimer = 0.2f; // Durasi getar & merah (0.2 detik)
-            notifyHealthObservers();
-            System.out.println("Player Hit! HP: " + hp);
-
-            if (this.hp <= 0) {
-                this.dead = true;
-                stopWalkingSound();
-                notifyStatusObservers();
-            } else {
-                isInvincible = true;
-                invincibilityTimer = INVINCIBILITY_DURATION;
-            }
-
-            SoundManager.getInstance().playSoundWithCooldown("horse_hit1.wav", 0.2f);
-        }
-    }
-
-    public void resetStats() {
-        this.hp = maxHp;
-        this.dead = false;
-        this.isBusy = false;
-        this.isHit = false;
-        this.hitTimer = 0;
-        this.velocity.set(0, 0);
-        this.currentState = new NormalState();
-        this.dashCooldownTimer = 0;
-        this.ghosts.clear();
-        stopWalkingSound();
-        notifyStatusObservers();
-        notifyHealthObservers();
-        notifyDashObservers();
-        if (respawnPosition != null) {
-            setPosition(respawnPosition.x, respawnPosition.y);
-        }
-        System.out.println("Player stats reset. HP: " + hp);
-    }
-
-    public void gainHp(int number) {
-        this.hp += number;
-
-        if (this.hp > maxHp) {
-            this.hp = maxHp;
-        }
-
-        notifyHealthObservers();
-
-        System.out.println("HP Gained! Current HP: " + hp);
-    }
-
-    // --- SCORE ---
-    public int getScore() {
-        return score;
-    }
-
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public void addScore(int value) {
-        this.score += value;
-    }
-
-    // --- NETWORK ---
-    public void saveToCloud() {
-        System.out.println("Mencoba menyimpan data ke server...");
-
-        // Ambil username dari Main class
-        String user = Main.currentUsername;
-
-        com.chronicorn.frontend.managers.NetworkManager.getInstance().saveGame(
-            user,
-            this.score,
-            this.hp,
-            this.atk,
-            this.def,
-            new com.chronicorn.frontend.managers.NetworkCallback() {
-                @Override
-                public void onSuccess(String response) {
-                    System.out.println("GAME SAVED: " + response);
-                }
-
-                @Override
-                public void onError(String errorMessage) {
-                    System.err.println("SAVE FAILED: " + errorMessage);
-                }
-            }
-        );
     }
 }

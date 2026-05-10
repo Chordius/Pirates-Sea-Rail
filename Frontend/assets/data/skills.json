@@ -1,0 +1,257 @@
+{
+  "basic_attack": {
+    "name": "Basic Attack",
+    "iconId": "",
+    "scope": "SINGLE",
+    "element": "NONE",
+    "basePower": 50,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "WAIT: 0.2",
+      "ANIMATION: slash",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "WAIT: 0.2",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "sonic_slash": {
+    "name": "Sonic Slash",
+    "iconId": "icon_slash_wind",
+    "scope": "SINGLE",
+    "element": "WIND",
+    "basePower": 50,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: sonic_slash",
+      "WAIT: 0.1",
+      "ANIMATION: wind_scar",
+      "ANIMATION: wind_impact",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "WAIT: 0.2",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "super_sonic_slash": {
+    "name": "Super Sonic Slash",
+    "iconId": "icon_slash_wind",
+    "scope": "SINGLE",
+    "element": "WIND",
+    "basePower": 70,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: sonic_slash",
+      "ANIMATION: wind_slice",
+      "WAIT: 0.1",
+      "ANIMATION: wind_scar",
+      "ANIMATION: wind_impact",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "WAIT: 0.2",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "wind_cutter": {
+    "name": "Wind Cutter",
+    "iconId": "icon_slash_wind",
+    "scope": "BLAST",
+    "element": "WIND",
+    "basePower": 70,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: wind_core",
+      "WAIT: 0.15",
+      "ANIMATION: wind_slice",
+      "WAIT: 0.15",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "second_wind": {
+    "name": "Second Wind",
+    "iconId": "icon_slash_wind",
+    "scope": "ALLY",
+    "element": "WIND",
+    "basePower": 0,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "tag": "support",
+    "sequence": [
+      "PERFORM START",
+      "WAIT: 0.2",
+      "ANIMATION: second_wind",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "WAIT: 0.2"
+    ]
+  },
+
+  "the_wind_way": {
+    "name": "The Wind's Ways",
+    "iconId": "icon_slash_wind",
+    "scope": "BLAST",
+    "element": "WIND",
+    "basePower": 90,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "WAIT: 0.2",
+      "ANIMATION: slash",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "WAIT: 0.2"
+    ]
+  },
+
+  "fire_punch": {
+    "name": "Fire Punch",
+    "iconId": "icon_slash_wind",
+    "scope": "SINGLE",
+    "element": "FIRE",
+    "basePower": 50,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: hit",
+      "ANIMATION: punch-fire",
+      "ANIMATION: hit-fire",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "WAIT: 0.2"
+    ]
+  },
+
+  "splash": {
+    "name": "Splash!",
+    "iconId": "icon_slash_wind",
+    "scope": "SINGLE",
+    "element": "WATER",
+    "basePower": 50,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: water_buildup",
+      "WAIT: 0.3",
+      "ANIMATION: water_burst",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "WAIT: 0.2",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "first_aid": {
+    "name": "First Aid",
+    "iconId": "icon_slash_water",
+    "scope": "ALLY",
+    "element": "WATER",
+    "basePower": 0,
+    "toughnessDMG": 0,
+    "energyBonus": 15,
+    "tag": "support",
+    "sequence": [
+      "PERFORM START",
+      "ANIMATION: water_buildup",
+      "WAIT: 0.3",
+      "ANIMATION: water_burst",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "deal_shoot": {
+    "name": "Shoot!",
+    "iconId": "icon_slash_wind",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "basePower": 50,
+    "toughnessDMG": 20,
+    "energyBonus": 15,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: stick_pierce",
+      "ANIMATION: stick_special_photon",
+      "WAIT: 0.1",
+      "ANIMATION: stick_special_pierce",
+      "WAIT: 0.1",
+      "ANIMATION: hit_thunder",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+
+  "reaction_overload": {
+    "name": "Overload",
+    "scope": "BLAST",
+    "element": "FIRE",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: hit-fire",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+
+  "reaction_smothered": {
+    "name": "Smothered",
+    "scope": "SINGLE",
+    "element": "EARTH",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: slash",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+
+  "reaction_electrocute": {
+    "name": "Electrocute",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: slash",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  }
+}

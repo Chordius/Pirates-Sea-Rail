@@ -35,11 +35,11 @@ public class BackgroundBuilder {
 
         // If size wasn't explicitly set, default to the texture's native size
         if (width != -1 && height != -1) {
-            bg.setSize(width, height);
+            bg.setSize(width * 1.2f, height * 1.2f);
         }
 
         bg.setColor(tint);
-        bg.setPosition(0, 0);
+        bg.setPosition(-width * 0.1f, -height * 0.1f);
 
         return bg;
     }

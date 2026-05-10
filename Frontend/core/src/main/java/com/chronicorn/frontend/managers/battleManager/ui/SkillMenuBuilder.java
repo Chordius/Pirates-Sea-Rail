@@ -44,7 +44,7 @@ public class SkillMenuBuilder {
         buttonGroup.addActor(bg);
 
         // 2. Skill Name
-        Label nameLabel = new Label(skill.getName(), skin, "default");
+        Label nameLabel = new Label(skill.getName(), skin, "skill-style");
         float textX = (SKILL_BG_X * MODIFIER) - nameLabel.getWidth() - 75; // Adjust 75 to clear your right-side icon
         float textY = ((SKILL_BG_Y * MODIFIER) / 2f) - (nameLabel.getHeight() / 2f);
 

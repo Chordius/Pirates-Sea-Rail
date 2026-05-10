@@ -9,7 +9,7 @@ import com.chronicorn.frontend.observers.BattlerObserver;
 public class Enemy extends Battler {
     protected int weaknessbar;
     protected int maxWeakness;
-    protected Array<Elements> innateElements = new Array<>();
+    protected Array<Elements> innateElements;
     protected boolean signature;
     protected ElementMark mark;
 
@@ -53,6 +53,7 @@ public class Enemy extends Battler {
 
     public void setSignatureLoss(boolean b) {
         this.signature = !b;
+        notifyObserversOnWeak();
     }
 
     public boolean isInSignatureLoss() {
@@ -62,45 +63,21 @@ public class Enemy extends Battler {
     public void applyElementalMark(Elements attackElement, Actor source) {
         this.mark = new ElementMark(attackElement, source, 2);
         System.out.println("An element mark of " + this.mark + " has been applied!");
+        notifyObserversOnStatus();
     }
 
     public void clearElementalMark() {
         this.mark = null;
+        notifyObserversOnStatus();
     }
 
     public ElementMark getCurrentElementalMark() {
         return this.mark;
     }
 
-    public double getElementalResistanceRate(Elements attackElement) {
-        // Wind and None are neutral by default for raw damage multipliers
-        if (attackElement == Elements.NONE || attackElement == Elements.WIND) {
-            return 1.0;
-        }
-
-        double finalRate = 1.0;
-
-        for (Elements innate : this.innateElements) {
-            // Check for Weakness (1.2x)
-            if (innate.getWeakness() == attackElement) {
-                finalRate *= 1.2;
-            }
-            // Check for Resistance (0.8x)
-            else if (innate.getResistance() == attackElement) {
-                finalRate *= 0.8;
-            }
-            // If neither, it implicitly remains 1.0x
-        }
-
-        // Apply the global RES stat modifier (e.g., a buff that lowers all elemental damage taken)
-        finalRate *= resistance;
-
-        return finalRate;
-    }
-
     public void reduceWeaknessBar(int i) {
         this.weaknessbar -= i;
-        if (this.weaknessbar < 0) {
+        if (this.weaknessbar <= 0) {
             this.weaknessbar = 0;
         }
         notifyObserversOnWeak();

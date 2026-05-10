@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Array;
 import com.chronicorn.frontend.battlers.Enemy;
 import com.chronicorn.frontend.managers.battleManager.enums.Elements;
 import com.chronicorn.frontend.observers.BattlerObserver;
+import com.chronicorn.frontend.statuseffect.StatusEffect;
 
 public class EnemyWidget extends Group implements BattlerObserver {
     public interface Listener {
@@ -30,6 +31,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
     private Image sprite;
     private float spriteOrigX;
     private float spriteOrigY;
+    private Skin skin;
 
     private ProgressBar hpBar;
     private ProgressBar hpGhostBar;
@@ -47,9 +49,19 @@ public class EnemyWidget extends Group implements BattlerObserver {
     private final int BAR_SIZE_Y = 70;
     private static final float MODIFIER = 0.5F;
 
+    private Table statusTable;
+    private float statusRotationTimer = 0f;
+    private int statusOffset = 0;
+    private static final float STATUS_ROTATION_INTERVAL = 2.0f;
+
+    private Group markGroup;
+    private Image markIcon;
+    private Image markGhost;
+
     public EnemyWidget(final Enemy enemy, Skin skin, final Listener listener) {
         this.enemy = enemy;
         this.listener = listener;
+        this.skin = skin;
         this.enemy.addObserver(this);
 
         // 1. Enemy Sprite
@@ -148,6 +160,34 @@ public class EnemyWidget extends Group implements BattlerObserver {
         iconTable.setTouchable(Touchable.disabled);
         this.addActor(iconTable);
 
+        // Elemental Mark UI (Positioned over the far-right icon)
+        markGroup = new Group();
+        markGroup.setSize(32, 32);
+
+        // Calculate position: Right edge of the table minus the icon size and padding
+        float markX = iconTable.getX() + iconTable.getWidth() - 34f;
+        float markY = iconTable.getY() + 2f; // +2 to account for the table's pad(2)
+        markGroup.setPosition(markX, markY);
+        markGroup.setTouchable(Touchable.disabled);
+        markGroup.setVisible(false); // Hidden by default
+
+        markIcon = new Image();
+        markIcon.setSize(32, 32);
+        markGroup.addActor(markIcon);
+
+        markGhost = new Image();
+        markGhost.setSize(32, 32);
+        markGhost.setColor(new Color(1f, 1f, 1f, 0f)); // Start transparent
+        markGroup.addActor(markGhost);
+
+        this.addActor(markGroup);
+
+        statusTable = new Table();
+        statusTable.left().bottom();
+        statusTable.setPosition(barBg.getX(), barBg.getY() + barBg.getHeight());
+        statusTable.setTouchable(Touchable.disabled);
+        this.addActor(statusTable);
+
         // 5. Interaction Listeners
         this.addListener(new ClickListener() {
             @Override
@@ -217,6 +257,65 @@ public class EnemyWidget extends Group implements BattlerObserver {
         }
     }
 
+    public void playCastAnimation() {
+        this.setOrigin(Align.center);
+
+        // 1. Perspective Math Setup
+        // Distance from the object to the Vanishing Point.
+        // -400f means the object is 400 pixels below the horizon line.
+        float distanceToVpY = -220f;
+        float distanceToVpX = 0f;    // Centered horizontally
+
+        float mainTargetScale = 1.1f;
+        float ghostTargetScale = 1.5f;
+
+        // Calculate total required translation for the main widget
+        float mainMoveY = distanceToVpY * (mainTargetScale - 1f);
+        float mainMoveX = distanceToVpX * (mainTargetScale - 1f);
+
+        // 2. Scale and move the main enemy container
+        this.addAction(Actions.parallel(
+            Actions.scaleTo(mainTargetScale, mainTargetScale, 0.3f, Interpolation.pow2Out),
+            Actions.moveBy(mainMoveX, mainMoveY, 0.3f, Interpolation.pow2Out),
+            Actions.delay(0.3f)
+        ));
+
+        // 3. Create the Ghost Layer
+        Image ghost = new Image(sprite.getDrawable());
+        ghost.setSize(sprite.getWidth(), sprite.getHeight());
+        ghost.setPosition(sprite.getX(), sprite.getY());
+        ghost.setOrigin(Align.center);
+        this.addActor(ghost);
+
+        // 4. Ghost Choreography
+        ghost.addAction(Actions.sequence(
+            Actions.delay(0.1f),
+            Actions.parallel(
+                Actions.color(Color.GOLD),
+                Actions.alpha(0.4f),
+                Actions.scaleTo(ghostTargetScale, ghostTargetScale, 0.3f, Interpolation.pow2Out),
+                Actions.moveBy(0, 0, 0.3f, Interpolation.pow2Out),
+                Actions.fadeOut(0.3f, Interpolation.pow2Out)
+            ),
+            Actions.removeActor()
+        ));
+    }
+
+    public void resetCastAnimation() {
+        float distanceToVpY = -220f;
+        float distanceToVpX = 0f;
+        float mainTargetScale = 1.1f;
+
+        // Invert the exact movement used in the cast animation
+        float reverseMoveY = -(distanceToVpY * (mainTargetScale - 1f));
+        float reverseMoveX = -(distanceToVpX * (mainTargetScale - 1f));
+
+        this.addAction(Actions.parallel(
+            Actions.scaleTo(1.0f, 1.0f, 0.2f, Interpolation.pow2Out),
+            Actions.moveBy(reverseMoveX, reverseMoveY, 0.2f, Interpolation.pow2Out)
+        ));
+    }
+
     // --- State Updates ---
 
     public void setTargeted(boolean targeted) {
@@ -247,26 +346,83 @@ public class EnemyWidget extends Group implements BattlerObserver {
         }
     }
 
+    // --- Status Effect Logic ---
+
+    public void refreshStatusIcons() {
+        System.out.println("Status!");
+        statusTable.clearChildren();
+
+        // Assuming your Enemy/Battler class has this getter
+        Array<StatusEffect> states = enemy.getActiveStates();
+
+        if (states == null || states.size == 0) return;
+
+        // Failsafe: Reset rotation if states expired and the array shrank
+        if (states.size <= 3 || statusOffset >= states.size) {
+            statusOffset = 0;
+            statusRotationTimer = 0f;
+        }
+
+        // Draw up to 3 icons starting from the current offset
+        int count = 0;
+        for (int i = statusOffset; i < states.size && count < 3; i++) {
+            StatusEffect state = states.get(i);
+
+            // Generate the icon. Assumes StatusEffect has a getIconId() method
+            Image icon = new Image(skin.getDrawable(state.getIconId()));
+            statusTable.add(icon).size(32, 32).pad(2);
+            count++;
+        }
+
+        statusTable.pack();
+    }
+
+    @Override
+    public void act(float delta) {
+        super.act(delta);
+
+        Array<StatusEffect> states = enemy.getActiveStates();
+
+        // Only run the rotation timer if there are more than 3 active states
+        if (states != null && states.size > 3) {
+            statusRotationTimer += delta;
+
+            if (statusRotationTimer >= STATUS_ROTATION_INTERVAL) {
+                statusRotationTimer = 0f;
+                statusOffset += 3; // Jump forward by 3
+
+                // Wrap around back to the beginning
+                if (statusOffset >= states.size) {
+                    statusOffset = 0;
+                }
+                refreshStatusIcons();
+            }
+        }
+    }
+
     @Override
     public void onStatsUpdated() {
-
+        refreshStatusIcons();
+        refreshSignatureLossUI();
     }
 
     @Override
-    public void onEnChange() {
-        // Enemies have no ultimates
-    }
-
-    @Override
-    public void onHpChange() {
+    public void onHpChange(int baseDamage, Elements element) {
+        if (lastHp == -1) {
+            lastHp = enemy.getMaxHp();
+        }
         int currentHp = enemy.getHp();
 
         // Update both bars. The ghost bar will visually lag due to animateDuration.
         hpBar.setValue(currentHp);
         hpGhostBar.setValue(currentHp);
 
-        if (currentHp < lastHp || lastHp == -1) {
+        if (lastHp != -1 && currentHp < lastHp) {
+            int damageTaken = lastHp - currentHp;
             triggerDamageAnimation();
+
+            // Spawn standard damage number (White)
+            spawnDamageNumber(damageTaken, element);
         }
 
         lastHp = currentHp;
@@ -284,7 +440,96 @@ public class EnemyWidget extends Group implements BattlerObserver {
             triggerDamageAnimation();
         }
 
+        refreshSignatureLossUI();
+
         lastWeakness = currentWeakness;
+    }
+
+    public void refreshSignatureLossUI() {
+        boolean isBroken = enemy.isInSignatureLoss();
+
+        // 1. Darken or Restore Innate Icons
+        for (com.badlogic.gdx.scenes.scene2d.Actor child : iconTable.getChildren()) {
+            if (isBroken) {
+                // Darken to a heavy gray/black
+                child.setColor(0.2f, 0.2f, 0.2f, 1f);
+            } else {
+                // Restore normal color
+                child.setColor(Color.WHITE);
+            }
+        }
+
+        // 2. Handle the Mark Overlay
+        if (isBroken) {
+            // Assuming your Enemy class has a getter for the current ElementMark object
+            if (enemy.getCurrentElementalMark() != null) {
+                Elements markElement = enemy.getCurrentElementalMark().element;
+                String markTextureName = markElement.name().toLowerCase();
+
+                // Set the correct elemental graphic
+                markIcon.setDrawable(skin.getDrawable(markTextureName));
+                markGhost.setDrawable(skin.getDrawable(markTextureName));
+
+                markGroup.setVisible(true);
+
+                // Apply the glow pulse effect
+                markGhost.clearActions();
+                markGhost.addAction(Actions.forever(
+                    Actions.sequence(
+                        Actions.alpha(0.8f, 0.6f, Interpolation.sine),
+                        Actions.alpha(0.2f, 0.6f, Interpolation.sine)
+                    )
+                ));
+            } else {
+                // Broken, but waiting for a new mark to be applied
+                markGroup.setVisible(false);
+            }
+        } else {
+            // Not broken, hide the mark overlay completely
+            markGroup.setVisible(false);
+            markGhost.clearActions();
+        }
+    }
+
+    @Override
+    public void onPopupRequested(String text, Color color) {
+        spawnReactionPopup(text, color);
+    }
+
+    private void spawnDamageNumber(int damage, Elements element) {
+        if (this.getParent() == null) return;
+
+        float x = getX() + getWidth() / 2f;
+        float y = getY() + getHeight() / 3f;
+
+        Color finalColor = element.getElementColor();
+
+        // The popup will now spawn white, then transition to finalColor
+        FloatingPopup popup = new FloatingPopup(String.valueOf(damage), skin, "damage-style", finalColor, x, y);
+        this.getParent().addActor(popup);
+    }
+
+    private void spawnReactionPopup(String text, Color tint) {
+        if (this.getParent() == null) return;
+
+        // 1. Create the popup at 0,0 first so we can measure its exact width
+        FloatingPopup popup = new FloatingPopup(text, skin, "reaction-style", tint, 0, 0);
+
+        // 2. Calculate the boundaries
+        float minX = getX();
+        float maxX = getX() + getWidth() - popup.getWidth(); // Right edge MINUS text width
+
+        // Failsafe: If the text is somehow wider than the entire enemy sprite, lock it to the left edge
+        if (maxX < minX) {
+            maxX = minX;
+        }
+
+        // 3. Roll a random X within those strict bounds
+        float spawnX = minX + (float) (Math.random() * (maxX - minX));
+        float spawnY = getY() + getHeight() / 2f;
+
+        popup.setPosition(spawnX, spawnY);
+        this.getParent().addActor(popup);
     }
 
     public void dispose() {

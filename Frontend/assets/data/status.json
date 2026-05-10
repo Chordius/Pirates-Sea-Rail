@@ -1,0 +1,27 @@
+{
+  "burn": {
+    "name": "Burn",
+    "iconId": "icon_burn",
+    "turns": 5
+  },
+  "wind_scar": {
+    "name": "Wind Scar",
+    "iconId": "icon_wind_scar",
+    "turns": 3
+  },
+  "second_wind": {
+    "name": "Second Wind",
+    "iconId": "icon_second_wind",
+    "turns": 3
+  },
+  "smothered": {
+    "name": "Smothered",
+    "iconId": "icon_second_wind",
+    "turns": 3
+  },
+  "electrocuted": {
+    "name": "Electrocuted",
+    "iconId": "icon_electrocuted",
+    "turns": 3
+  }
+}

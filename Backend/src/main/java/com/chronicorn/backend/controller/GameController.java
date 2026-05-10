@@ -1,7 +1,7 @@
 package com.chronicorn.backend.controller;
 
-import com.chronicorn.backend.model.PlayerEntity;
-import com.chronicorn.backend.repository.PlayerRepository;
+import com.chronicorn.backend.models.PlayerEntity;
+import com.chronicorn.backend.repositories.PlayerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

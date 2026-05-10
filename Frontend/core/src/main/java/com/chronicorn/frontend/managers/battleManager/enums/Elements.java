@@ -1,5 +1,7 @@
 package com.chronicorn.frontend.managers.battleManager.enums;
 
+import com.badlogic.gdx.graphics.Color;
+
 public enum Elements {
     NONE, WATER, EARTH, LIGHTNING, FIRE, WIND;
 
@@ -22,6 +24,23 @@ public enum Elements {
             case EARTH: return LIGHTNING;
             case FIRE: return EARTH;
             default: return NONE;
+        }
+    }
+
+    public Color getElementColor() {
+        switch (this) {
+            case WIND:
+                return Color.valueOf("82cd98");
+            case FIRE:
+                return Color.valueOf("dc5151");
+            case WATER:
+                return Color.valueOf("82abcd");
+            case LIGHTNING:
+                return Color.valueOf("aa61b7");
+            case EARTH:
+                return Color.TAN;
+            default:
+                return Color.WHITE;
         }
     }
 }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template>
+ <object name="NPC" type="MapEvent" width="48" height="48">
+  <properties>
+   <property name="base_speed" type="float" value="0"/>
+   <property name="character_index" type="int" value="0"/>
+   <property name="is_solid" type="bool" value="false"/>
+   <property name="is_static" type="bool" value="false"/>
+   <property name="script_id" value=""/>
+   <property name="sprite_sheet" type="file" value=""/>
+   <property name="type" value="MapEvent"/>
+  </properties>
+ </object>
+</template>

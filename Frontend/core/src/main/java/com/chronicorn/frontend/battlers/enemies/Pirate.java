@@ -7,27 +7,24 @@ import com.chronicorn.frontend.managers.battleManager.BattleManager;
 import com.chronicorn.frontend.managers.battleManager.enums.Elements;
 import com.chronicorn.frontend.skills.Action;
 import com.chronicorn.frontend.skills.Skill;
-import com.chronicorn.frontend.skills.monsters.BasicAttackSkill;
 
 public class Pirate extends Enemy {
 
     public Pirate() {
         super(
             "Pirate",
-            35,
-            15,
-            15,
-            15,
+            70,
+            65,
+            65,
+            65,
             18,
-            1,
-            50
+            10,
+            20
         );
 
         this.innateElements.add(Elements.EARTH, Elements.FIRE);
 
-        this.skills.add(
-            new BasicAttackSkill(40)
-        );
+        this.learnSkill("basic_attack");
     }
 
 

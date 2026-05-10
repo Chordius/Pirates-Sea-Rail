@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Align;
-import com.chronicorn.frontend.managers.ImageManager; // Assuming you have this
 
 public class WindowFlex extends WindowBase {
     private Drawable defaultBackground;

@@ -12,6 +12,5 @@ public class ElementMark {
         this.element = e;
         this.source = s;
         this.duration = d;
-        System.out.print("Elemental Mark of " + this.element.name() + " applied!");
     }
 }

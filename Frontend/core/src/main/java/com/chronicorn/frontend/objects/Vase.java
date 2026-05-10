@@ -21,7 +21,6 @@ public class Vase extends InteractiveObject {
         if (isBroken) return;
         if (player.isDashing()) {
             breakObject(events);
-            player.gainHp(5);
         }
     }
 

@@ -4,93 +4,105 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align; // Penting
+import com.badlogic.gdx.utils.Align;
 import com.chronicorn.frontend.Main;
-import com.chronicorn.frontend.managers.ImageManager;
-import com.chronicorn.frontend.managers.NetworkCallback;
-import com.chronicorn.frontend.managers.NetworkManager;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
+import com.chronicorn.frontend.managers.networkManager.NetworkCallback;
+import com.chronicorn.frontend.managers.networkManager.NetworkManager;
 import com.chronicorn.frontend.managers.SceneManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
+import com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse;
 import com.chronicorn.frontend.screens.MapScreen;
 
 public class WindowLogin extends WindowBase {
-
+    private TextField emailField;
     private TextField usernameField;
     private TextField passwordField;
     private Label statusLabel;
 
     public WindowLogin() {
-        super("", 0, 0, 400, 400); // Perbesar sedikit ukurannya
-        this.center(); // Pastikan window di tengah stage
+        // Adjusted size to better fit the compact, label-less design
+        super("", 0, 0, 400, 450);
+        this.center();
     }
 
     @Override
     public void createContents() {
-        // Reset layout default window agar rapi
-        this.defaults().pad(5).align(Align.center).width(300);
+        this.defaults().pad(5).align(Align.center).width(320);
 
-        // --- ROW 1: USERNAME ---
-        Label lblUser = new Label("Username:", ImageManager.skin);
-        lblUser.setColor(Color.YELLOW);
-        this.add(lblUser).align(Align.left).row(); // Label rata kiri
+        // --- HEADER (Optional: Mimics the 'Kuro Games' logo area) ---
+        Label headerLabel = new Label("ACCOUNT LOGIN", ImageManager.skin);
+        headerLabel.setAlignment(Align.center);
+        this.add(headerLabel).padBottom(20).row();
+
+        // --- INPUT FIELDS (Using placeholder text instead of external labels) ---
+        emailField = new TextField("", ImageManager.skin);
+        emailField.setMessageText("Enter email");
+        emailField.setAlignment(Align.center); // Optional: Align.left looks more like the image
+        this.add(emailField).height(45).padBottom(10).row();
 
         usernameField = new TextField("", ImageManager.skin);
-        this.add(usernameField).height(35).row(); // Input box
-
-        // --- ROW 2: PASSWORD ---
-        Label lblPass = new Label("Password:", ImageManager.skin);
-        lblPass.setColor(Color.YELLOW);
-        this.add(lblPass).align(Align.left).padTop(10).row();
+        usernameField.setMessageText("Enter username");
+        usernameField.setAlignment(Align.center);
+        this.add(usernameField).height(45).padBottom(10).row();
 
         passwordField = new TextField("", ImageManager.skin);
+        passwordField.setMessageText("Enter password");
         passwordField.setPasswordMode(true);
         passwordField.setPasswordCharacter('*');
-        this.add(passwordField).height(35).row();
+        passwordField.setAlignment(Align.center);
+        this.add(passwordField).height(45).padBottom(15).row();
 
-        // --- ROW 3: STATUS ---
-        statusLabel = new Label("", ImageManager.skin);
-        statusLabel.setColor(Color.RED);
-        statusLabel.setAlignment(Align.center);
-        this.add(statusLabel).padTop(10).padBottom(10).row();
+        // --- SUB-MENU ROW (Exit Left, Register Right) ---
+        // A nested table allows two elements to share the same horizontal row
+        Table subMenuTable = new Table();
 
-        // --- ROW 4: BUTTONS ---
-        TextButton btnLogin = new TextButton("LOGIN", ImageManager.skin);
-        this.add(btnLogin).height(45).padTop(5).row();
-
-        TextButton btnRegister = new TextButton("REGISTER", ImageManager.skin);
-        this.add(btnRegister).height(45).padTop(5).row();
-
-        TextButton btnExit = new TextButton("EXIT GAME", ImageManager.skin);
-        this.add(btnExit).height(45).padTop(15).row();
-
-        // --- LISTENERS ---
-        btnLogin.addListener(new ClickListener() {
+        Label lblExit = new Label("Exit Game", ImageManager.skin);
+        lblExit.setColor(Color.LIGHT_GRAY);
+        lblExit.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                performLogin();
+                Gdx.app.exit();
             }
         });
 
-        btnRegister.addListener(new ClickListener() {
+        Label lblRegister = new Label("Register Now", ImageManager.skin);
+        lblRegister.setColor(Color.GOLD);
+        lblRegister.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 performRegister();
             }
         });
 
-        btnExit.addListener(new ClickListener() {
+        subMenuTable.add(lblExit).align(Align.left).expandX();
+        subMenuTable.add(lblRegister).align(Align.right).expandX();
+
+        this.add(subMenuTable).width(320).padBottom(15).row();
+
+        // --- MAIN LOGIN BUTTON ---
+        TextButton btnLogin = new TextButton("Log in", ImageManager.skin);
+        btnLogin.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
+                performLogin();
             }
         });
+        this.add(btnLogin).width(320).height(50).row();
+
+        // --- STATUS INDICATOR ---
+        statusLabel = new Label("", ImageManager.skin);
+        statusLabel.setColor(Color.RED);
+        statusLabel.setAlignment(Align.center);
+        this.add(statusLabel).padTop(15).row();
     }
 
-    // ... method performLogin dan performRegister TETAP SAMA seperti sebelumnya ...
     private void performLogin() {
+        String email = emailField.getText();
         String user = usernameField.getText();
         String pass = passwordField.getText();
 
@@ -102,13 +114,11 @@ public class WindowLogin extends WindowBase {
         statusLabel.setText("Logging in...");
         statusLabel.setColor(Color.YELLOW);
 
-        NetworkManager.getInstance().login(user, pass, new NetworkCallback() {
+        NetworkManager.getInstance().login(email, pass, new NetworkCallback<UserAuthResponse>() {
             @Override
-            public void onSuccess(String response) {
-                // Sukses
-                Main.currentUsername = user;
+            public void onSuccess(UserAuthResponse result) {
+                Main.currentLocalId = result.localUserId;
                 GameSession.getInstance().resetSession();
-                GameSession.getInstance().startTimer();
                 SceneManager.getInstance().pushScreen(new MapScreen());
             }
 
@@ -121,19 +131,21 @@ public class WindowLogin extends WindowBase {
     }
 
     private void performRegister() {
+        String email = emailField.getText();
         String user = usernameField.getText();
         String pass = passwordField.getText();
 
-        if (user.isEmpty() || pass.isEmpty()) {
+        if (email.isEmpty() || user.isEmpty() || pass.isEmpty()) {
             statusLabel.setText("Isi semua data!");
             return;
         }
         statusLabel.setText("Mendaftar...");
 
-        NetworkManager.getInstance().register(user, pass, new NetworkCallback() {
+        NetworkManager.getInstance().register(email, pass, user, new NetworkCallback<UserAuthResponse>() {
             @Override
-            public void onSuccess(String response) {
+            public void onSuccess(UserAuthResponse result) {
                 statusLabel.setText("Register Sukses! Silakan Login.");
+                Main.currentLocalId = result.localUserId;
                 statusLabel.setColor(Color.GREEN);
             }
 

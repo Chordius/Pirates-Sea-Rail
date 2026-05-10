@@ -17,6 +17,10 @@ public class Action {
 
     public Battler getPrimaryTarget() { return primaryTarget; }
 
+    public Array<Battler> getTargets() {
+        return targets;
+    }
+
     public Action(Battler user) {
         this.user = user;
         this.targets = new Array<>();
@@ -60,6 +64,7 @@ public class Action {
     // Called by your BattleManager during the EXECUTE_ACTION state
     public void execute() {
         if (skill != null) {
+            System.out.println(user.getName() + " uses " + skill.getName() + "!");
             // TODO: Shuffle primary target to be index 0.
             if (primaryTarget != null) {
                 int index = targets.indexOf(primaryTarget, true);

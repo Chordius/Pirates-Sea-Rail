@@ -42,51 +42,63 @@ public class TargetingLogic {
     public static Array<Battler> resolveTargets(Battler user, Battler primaryTarget, Array<Battler> fallbackTargets, ArrayList<Battler> allBattlers, TargetScope scope) {
         Array<Battler> resolved = new Array<>();
 
-        if (scope == null || user == null || allBattlers == null) return resolved;
+        // If we have no scope, no battlers, or neither a user nor a target to anchor from, abort.
+        if (scope == null || allBattlers == null || (user == null && primaryTarget == null)) {
+            return resolved;
+        }
 
         Array<Battler> lane = new Array<>();
-        boolean isUserPlayer = user.isPlayerControlled();
 
-        // Determine the lane of potential targets based on scope
+        // 1. Determine Target Alignment (Player Team vs Enemy Team)
+        boolean isTargetPlayerTeam;
+
+        if (user != null) {
+            // Standard Action: Target lane depends on the user's alignment and the skill's scope
+            boolean isUserPlayer = user.isPlayerControlled();
+            if (scope == TargetScope.ALLY || scope == TargetScope.ALLIES || scope == TargetScope.SELF) {
+                isTargetPlayerTeam = isUserPlayer;
+            } else {
+                isTargetPlayerTeam = !isUserPlayer;
+            }
+        } else {
+            // Reaction Action (User is null): The target lane is simply the team of the primary target.
+            // For example, if Overload (ALL or BLAST) triggers on an Enemy, the target lane is the Enemy team.
+            isTargetPlayerTeam = primaryTarget.isPlayerControlled();
+        }
+
+        // 2. Build the Lane
         if (scope == TargetScope.SELF) {
-            lane.add(user);
-        }
-
-        if (scope == TargetScope.ALLY || scope == TargetScope.ALLIES) {
+            // If user is null, SELF defaults to the primaryTarget
+            lane.add(user != null ? user : primaryTarget);
+        } else {
             for (Battler b : allBattlers) {
-                boolean isBattlerAlly = b.isPlayerControlled() == isUserPlayer;
-                if (b.isAlive() && isBattlerAlly) {
+                if (b.isAlive() && b.isPlayerControlled() == isTargetPlayerTeam) {
                     lane.add(b);
                 }
             }
         }
 
-        if (scope == TargetScope.SINGLE || scope == TargetScope.BLAST || scope == TargetScope.ALL) {
-            for (Battler b : allBattlers) {
-                boolean isBattlerEnemy = b.isPlayerControlled() != isUserPlayer;
-                if (b.isAlive() && isBattlerEnemy) {
-                    lane.add(b);
-                }
-            }
-        }
-
-        // Edge Case 0: No valid targets in lane. If scope allows self-targeting, default to user.
+        // 3. Edge Case 0: No valid targets in lane.
         if (lane.size == 0) {
-            if (scope == TargetScope.SELF || scope == TargetScope.ALLY) {
+            if ((scope == TargetScope.SELF || scope == TargetScope.ALLY) && user != null) {
                 resolved.add(user);
+            } else if (primaryTarget != null) {
+                resolved.add(primaryTarget);
             }
             return resolved;
         }
 
-        // Edge Case 1: Primary target not in lane, but fallback targets are. Use the first fallback as primary.
+        // 4. Find the center index for targeting
         int primaryIndex = lane.indexOf(primaryTarget, true);
+
+        // Edge Case 1: Primary target not in lane, use fallback.
         if (primaryIndex == -1 && fallbackTargets != null && fallbackTargets.size > 0) {
             primaryIndex = lane.indexOf(fallbackTargets.first(), true);
         }
 
-        // Edge Case 2: Primary target not in lane, and no valid fallback. Default to user or first in lane.
+        // Edge Case 2: No valid fallback. Default to user or first in lane.
         if (primaryIndex == -1) {
-            if (scope == TargetScope.ALLY) {
+            if (scope == TargetScope.ALLY && user != null) {
                 int userIndex = lane.indexOf(user, true);
                 primaryIndex = userIndex != -1 ? userIndex : 0;
             } else {
@@ -94,7 +106,7 @@ public class TargetingLogic {
             }
         }
 
-        // Get the final target indices based on the primary index and scope, then resolve to actual Battler objects
+        // 5. Apply the Scope pattern (Single, Blast, All)
         IntArray targetIndices = getTargetIndices(primaryIndex, lane.size, scope);
         for (int i = 0; i < targetIndices.size; i++) {
             int idx = targetIndices.get(i);
@@ -103,9 +115,13 @@ public class TargetingLogic {
             }
         }
 
-        // Edge Case 3: No valid targets found, but scope allows self-targeting. Default to user.
-        if (resolved.size == 0 && (scope == TargetScope.SELF || scope == TargetScope.ALLY)) {
-            resolved.add(user);
+        // 6. Failsafe
+        if (resolved.size == 0) {
+            if ((scope == TargetScope.SELF || scope == TargetScope.ALLY) && user != null) {
+                resolved.add(user);
+            } else if (primaryTarget != null) {
+                resolved.add(primaryTarget);
+            }
         }
 
         return resolved;
