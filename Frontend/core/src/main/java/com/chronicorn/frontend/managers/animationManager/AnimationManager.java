@@ -18,6 +18,7 @@ import com.chronicorn.frontend.managers.battleManager.ui.EnemyWidget;
 import com.chronicorn.frontend.skills.Action;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 public class AnimationManager {
     // --- STATIC CACHE (Global Memory) ---
@@ -87,10 +88,17 @@ public class AnimationManager {
     }
 
     public static void dispose() {
+        HashSet<com.badlogic.gdx.graphics.Texture> disposed = new HashSet<>();
         for (Animation<TextureRegion> anim : vfxCache.values()) {
             Object[] frames = anim.getKeyFrames();
-            if (frames.length > 0) {
-                ((TextureRegion) frames[0]).getTexture().dispose();
+            for (Object f : frames) {
+                if (f instanceof TextureRegion) {
+                    com.badlogic.gdx.graphics.Texture tex = ((TextureRegion) f).getTexture();
+                    if (tex != null && !disposed.contains(tex)) {
+                        try { tex.dispose(); } catch (Exception ignored) {}
+                        disposed.add(tex);
+                    }
+                }
             }
         }
         vfxCache.clear();

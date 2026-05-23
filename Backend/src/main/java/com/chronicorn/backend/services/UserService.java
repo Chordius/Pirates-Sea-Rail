@@ -130,4 +130,8 @@ public class UserService {
             throw new RuntimeException("Invalid email or password.");
         }
     }
+
+    public Optional<User> getUserById(UUID userId) {
+        return userRepo.findById(userId);
+    }
 }

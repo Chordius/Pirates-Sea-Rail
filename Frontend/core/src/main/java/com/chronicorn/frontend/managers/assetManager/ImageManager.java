@@ -31,8 +31,11 @@ public class ImageManager {
     public static int fontSize = 26;
     public static float modifier = 0.5f;
     private static Map<String, TextureRegion[][]> characterCache = new HashMap<>();
+    private static Map<String, Animation<TextureRegion>> balloonCache = new HashMap<>();
     // Track textures we create here so we can dispose them explicitly
     private static Map<String, Texture> textureCache = new HashMap<>();
+    // Track atlases we create so we can dispose them explicitly
+    private static Map<String, TextureAtlas> atlasCache = new HashMap<>();
 
     public static ShaderProgram portraitFadeShader;
 
@@ -69,21 +72,39 @@ public class ImageManager {
         skin.add("default", new Label.LabelStyle(font, Color.WHITE));
         skin.add("default", new Window.WindowStyle(font, Color.WHITE, windowDrawable));
 
-        // 3. Button Styles
-        // Style Polos
-        TextButton.TextButtonStyle tbs = new TextButton.TextButtonStyle();
-        tbs.font = font;
-        tbs.fontColor = Color.WHITE;
-        skin.add("default", tbs);
+        // 1. Load the texture
+        Texture rawButtonTex = loadTextureManaged("Window2.png");
 
-        // Style Kotak (Login Menu)
-        Drawable buttonBg = windowDrawable.tint(new Color(1.2f, 1.2f, 1.2f, 1f));
-        TextButton.TextButtonStyle boxedStyle = new TextButton.TextButtonStyle();
-        boxedStyle.font = font;
-        boxedStyle.fontColor = Color.WHITE;
-        boxedStyle.up = buttonBg;
-        boxedStyle.down = windowDrawable;
-        skin.add("boxed-button", boxedStyle);
+        // 2. Define the NinePatch
+        // Left/Right: 30px (covers the half-circle curves)
+        // Top: 25px (covers the top curve)
+        // Bottom: 33px (covers the bottom curve PLUS the shadow)
+        // This leaves 2 pixels (60 - 25 - 33) in the middle to stretch vertically if needed.
+        NinePatch buttonPatch = new NinePatch(rawButtonTex, 20, 20, 25, 33);
+
+        // 3. Wrap in a Drawable and add PADDING
+        NinePatchDrawable buttonDrawable = new NinePatchDrawable(buttonPatch);
+
+        // This is the secret: We add extra padding to the bottom
+        // to "push" the text up away from the shadow.
+        buttonDrawable.setTopHeight(25);
+        buttonDrawable.setBottomHeight(33); // The extra height here accounts for the shadow
+        buttonDrawable.setLeftWidth(20);
+        buttonDrawable.setRightWidth(20);
+
+        // 4. Update the Styles
+        TextButton.TextButtonStyle gachaButtonStyle = new TextButton.TextButtonStyle();
+        gachaButtonStyle.font = skin.getFont("menu");
+        gachaButtonStyle.fontColor = Color.valueOf("695f52");
+        gachaButtonStyle.up = buttonDrawable;
+        gachaButtonStyle.down = buttonDrawable.tint(Color.valueOf("695f52"));
+        gachaButtonStyle.downFontColor = Color.valueOf("ede8de");
+        gachaButtonStyle.over = buttonDrawable.tint(Color.valueOf("aa9573"));
+        gachaButtonStyle.overFontColor = Color.WHITE;
+
+        // Register it so GachaTable actually uses the right one
+        skin.add("boxed-button", gachaButtonStyle);
+        skin.add("default", gachaButtonStyle);
 
         // 4. Components (Panggil method helper di sini)
         loadWindowAsset();
@@ -91,6 +112,7 @@ public class ImageManager {
         loadCheckboxTexture();
         loadTextFieldStyle();
         loadHealthBarStyle();
+        loadMenuComponents();
 
         // Selection Box (Custom Pixmap)
         Pixmap pixmapSel = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -100,6 +122,13 @@ public class ImageManager {
         skin.add("selection-box", selectionPixel);
         textureCache.put("pixmap-selection", selectionPixel);
         pixmapSel.dispose();
+
+        TextureAtlas iconAtlas = loadAtlasManaged("icon.atlas");
+        skin.addRegions(iconAtlas);
+        TextureAtlas statusAtlas = loadAtlasManaged("status.atlas");
+        skin.addRegions(statusAtlas);
+
+        loadScrollPaneStyle();
     }
 
     private static void loadTextFieldStyle() {
@@ -115,7 +144,7 @@ public class ImageManager {
 
         // Padding text field
         tfs.background.setLeftWidth(10);
-        tfs.background.setRightWidth(10);
+        tfs.background.setRightWidth(15);
         tfs.background.setTopHeight(5);
         tfs.background.setBottomHeight(5);
 
@@ -185,11 +214,35 @@ public class ImageManager {
         skin.add("default", checkBoxStyle);
     }
 
+    public static void loadGachaAssets() {
+        // --- Gacha Cutscene Assets ---
+        Texture seaBgTex = loadTextureManaged("gacha/pullscreen/Sea-Back-Character.png", true);
+        seaBgTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("gacha-bg-character", new TextureRegionDrawable(new TextureRegion(seaBgTex)), Drawable.class);
+
+        Texture textBringTex = loadTextureManaged("gacha/pullscreen/Bring-Along.png", true);
+        textBringTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("gacha-text-bring", new TextureRegionDrawable(new TextureRegion(textBringTex)), Drawable.class);
+
+        Texture textComeTex = loadTextureManaged("gacha/pullscreen/Come-Aboard.png", true);
+        textComeTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("gacha-text-come", new TextureRegionDrawable(new TextureRegion(textComeTex)), Drawable.class);
+
+        Texture textHopesTex = loadTextureManaged("gacha/pullscreen/All-Hope.png", true);
+        textHopesTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("gacha-text-hopes", new TextureRegionDrawable(new TextureRegion(textHopesTex)), Drawable.class);
+
+        Texture sunTex = loadTextureManaged("gacha/pullscreen/sun-flare.png", true);
+        sunTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("gacha-sun-flare", new TextureRegionDrawable(new TextureRegion(sunTex)), Drawable.class);
+    }
+
     public static void loadFontTexture(int fontSize) {
         // 1. Load the raw .ttf file
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Anago-Book.ttf"));
         FreeTypeFontGenerator generatorCombat = new FreeTypeFontGenerator(Gdx.files.internal("fonts/gamefont.TTF"));
-        FreeTypeFontGenerator generatorStyled = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Cleargothic Bold.ttf"));
+        FreeTypeFontGenerator generatorStyled = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ClearGothic Regular.ttf"));
+        FreeTypeFontGenerator generatorStyledBold = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ClearGothic Bold.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 
         // --- STYLE 1: Standard UI Font (HP, Menus) ---
@@ -201,6 +254,32 @@ public class ImageManager {
         parameter.shadowColor = new Color(0, 0, 0, 0.75f);
         BitmapFont standardFont = generator.generateFont(parameter);
         font = standardFont;
+
+        // --- Pirate Font ---
+        parameter.size = fontSize;
+        parameter.color = Color.WHITE;
+        parameter.borderWidth = 0f;
+        parameter.shadowOffsetX = 0;
+        parameter.shadowOffsetY = 0;
+        BitmapFont menuFont = generatorStyledBold.generateFont(parameter);
+
+        parameter.size = fontSize;
+        parameter.color = Color.WHITE;
+        parameter.borderColor = Color.valueOf("686259");
+        parameter.borderWidth = 1.5f;
+        parameter.shadowOffsetX = 2;
+        parameter.shadowOffsetY = 2;
+        parameter.shadowColor = new Color(0, 0, 0, 0.5f);
+        BitmapFont menuFont2 = generatorStyled.generateFont(parameter);
+
+        parameter.size = 42;
+        parameter.color = Color.WHITE;
+        parameter.borderColor = Color.valueOf("686259");
+        parameter.borderWidth = 2.5f;
+        parameter.shadowOffsetX = 1;
+        parameter.shadowOffsetY = 1;
+        parameter.shadowColor = new Color(0, 0, 0, 0.5f);
+        BitmapFont menuFont3 = generatorStyled.generateFont(parameter);
 
         // --- STYLE 2: UI Skill Style
         parameter.size = fontSize;
@@ -251,15 +330,27 @@ public class ImageManager {
         parameter.shadowOffsetY = 0;
         BitmapFont reactionShineFont = generatorCombat.generateFont(parameter);
 
+
+
         // 2. Dispose of the generator to prevent memory leaks (Remember your VRAM!)
         generator.dispose();
         generatorCombat.dispose();
         generatorStyled.dispose();
+        generatorStyledBold.dispose();
+
+        skin.add("default", standardFont);
+        skin.add("menu", menuFont);
+        skin.add("menu2", menuFont2);
+        skin.add("menu3", menuFont3);
 
         // 3. Package them into LabelStyles and add them to your Skin
         // Scene2D Labels look for LabelStyles, not raw fonts.
         // Package them into the skin
         skin.add("default", new Label.LabelStyle(standardFont, Color.WHITE));
+        skin.add("menu", new Label.LabelStyle(menuFont, Color.valueOf("695F52")));
+        skin.add("menu2", new Label.LabelStyle(menuFont2, Color.WHITE));
+        skin.add("menu3", new Label.LabelStyle(menuFont3, Color.WHITE));
+
         skin.add("skill-style", new Label.LabelStyle(styleFont, Color.WHITE));
         skin.add("number-style", new Label.LabelStyle(styleFontNumber, Color.WHITE));
 
@@ -456,12 +547,6 @@ public class ImageManager {
         eWeakStyle.knobBefore = eWeakFillDraw;
         skin.add("enemy-weakness-bar", eWeakStyle);
 
-        // 4. ICONS
-        TextureAtlas iconAtlas = new TextureAtlas(Gdx.files.internal("icon.atlas"));
-        skin.addRegions(iconAtlas);
-        TextureAtlas statusAtlas = new TextureAtlas(Gdx.files.internal("status.atlas"));
-        skin.addRegions(statusAtlas);
-
         // 5. reticle
         Texture reticle = loadTextureManaged("battlehud/target.png", true);
         reticle.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
@@ -501,6 +586,163 @@ public class ImageManager {
             characterCache.put(fileName, frames);
         }
         return characterCache.get(fileName);
+    }
+
+    public static void loadMenuComponents() {
+        // --- 1. The Header Background (header.png) ---
+        Texture headerTex = loadTextureManaged("menu/header.png");
+        // NO NINEPATCH. Use a strict TextureRegionDrawable.
+        skin.add("yellow-nav-bg", new TextureRegionDrawable(new TextureRegion(headerTex)), Drawable.class);
+
+        // --- 2. The Ribbon Selection Style (ribbon.png) ---
+        Texture ribbonTex = loadTextureManaged("menu/ribbon.png");
+        ribbonTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        skin.add("ribbon-drawable", new TextureRegionDrawable(new TextureRegion(ribbonTex)), Drawable.class);
+
+        // --- 3. The Label Box (Label.png) ---
+        Texture labelTex = loadTextureManaged("menu/Label.png");
+        labelTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        NinePatch labelPatch = new NinePatch(labelTex, 40, 40, 0, 0);
+        skin.add("label-bg", new NinePatchDrawable(labelPatch), Drawable.class);
+
+        TextureAtlas menuAtlas = loadAtlasManaged("menu/menu.atlas");
+        skin.addRegions(menuAtlas);
+
+        TextureAtlas skillMenuBgAtlas = loadAtlasManaged("menu/skill_menu_square.atlas");
+        skin.addRegions(skillMenuBgAtlas);
+
+        TextureAtlas faceAtlas = loadAtlasManaged("portraits/face.atlas");
+        skin.addRegions(faceAtlas);
+
+        TextureAtlas iconWeapons = loadAtlasManaged("equippable.atlas");
+        skin.addRegions(iconWeapons);
+
+        // --- Gradient Background ---
+        Texture gradientTex = loadTextureManaged("menu/gradient.png");
+        skin.add("gradient-bg", new TextureRegionDrawable(new TextureRegion(gradientTex)), Drawable.class);
+
+        // --- Roster HP Bar (FIXED: Applies the 0.5f modifier and filtering) ---
+        Texture texBg = loadTextureManaged("battlehud/BattleHPBar-Empty-True.png", true);
+        texBg.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Linear);
+
+        Texture texFill = loadTextureManaged("battlehud/BattleHPBar-Full-True.png", true);
+        texFill.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Linear);
+
+        Drawable drawBg = new TextureRegionDrawable(new TextureRegion(texBg));
+        Drawable drawFill = new HorizontalCropDrawable(new TextureRegion(texFill));
+
+        drawBg.setMinWidth(texBg.getWidth() * modifier);
+        drawBg.setMinHeight(texBg.getHeight() * modifier);
+        drawFill.setMinWidth(texFill.getWidth() * modifier);
+        drawFill.setMinHeight(texFill.getHeight() * modifier);
+
+        ProgressBar.ProgressBarStyle barStyle = new ProgressBar.ProgressBarStyle();
+        barStyle.background = drawBg;
+        barStyle.knobBefore = drawFill;
+        skin.add("hp-roster-bar", barStyle);
+
+        Texture mapBgTex = loadTextureManaged("menu/Background.png");
+        skin.add("menu-map-bg", new TextureRegionDrawable(new TextureRegion(mapBgTex)), Drawable.class);
+
+        // --- Switch Text Graphic ---
+        Texture switchTex = loadTextureManaged("menu/Switch.png");
+        switchTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        skin.add("switch-text", new TextureRegionDrawable(new TextureRegion(switchTex)), Drawable.class);
+
+        Texture nameSplashTex = loadTextureManaged("menu/Name-Splash.png");
+        nameSplashTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        skin.add("name-splash", new TextureRegionDrawable(new TextureRegion(nameSplashTex)), Drawable.class);
+
+        Texture attributesTex = loadTextureManaged("menu/Attributes.png");
+        attributesTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        skin.add("attributes-bg", new TextureRegionDrawable(new TextureRegion(attributesTex)), Drawable.class);
+
+        Texture bannerDealTex = loadTextureManaged("gacha/banner_deal.png", true);
+        bannerDealTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("banner_deal", new TextureRegionDrawable(new TextureRegion(bannerDealTex)), Drawable.class);
+
+        Texture bannerRagnarTex = loadTextureManaged("gacha/banner_ragnar.png", true);
+        bannerRagnarTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("banner_ragnar", new TextureRegionDrawable(new TextureRegion(bannerRagnarTex)), Drawable.class);
+
+        Texture selectDealTex = loadTextureManaged("gacha/SelectBanner_deal.png", true);
+        selectDealTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("SelectBanner_deal", new TextureRegionDrawable(new TextureRegion(selectDealTex)), Drawable.class);
+
+        Texture selectRagnarTex = loadTextureManaged("gacha/SelectBanner_ragnar.png", true);
+        selectRagnarTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("SelectBanner_ragnar", new TextureRegionDrawable(new TextureRegion(selectRagnarTex)), Drawable.class);
+
+        Texture selectMoneyTex = loadTextureManaged("gacha/SelectBanner_money.png", true);
+        selectMoneyTex.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("SelectBanner_money", new TextureRegionDrawable(new TextureRegion(selectMoneyTex)), Drawable.class);
+
+        Texture equipHintWind = loadTextureManaged("menu/element_specific/equiphint_wind.png", true);
+        equipHintWind.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equiphint_wind", new TextureRegionDrawable(new TextureRegion(equipHintWind)), Drawable.class);
+
+        Texture equipWeaponWind = loadTextureManaged("menu/element_specific/equipweapon_wind.png", true);
+        equipWeaponWind.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equipweapon_wind", new TextureRegionDrawable(new TextureRegion(equipWeaponWind)), Drawable.class);
+
+        Texture equipMenu = loadTextureManaged("menu/equip_menu.png", true);
+        equipMenu.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equip_menu", new TextureRegionDrawable(new TextureRegion(equipMenu)), Drawable.class);
+
+        loadGachaAssets();
+    }
+
+    public static void loadMenuCharacterAsset(String characterName) {
+        String lowerName = characterName.toLowerCase();
+        String styleName = "ult-roster-bar-" + lowerName;
+
+        if (!skin.has(styleName, ProgressBar.ProgressBarStyle.class)) {
+            String ultBarName = "ult_bar_" + lowerName;
+
+            // FIXED: Applies the 0.5f modifier and filtering to match combat exactly
+            Texture ultBarFill = loadTextureManaged("battlehud/ultimates/" + ultBarName + ".png", true);
+            ultBarFill.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+            Texture ultBarBg = loadTextureManaged("battlehud/ultimates/" + ultBarName + "_bg.png", true);
+            ultBarBg.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+
+            Drawable drawUltBg = new TextureRegionDrawable(new TextureRegion(ultBarBg));
+            Drawable drawUltFill = new CroppedDrawable(new TextureRegion(ultBarFill));
+
+            drawUltBg.setMinWidth(ultBarBg.getWidth() * modifier);
+            drawUltBg.setMinHeight(ultBarBg.getHeight() * modifier);
+            drawUltFill.setMinWidth(ultBarFill.getWidth() * modifier);
+            drawUltFill.setMinHeight(ultBarFill.getHeight() * modifier);
+
+            ProgressBar.ProgressBarStyle barUltStyle = new ProgressBar.ProgressBarStyle();
+            barUltStyle.background = drawUltBg;
+            barUltStyle.knobBefore = drawUltFill;
+
+            skin.add(styleName, barUltStyle);
+
+            // --- LAZY LOAD THE PORTRAIT ---
+            String portraitName = "portrait_" + lowerName;
+            Texture portraitTex = loadTextureManaged("portraits/" + portraitName + ".png", true);
+            portraitTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+            skin.add(portraitName, new TextureRegionDrawable(new TextureRegion(portraitTex)), Drawable.class);
+        }
+    }
+
+    public static void loadScrollPaneStyle() {
+        ScrollPane.ScrollPaneStyle spStyle = new ScrollPane.ScrollPaneStyle();
+
+        // The track (background line)
+        Drawable hScroll = skin.newDrawable("white-pixel", new Color(0, 0, 0, 0.5f));
+        hScroll.setMinHeight(4f); // Thin line
+        spStyle.hScroll = hScroll;
+
+        // The knob (the part you drag)
+        Drawable hScrollKnob = skin.newDrawable("white-pixel", new Color(0.8f, 0.8f, 0.8f, 1f));
+        hScrollKnob.setMinHeight(4f);
+        hScrollKnob.setMinWidth(40f); // Minimum width so it's clickable
+        spStyle.hScrollKnob = hScrollKnob;
+
+        skin.add("default", spStyle);
     }
 
     public static void initPortraitShaders() {
@@ -555,7 +797,13 @@ public class ImageManager {
             try { t.dispose(); } catch (Exception ignored) {}
         }
         textureCache.clear();
+        // Dispose any atlases we loaded and tracked here
+        for (TextureAtlas a : atlasCache.values()) {
+            try { a.dispose(); } catch (Exception ignored) {}
+        }
+        atlasCache.clear();
         characterCache.clear();
+        balloonCache.clear();
     }
 
     private static Texture loadTextureManaged(String path) {
@@ -565,6 +813,15 @@ public class ImageManager {
             textureCache.put(path, t);
         }
         return t;
+    }
+
+    private static TextureAtlas loadAtlasManaged(String path) {
+        TextureAtlas a = atlasCache.get(path);
+        if (a == null) {
+            a = new TextureAtlas(Gdx.files.internal(path));
+            atlasCache.put(path, a);
+        }
+        return a;
     }
 
     private static Texture loadTextureManaged(String path, boolean useMipMaps) {
@@ -578,12 +835,57 @@ public class ImageManager {
     }
 
     public static void loadBattleBg(String drawableName) {
-        Texture backgroundBaseTex = new Texture(Gdx.files.internal("battleback/" + drawableName));
+        Texture backgroundBaseTex = loadTextureManaged("battleback/" + drawableName);
         backgroundBaseTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         skin.add("battleback", new TextureRegionDrawable(new TextureRegion(backgroundBaseTex)), Drawable.class);
 
-        Texture inspirationTex = new Texture(Gdx.files.internal("battlehud/Inspiration.png"));
+        Texture inspirationTex = loadTextureManaged("battlehud/Inspiration.png");
         inspirationTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         skin.add("inspired", new TextureRegionDrawable(new TextureRegion(inspirationTex)), Drawable.class);
+    }
+
+    public static Animation<TextureRegion> getBalloonAnimation(String balloonType) {
+        if (!balloonCache.containsKey(balloonType)) {
+            Texture sheet = loadTextureManaged("characters/Balloon.png");
+            int frameWidth = sheet.getWidth() / 8;
+            int frameHeight = sheet.getHeight() / 15;
+
+            TextureRegion[][] frames = TextureRegion.split(sheet, frameWidth, frameHeight);
+
+            int rowIndex = -1;
+            String typeUpper = balloonType.toUpperCase();
+            switch (typeUpper) {
+                case "SURPRISED": rowIndex = 0; break;
+                case "QUESTION": rowIndex = 1; break;
+                case "DELIGHTED": rowIndex = 2; break;
+                case "LOVE": rowIndex = 3; break;
+                case "ANGRY": rowIndex = 4; break;
+                case "WORRIED": rowIndex = 5; break;
+                case "COBWEB": rowIndex = 6; break;
+                case "SILENCE": rowIndex = 7; break;
+                case "IDEA": rowIndex = 8; break;
+                case "SLEEP": rowIndex = 9; break;
+                default:
+                    try {
+                        rowIndex = Integer.parseInt(balloonType) - 1;
+                    } catch (NumberFormatException e) {
+                        rowIndex = 0;
+                    }
+                    break;
+            }
+
+            if (rowIndex < 0 || rowIndex >= 15) {
+                rowIndex = 0;
+            }
+
+            TextureRegion[] animFrames = new TextureRegion[8];
+            for (int col = 0; col < 8; col++) {
+                animFrames[col] = frames[rowIndex][col];
+            }
+
+            Animation<TextureRegion> anim = new Animation<>(0.1f, animFrames);
+            balloonCache.put(balloonType, anim);
+        }
+        return balloonCache.get(balloonType);
     }
 }

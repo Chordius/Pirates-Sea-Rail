@@ -19,21 +19,19 @@ public abstract class Battler {
     protected String name;
 
     // Derived Primary Parameters
-    protected int hp;
     protected int maxHp;
-    protected int energy;
-    protected int maxEnergy;
     protected int attack;
     protected int defense;
     protected int magic;
     protected int speed;
-    protected int level;
+
 
     // Primary Base Stats
     protected int baseMaxHp;
     protected int baseAttack;
     protected int baseDefense;
     protected int baseMagic;
+    protected int baseSpeed;
 
     // SP Parameters
     protected float penetration = 1;
@@ -43,8 +41,12 @@ public abstract class Battler {
     protected float incominghealing = 0f;
     protected float resistance = 1;
 
-    // Hidden Parameters
+    // Hidden Parameters Or Non-Equipment Modifiable Parameters
+    protected int hp;
+    protected int energy;
+    protected int maxEnergy;
     protected float reactionDMGBonus = 0;
+    protected int level;
 
     // States
     protected Array<StatusEffect> activeStates = new Array<>();
@@ -80,6 +82,7 @@ public abstract class Battler {
         this.baseAttack = attack;
         this.baseDefense = defense;
         this.baseMagic = magic;
+        this.baseSpeed = speed;
         this.speed = speed;
         this.isPlayerControlled = isPlayerControlled;
         this.level = level;

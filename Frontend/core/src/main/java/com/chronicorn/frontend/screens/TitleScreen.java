@@ -72,9 +72,19 @@ public class TitleScreen implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 SoundManager.getInstance().playSound("gate.wav");
 
-                // [PERBAIKAN UTAMA]
-                // Jangan langsung masuk MapScreen. Buka Login Window dulu.
-                openLoginWindow();
+                // Check LibGDX Preferences for saved persistent login
+                com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+                String savedId = prefs.getString("localUserId", null);
+
+                if (savedId != null && !savedId.isEmpty()) {
+                    // Auto-login successful
+                    com.chronicorn.frontend.Main.currentLocalId = savedId;
+                    com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().resetSession();
+                    com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen());
+                } else {
+                    // Start fresh interactive login
+                    openLoginWindow();
+                }
             }
         });
 

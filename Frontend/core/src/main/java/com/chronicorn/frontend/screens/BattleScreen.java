@@ -91,8 +91,6 @@ public class BattleScreen implements Screen {
     }
 
     private void initializeBattle() {
-        SkillDatabase.init();
-        StatusEffectDatabase.init();
         ArrayList<Battler> allBattlers = new ArrayList<>();
         enemies = new Array<>();
 

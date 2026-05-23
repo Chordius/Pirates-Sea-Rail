@@ -118,6 +118,12 @@ public class WindowLogin extends WindowBase {
             @Override
             public void onSuccess(UserAuthResponse result) {
                 Main.currentLocalId = result.localUserId;
+                
+                // Save to LibGDX persistent preferences so the user stays logged in
+                com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+                prefs.putString("localUserId", result.localUserId);
+                prefs.flush();
+                
                 GameSession.getInstance().resetSession();
                 SceneManager.getInstance().pushScreen(new MapScreen());
             }

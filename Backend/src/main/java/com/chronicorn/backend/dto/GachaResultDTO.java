@@ -9,5 +9,7 @@ public class GachaResultDTO {
         this.isNew = isNew;
     }
     public String getPulledCharId() { return pulledCharId; }
-    public boolean isNew() { return isNew; }
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("isNew")
+    public boolean getIsNew() { return isNew; }
 }

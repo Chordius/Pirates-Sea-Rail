@@ -15,6 +15,8 @@ public class Sailor extends Actor {
             20
         );
 
+        this.setId("C001");
+
         this.learnSkill("sonic_slash");
         this.learnSkill("wind_cutter");
         this.learnSkill("second_wind");

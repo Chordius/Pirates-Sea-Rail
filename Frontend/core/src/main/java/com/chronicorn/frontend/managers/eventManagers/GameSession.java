@@ -2,9 +2,13 @@ package com.chronicorn.frontend.managers.eventManagers;
 
 import com.badlogic.gdx.utils.ObjectMap;
 import com.badlogic.gdx.utils.ObjectSet;
+import com.chronicorn.frontend.managers.systems.PlayerInventory;
+import com.chronicorn.frontend.managers.systems.PlayerParty;
 
 public class GameSession {
     private static GameSession instance = new GameSession();
+    public PlayerParty party;
+    public PlayerInventory inventory;
 
     // 1. Switches
     private ObjectSet<String> flags = new ObjectSet<>();
@@ -37,6 +41,8 @@ public class GameSession {
         variables.clear();
         timer = 0f;
         isTimerRunning = false;
+        this.party = new PlayerParty();
+        this.inventory = new PlayerInventory();
     }
 
     public String getFormattedTime() {

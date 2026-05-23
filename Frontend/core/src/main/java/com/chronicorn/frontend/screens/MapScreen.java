@@ -62,6 +62,7 @@ public class MapScreen implements Screen {
     // Important Game Flags
     private boolean isGameOverTriggered = false;
     private boolean isCountdownTriggered = false;
+    private boolean cameraFollow = true;
 
     private BitmapFont hudFont;
 
@@ -94,7 +95,7 @@ public class MapScreen implements Screen {
         LevelMapManager.getInstance().setPlayer(player);
         // player.addObserver(gameHUD);
         LevelMapManager.getInstance().setEventManager(eventManager);
-        LevelMapManager.getInstance().changeLevel("test");
+        LevelMapManager.getInstance().changeLevel("LevelIntro");
 
         // Setup Input
         this.dashCommand = new Dash(player);
@@ -138,8 +139,10 @@ public class MapScreen implements Screen {
         LevelMapManager.getInstance().checkHazardTile(delta);
 
         // Camera Follow Player
-        camera.position.set(player.getPosition().x, player.getPosition().y, 0);
-        camera.update();
+        if (cameraFollow) {
+            camera.position.set(player.getPosition().x, player.getPosition().y, 0);
+            camera.update();
+        }
 
         GameSession.getInstance().update(delta);
 
@@ -247,5 +250,17 @@ public class MapScreen implements Screen {
 
     public GameHUD getGameHUD() {
         return this.gameHUD;
+    }
+
+    public OrthographicCamera getCamera() {
+        return this.camera;
+    }
+
+    public boolean isCameraFollow() {
+        return this.cameraFollow;
+    }
+
+    public void setCameraFollow(boolean follow) {
+        this.cameraFollow = follow;
     }
 }

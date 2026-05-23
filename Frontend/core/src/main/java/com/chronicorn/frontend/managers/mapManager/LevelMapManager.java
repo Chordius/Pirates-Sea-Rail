@@ -6,12 +6,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.utils.Array;
 import com.chronicorn.frontend.managers.ResetManager;
 import com.chronicorn.frontend.managers.SoundManager;
+import com.chronicorn.frontend.objects.BalloonEffect;
 import com.chronicorn.frontend.objects.EnemyMapEvent;
 import com.chronicorn.frontend.objects.InteractiveObject;
 import com.chronicorn.frontend.objects.MapEvent;
@@ -38,6 +40,7 @@ public class LevelMapManager {
     private Player player;
     private String currentMapName;
     private String lastTriggerName = null;
+    private final Array<BalloonEffect> activeBalloons = new Array<>();
 
     private final float WORLD_WIDTH = Gdx.graphics.getWidth();
     private final float WORLD_HEIGHT = Gdx.graphics.getHeight();
@@ -53,6 +56,7 @@ public class LevelMapManager {
     private void loadMapData(String level) {
         if (map != null) map.dispose();
         if (mapRenderer != null) mapRenderer.dispose();
+        activeBalloons.clear();
 
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load("maps/" + level + ".tmx");
@@ -255,6 +259,7 @@ public class LevelMapManager {
         map = null;
         mapRenderer = null;
         player = null;
+        activeBalloons.clear();
     }
 
     public void playMusic() {
@@ -311,18 +316,74 @@ public class LevelMapManager {
         }
     }
 
+    public void showBalloon(PhysicsObjects target, String balloonType) {
+        com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> anim = 
+            com.chronicorn.frontend.managers.assetManager.ImageManager.getBalloonAnimation(balloonType);
+        if (anim != null && target != null) {
+            for (int i = activeBalloons.size - 1; i >= 0; i--) {
+                if (activeBalloons.get(i).getTarget() == target) {
+                    activeBalloons.removeIndex(i);
+                }
+            }
+            activeBalloons.add(new BalloonEffect(target, anim));
+        }
+    }
+
     public MapScript getCurrentScript() {
         return this.currentScript;
     }
 
+    public boolean isAreaBlocked(float targetX, float targetY, float targetWidth, float targetHeight, InteractiveObject self) {
+        Rectangle targetRect = new Rectangle(targetX, targetY, targetWidth, targetHeight);
+
+        // 1. Check tile map walls
+        if (mapManager != null && mapManager.getCollisionRects() != null) {
+            Array<Rectangle> walls = mapManager.getCollisionRects();
+            for (int i = 0; i < walls.size; i++) {
+                Rectangle wall = walls.get(i);
+                if (targetRect.overlaps(wall)) {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Check other interactive objects
+        if (mapManager != null && mapManager.getInteractiveObjects() != null) {
+            Array<InteractiveObject> interactables = mapManager.getInteractiveObjects();
+            for (int i = 0; i < interactables.size; i++) {
+                InteractiveObject obj = interactables.get(i);
+                if (obj != self && obj.isSolid() && targetRect.overlaps(obj.getBounds())) {
+                    return true;
+                }
+            }
+        }
+
+        // 3. Check player (if self is solid, or we don't want NPCs to overlap player)
+        if (player != null && targetRect.overlaps(player.getBounds())) {
+            return true;
+        }
+
+        return false;
+    }
+
     public void updateObjects(float delta) {
         Array<InteractiveObject> interactables = mapManager.getInteractiveObjects();
-        if (interactables == null) return;
+        if (interactables != null) {
+            // MapEvent movement/animation must tick every frame, independent of EventManager command lifetime.
+            for (int i = 0; i < interactables.size; i++) {
+                InteractiveObject obj = interactables.get(i);
+                if (obj instanceof MapEvent) {
+                    ((MapEvent) obj).update(delta);
+                }
+            }
+        }
 
-        // MapEvent movement/animation must tick every frame, independent of EventManager command lifetime.
-        for (InteractiveObject obj : interactables) {
-            if (obj instanceof MapEvent) {
-                ((MapEvent) obj).update(delta);
+        // Update active balloons
+        for (int i = activeBalloons.size - 1; i >= 0; i--) {
+            BalloonEffect balloon = activeBalloons.get(i);
+            balloon.update(delta);
+            if (balloon.isFinished()) {
+                activeBalloons.removeIndex(i);
             }
         }
     }
@@ -357,6 +418,11 @@ public class LevelMapManager {
         // the loop will finish without drawing them. Draw them last so they overlap everything!
         if (!playerDrawn) {
             player.render(batch);
+        }
+
+        // Render balloon animations
+        for (BalloonEffect balloon : activeBalloons) {
+            balloon.render(batch);
         }
     }
 }

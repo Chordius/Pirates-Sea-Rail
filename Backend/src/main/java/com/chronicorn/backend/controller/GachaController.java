@@ -23,12 +23,23 @@ public class GachaController {
 
     // POST: http://localhost:8080/api/gacha/pull/{userId}
     @PostMapping("/pull/{userId}")
-    public ResponseEntity<?> pullCharacter(@PathVariable UUID userId) {
+    public ResponseEntity<?> pullCharacter(@PathVariable UUID userId, @RequestParam(required = false, defaultValue = "standard") String bannerId) {
         try {
-            GachaResultDTO result = gachaService.performPull(userId);
+            GachaResultDTO result = gachaService.performPull(userId, bannerId);
             return ResponseEntity.ok(result);
         } catch (RuntimeException e) {
             // Returns 400 Bad Request if they don't have enough currency
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // POST: http://localhost:8080/api/gacha/pull10/{userId}
+    @PostMapping("/pull10/{userId}")
+    public ResponseEntity<?> pull10Characters(@PathVariable UUID userId, @RequestParam(required = false, defaultValue = "standard") String bannerId) {
+        try {
+            java.util.List<GachaResultDTO> results = gachaService.performMultiPull(userId, bannerId, 10);
+            return ResponseEntity.ok(results);
+        } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
@@ -48,4 +59,14 @@ public class GachaController {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
         }
     }
+
+    @PostMapping("/grant/{userId}/{charId}")
+public ResponseEntity<?> grantCharacter(@PathVariable UUID userId, @PathVariable String charId) {
+    try {
+        GachaResultDTO result = gachaService.grantSpecificCharacter(userId, charId);
+        return ResponseEntity.ok(result);
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+}
 }

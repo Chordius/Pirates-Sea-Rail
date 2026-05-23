@@ -1,0 +1,12 @@
+face.png
+size:1024,256
+filter:Linear,Linear
+repeat:none
+face_deal
+bounds:440,2,144,144
+face_porter
+bounds:148,2,144,144
+face_reyna
+bounds:2,2,144,144
+face_sailor
+bounds:294,2,144,144

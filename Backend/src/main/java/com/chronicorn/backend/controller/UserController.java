@@ -3,10 +3,13 @@ package com.chronicorn.backend.controller;
 import com.chronicorn.backend.dto.UserAuthRequestDTO;
 import com.chronicorn.backend.dto.UserAuthResponseDTO;
 import com.chronicorn.backend.services.UserService;
+import com.chronicorn.backend.models.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Optional;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/users")
@@ -34,6 +37,28 @@ public class UserController {
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
+    }
+
+    // GET: http://localhost:8080/api/users/{userId}
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getUser(@PathVariable UUID userId) {
+        try {
+            Optional<User> userOpt = userService.getUserById(userId);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                UserAuthResponseDTO dto = new UserAuthResponseDTO(
+                    user.getUserId(),
+                    user.getGlobalUserId(),
+                    user.getUsername(),
+                    user.getPremiumCurrency()
+                );
+                return ResponseEntity.ok(dto);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 }

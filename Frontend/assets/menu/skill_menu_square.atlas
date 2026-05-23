@@ -1,0 +1,15 @@
+skill_menu_square.png
+size:1024,128
+repeat:none
+skill_menu_squarae_earth
+bounds:346,2,84,84
+skill_menu_squarae_fire
+bounds:88,2,84,84
+skill_menu_squarae_lightning
+bounds:174,2,84,84
+skill_menu_squarae_water
+bounds:432,2,84,84
+skill_menu_squarae_wind
+bounds:260,2,84,84
+skill_menu_square_none
+bounds:2,2,84,84

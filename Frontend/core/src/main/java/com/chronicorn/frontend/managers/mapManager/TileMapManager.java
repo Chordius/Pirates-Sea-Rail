@@ -29,20 +29,20 @@ public class TileMapManager {
         int fgIndex = map.getLayers().getIndex("ABOVE PLAYER");
 
         if (bgIndex != -1) {
-            background = new int[]{ bgIndex };
+            background = new int[] { bgIndex };
         } else {
-            background = new int[]{};
+            background = new int[] {};
         }
 
         if (fgIndex != -1) {
-            foreground = new int[]{ fgIndex };
+            foreground = new int[] { fgIndex };
         } else {
-            foreground = new int[]{};
+            foreground = new int[] {};
         }
 
         calculateMapDimensions(map.getLayers());
 
-        System.out.println("Map Width is: "  + mapWidth);
+        System.out.println("Map Width is: " + mapWidth);
         System.out.println("Map Height is: " + mapHeight);
     };
 
@@ -50,7 +50,8 @@ public class TileMapManager {
         for (MapLayer layer : layers) {
             if (layer instanceof MapGroupLayer) {
                 calculateMapDimensions(((MapGroupLayer) layer).getLayers());
-                if (this.mapWidth > 0) return;
+                if (this.mapWidth > 0)
+                    return;
             }
 
             else if (layer instanceof TiledMapTileLayer) {
@@ -83,7 +84,7 @@ public class TileMapManager {
         for (MapLayer layer : layers) {
             if (layer instanceof MapGroupLayer) {
                 checkCollisionsRecursive(((MapGroupLayer) layer).getLayers());
-            } else {
+            } else if (layer instanceof TiledMapTileLayer) {
                 extractTiles((TiledMapTileLayer) layer);
             }
         }
@@ -99,8 +100,10 @@ public class TileMapManager {
                 TiledMapTileLayer.Cell cell = layer.getCell(x, y);
 
                 // Skip empty cells
-                if (cell == null) continue;
-                if (cell.getTile() == null) continue;
+                if (cell == null)
+                    continue;
+                if (cell.getTile() == null)
+                    continue;
 
                 // Get the objects defined on this specific tile in the Tileset Editor
                 MapObjects objects = cell.getTile().getObjects();
@@ -109,11 +112,10 @@ public class TileMapManager {
                     Rectangle rect = rectangleObject.getRectangle();
 
                     Rectangle worldRect = new Rectangle(
-                        x * tileWidth + rect.x,
-                        y * tileHeight + rect.y,
-                        rect.width,
-                        rect.height
-                    );
+                            x * tileWidth + rect.x,
+                            y * tileHeight + rect.y,
+                            rect.width,
+                            rect.height);
 
                     collisionRects.add(worldRect);
                 }
@@ -137,11 +139,15 @@ public class TileMapManager {
                 Intersector.intersectRectangles(playerRect, wall, intersection);
 
                 if (intersection.width < intersection.height) {
-                    if (objects.getPosition().x < wall.x) objects.getPosition().x -= intersection.width;
-                    else objects.getPosition().x += intersection.width;
+                    if (objects.getPosition().x < wall.x)
+                        objects.getPosition().x -= intersection.width;
+                    else
+                        objects.getPosition().x += intersection.width;
                 } else {
-                    if (objects.getPosition().y < wall.y) objects.getPosition().y -= intersection.height;
-                    else objects.getPosition().y += intersection.height;
+                    if (objects.getPosition().y < wall.y)
+                        objects.getPosition().y -= intersection.height;
+                    else
+                        objects.getPosition().y += intersection.height;
                 }
                 objects.getBounds().setPosition(objects.getPosition().x, objects.getPosition().y);
             }
@@ -211,7 +217,8 @@ public class TileMapManager {
                 checkWallCollisions(delta, player, tempCollisionList);
 
                 // Notice we DO NOT return the object here anymore!
-                // We let the loop finish so the player can be pushed out of multiple objects if stuck in a corner.
+                // We let the loop finish so the player can be pushed out of multiple objects if
+                // stuck in a corner.
             }
         }
     }
@@ -275,6 +282,10 @@ public class TileMapManager {
 
     public Array<InteractiveObject> getInteractiveObjects() {
         return interactiveObjects;
+    }
+
+    public Array<Rectangle> getCollisionRects() {
+        return collisionRects;
     }
 
     public float getMapHeight() {

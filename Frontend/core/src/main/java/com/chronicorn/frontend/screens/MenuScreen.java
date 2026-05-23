@@ -1,165 +1,308 @@
 package com.chronicorn.frontend.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.chronicorn.frontend.Player;
-import com.chronicorn.frontend.managers.assetManager.ImageManager;
-import com.chronicorn.frontend.windows.WindowLogin;
-import com.chronicorn.frontend.windows.WindowOptions;
-import com.chronicorn.frontend.windows.WindowSettings;
+import com.chronicorn.frontend.battlers.Actor;
+import com.chronicorn.frontend.managers.SceneManager;
+import com.chronicorn.frontend.managers.eventManagers.GameSession;
+import com.chronicorn.frontend.screens.components.*;
 
 public class MenuScreen implements Screen {
     private Stage stage;
     private Image backgroundImage;
+    private Player player;
 
-    // Simpan Table utama agar bisa di-hide/show
-    private Table rootTable;
+    private Stack rootStack;
+
+    private Table topNavTable;
+    private Table leftRosterTable;
+    private Table partySelectionTable;
+    private Table rightDetailsTable;
+    private Table gachaTable;
+    private Table contentContainer;
+    private Table equipMenuTable;
+    private Actor currentSelectedActor;
 
     public MenuScreen(Image bgImage, Player player) {
+        this.backgroundImage = bgImage;
+        this.player = player;
         this.stage = new Stage(new ScreenViewport());
 
-        // 1. SETUP BACKGROUND
-        if (bgImage != null) {
-            this.backgroundImage = bgImage;
-            backgroundImage.setFillParent(true);
-            stage.addActor(backgroundImage);
+        if (this.backgroundImage != null) {
+            this.backgroundImage.setFillParent(true);
+            stage.addActor(this.backgroundImage);
         }
 
-        // 2. LOGIKA PEMISAH (HYBRID)
-        if (player != null) {
-            // --- MODE PAUSE (Di dalam Game) ---
-            WindowOptions optionsWindow = new WindowOptions(player);
-            optionsWindow.open();
-            optionsWindow.setPosition(
-                (Gdx.graphics.getWidth() - optionsWindow.getWidth()) / 2,
-                (Gdx.graphics.getHeight() - optionsWindow.getHeight()) / 2
-            );
-            stage.addActor(optionsWindow);
-
-        } else {
-            // --- MODE TITLE SCREEN (Awal Game) ---
-            setupTitleScreen();
-        }
-
-        Gdx.input.setInputProcessor(stage);
+        buildUI();
     }
 
-    private void setupTitleScreen() {
-        // UI Layout Utama
-        rootTable = new Table();
-        rootTable.setFillParent(true);
-        stage.addActor(rootTable);
+    private void buildUI() {
+        Stack rootStack = new Stack();
 
-        // --- 1. JUDUL BESAR "CHRONICORN" ---
-        Label titleLabel = new Label("Chronicorn", ImageManager.skin);
-        titleLabel.setFontScale(4.0f); // Perbesar Font agar mirip screenshot
-        titleLabel.setAlignment(Align.center);
+        Table contentLayer = new Table();
+        contentLayer.top().left();
 
-        // Tambahkan judul (Padding bawah besar biar jarak ke tombol jauh)
-        rootTable.add(titleLabel).padBottom(80).row();
-
-        // --- 2. TOMBOL-TOMBOL MENU ---
-        Table btnTable = new Table();
-
-        // START GAME: Pakai style "boxed-button" (Ada Kotaknya)
-        TextButton btnStart = new TextButton("START GAME", ImageManager.skin, "boxed-button");
-
-        // SETTINGS & EXIT: Pakai style "default" (Hanya Teks)
-        TextButton btnSettings = new TextButton("SETTINGS", ImageManager.skin, "default");
-        TextButton btnExit = new TextButton("EXIT", ImageManager.skin, "default");
-
-        // Susun Tombol
-        btnTable.add(btnStart).width(250).height(60).padBottom(20).row(); // Tombol Start Besar
-        btnTable.add(btnSettings).padBottom(15).row();
-        btnTable.add(btnExit).row();
-
-        rootTable.add(btnTable);
-
-        // --- 3. LOGIKA KLIK TOMBOL (ANTI-NUMPLEK) ---
-
-        // Aksi START GAME -> Buka Login
-        btnStart.addListener(new ClickListener() {
+        topNavTable = new TopNavTable(new TopNavTable.TabSelectionListener() {
             @Override
-            public void clicked(InputEvent event, float x, float y) {
-                // Sembunyikan Menu Utama
-                rootTable.setVisible(false);
-
-                // Tampilkan Login
-                WindowLogin loginWindow = new WindowLogin();
-                loginWindow.open();
-                loginWindow.setPosition(
-                    (Gdx.graphics.getWidth() - loginWindow.getWidth()) / 2,
-                    (Gdx.graphics.getHeight() - loginWindow.getHeight()) / 2
-                );
-
-                // (Opsional) Tambahkan logika tombol Back di WindowLogin nanti jika perlu
-                stage.addActor(loginWindow);
+            public void onTabSelected(String tabName) {
+                switchMenuContent(tabName);
             }
         });
 
-        // Aksi SETTINGS -> Buka Settings (Hanya UI Dummy dulu karena blm ada player)
-        btnSettings.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                rootTable.setVisible(false);
+        contentContainer = new Table();
 
-                // Gunakan WindowSettings tapi pass null sebagai player/parent sementara
-                // Atau buat instance khusus jika perlu.
-                // Di sini kita pakai cara trick agar WindowOptions bisa handle
-                WindowOptions dummyOptions = new WindowOptions(null);
-                WindowSettings settingsWindow = new WindowSettings(dummyOptions, null);
-                settingsWindow.open();
-                settingsWindow.setPosition(
-                    (Gdx.graphics.getWidth() - settingsWindow.getWidth()) / 2,
-                    (Gdx.graphics.getHeight() - settingsWindow.getHeight()) / 2
-                );
+        contentLayer.add(contentContainer).expand().fill().padTop(70);
 
-                // Tambahkan tombol Back manual ke rootTable (karena logic defaultnya beda)
-                TextButton backBtn = new TextButton("Back", ImageManager.skin);
-                backBtn.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        settingsWindow.remove();
-                        rootTable.setVisible(true); // Munculkan menu lagi
+        Table navLayer = new Table();
+        navLayer.top().left();
+        navLayer.add(topNavTable).expandX().fillX();
+
+        navLayer.setTouchable(Touchable.childrenOnly);
+        topNavTable.setTouchable(Touchable.childrenOnly);
+
+        rootStack.add(contentLayer);
+        rootStack.add(navLayer);
+
+        rootStack.setFillParent(true);
+        stage.addActor(rootStack);
+
+        switchMenuContent("Crew");
+    }
+
+    private void switchMenuContent(String tabName) {
+        contentContainer.clearChildren();
+
+        if (tabName.equals("Crew")) {
+            Stack masterCrewStack = new Stack();
+
+            rightDetailsTable = new RightDetailsTable();
+            equipMenuTable = new EquipMenuTable();
+            equipMenuTable.setVisible(false); // Hide it initially
+
+            // Equip Listener Transition
+            ((RightDetailsTable) rightDetailsTable).setEquipListener(new RightDetailsTable.EquipWeaponsListener() {
+                @Override
+                public void onEquipWeaponsClicked() {
+                    if (leftRosterTable != null && leftRosterTable.isVisible()) {
+
+                        // 1. Fade out the base crew layout
+                        leftRosterTable.clearActions();
+                        leftRosterTable.addAction(Actions.sequence(
+                                Actions.fadeOut(0.2f, Interpolation.fade),
+                                Actions.visible(false)));
+
+                        rightDetailsTable.clearActions();
+                        rightDetailsTable.addAction(Actions.sequence(
+                                Actions.fadeOut(0.2f, Interpolation.fade),
+                                Actions.visible(false)));
+
+                        // 2. Prep and Animate the Equip Menu
+                        ((EquipMenuTable) equipMenuTable).updateMenu(currentSelectedActor,
+                                GameSession.getInstance().inventory);
+                        equipMenuTable.setVisible(true);
+                        ((EquipMenuTable) equipMenuTable).playEntranceAnimation();
+                        ((EquipMenuTable) equipMenuTable).setListener(new EquipMenuTable.EquipInteractionListener() {
+                            @Override
+                            public void onConfirmClicked() {
+                                if (currentSelectedActor != null) {
+                                    com.chronicorn.frontend.items.Equippable[] selected = ((EquipMenuTable) equipMenuTable)
+                                            .getEquippedWeapons();
+                                    currentSelectedActor.getEquipments().clear();
+                                    if (selected[0] != null)
+                                        currentSelectedActor.getEquipments().add(selected[0]);
+                                    if (selected[1] != null)
+                                        currentSelectedActor.getEquipments().add(selected[1]);
+                                    currentSelectedActor.calculateParams(currentSelectedActor.getLevel());
+                                }
+
+                                // Fade out Equip Menu
+                                equipMenuTable.clearActions();
+                                equipMenuTable.addAction(Actions.sequence(
+                                        Actions.fadeOut(0.2f, Interpolation.fade),
+                                        Actions.visible(false)));
+
+                                // Bring back base Crew Menu and update details
+                                leftRosterTable.setVisible(true);
+                                rightDetailsTable.setVisible(true);
+
+                                leftRosterTable.getColor().a = 1f;
+                                rightDetailsTable.getColor().a = 1f;
+
+                                ((LeftRosterTable) leftRosterTable).refreshRoster();
+                                if (currentSelectedActor != null) {
+                                    ((RightDetailsTable) rightDetailsTable).updateDetails(currentSelectedActor);
+                                }
+                                ((RightDetailsTable) rightDetailsTable).playEntranceAnimation();
+                            }
+
+                            @Override
+                            public void onCloseClicked() {
+                                // 1. Fade out Equip Menu
+                                equipMenuTable.clearActions();
+                                equipMenuTable.addAction(Actions.sequence(
+                                        Actions.fadeOut(0.2f, Interpolation.fade),
+                                        Actions.visible(false)));
+
+                                // 2. Bring back base Crew Menu
+                                leftRosterTable.setVisible(true);
+                                rightDetailsTable.setVisible(true);
+
+                                // Reset alpha before playing entrance animations
+                                leftRosterTable.getColor().a = 1f;
+                                rightDetailsTable.getColor().a = 1f;
+
+                                // Trigger the sliding entrances again
+                                ((LeftRosterTable) leftRosterTable).refreshRoster();
+                                ((RightDetailsTable) rightDetailsTable).playEntranceAnimation();
+                            }
+                        });
                     }
-                });
-                settingsWindow.add(backBtn).padTop(20).row();
+                }
+            });
 
-                stage.addActor(settingsWindow);
-            }
-        });
+            leftRosterTable = new LeftRosterTable(new LeftRosterTable.CharacterSelectionListener() {
+                @Override
+                public void onCharacterSelected(Actor selectedActor) {
+                    // Cache the selection so the equip menu knows who to load!
+                    currentSelectedActor = selectedActor;
+                    ((RightDetailsTable) rightDetailsTable).updateDetails(selectedActor);
+                }
 
-        // Aksi EXIT
-        btnExit.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
+                @Override
+                public void onPartyTriggerClicked() {
+                    boolean isCurrentlyVisible = partySelectionTable.isVisible();
+
+                    if (!isCurrentlyVisible) {
+                        // 1. Opening Party Screen
+                        ((PartySelectionTable) partySelectionTable).refreshToCurrentParty();
+
+                        // Fade out details
+                        rightDetailsTable.clearActions();
+                        rightDetailsTable.addAction(Actions.sequence(
+                                Actions.fadeOut(0.2f, Interpolation.fade),
+                                Actions.visible(false)));
+
+                        // Prep and animate in Party Grid
+                        partySelectionTable.setVisible(true);
+                        ((PartySelectionTable) partySelectionTable).playEntranceAnimation();
+
+                    } else {
+                        // 2. Closing Party Screen (via trigger)
+                        partySelectionTable.clearActions();
+                        partySelectionTable.addAction(Actions.sequence(
+                                Actions.fadeOut(0.2f, Interpolation.fade),
+                                Actions.visible(false)));
+
+                        // Bring back Details
+                        rightDetailsTable.setVisible(true);
+                        rightDetailsTable.getColor().a = 1f; // Must reset master alpha after a fadeOut!
+                        ((RightDetailsTable) rightDetailsTable).playEntranceAnimation();
+                    }
+                }
+            });
+
+            // Call it initially upon loading the menu
+            ((RightDetailsTable) rightDetailsTable).playEntranceAnimation();
+
+            partySelectionTable = new PartySelectionTable(new PartySelectionTable.PartyConfirmListener() {
+                @Override
+                public void onPartyConfirmed() {
+                    // Fade out Party Screen
+                    partySelectionTable.clearActions();
+                    partySelectionTable.addAction(Actions.sequence(
+                            Actions.fadeOut(0.2f, Interpolation.fade),
+                            Actions.visible(false)));
+
+                    ((LeftRosterTable) leftRosterTable).refreshRoster();
+
+                    // Bring back Details
+                    rightDetailsTable.setVisible(true);
+                    rightDetailsTable.getColor().a = 1f; // Must reset master alpha after a fadeOut!
+                    ((RightDetailsTable) rightDetailsTable).playEntranceAnimation();
+                }
+            });
+            partySelectionTable.setVisible(false);
+
+            Stack rightSideStack = new Stack();
+            rightSideStack.add(rightDetailsTable);
+            rightSideStack.add(partySelectionTable);
+
+            Table crewLayout = new Table();
+            crewLayout.add(leftRosterTable).width(350).fillY().expandY();
+            crewLayout.add(rightSideStack).expand().fill().padTop(70);
+
+            masterCrewStack.add(crewLayout);
+            masterCrewStack.add(equipMenuTable);
+
+            contentContainer.add(masterCrewStack).fill().expand();
+        } else if (tabName.equals("Gacha")) {
+
+            if (gachaTable == null) {
+                gachaTable = new GachaTable();
             }
-        });
+
+            // FIXED: Only add to container if it isn't already a child.
+            // This completely mitigates layout breakage from spam clicking!
+            if (!contentContainer.getChildren().contains(gachaTable, true)) {
+                contentContainer.add(gachaTable).fill().expand();
+            }
+
+            // Fire the slam-in animations safely!
+            ((GachaTable) gachaTable).playEntranceAnimation();
+        } else if (tabName.equals("Inventory")) {
+            // E.g., contentContainer.add(new InventoryTable()).fill().expand();
+        }
+    }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            SceneManager.getInstance().goBack();
+            return;
+        }
+
         stage.act(delta);
         stage.draw();
     }
 
-    @Override public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
-    @Override public void dispose() { stage.dispose(); }
-    @Override public void show() {}
-    @Override public void hide() {}
-    @Override public void pause() {}
-    @Override public void resume() {}
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
+
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+    }
+
+    @Override
+    public void dispose() {
+        stage.dispose();
+    }
 }

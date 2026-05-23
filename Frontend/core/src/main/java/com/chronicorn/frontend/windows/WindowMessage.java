@@ -14,6 +14,9 @@ public class WindowMessage extends WindowBase {
     private int alignment;
     private static final int DEFAULT_ALIGNMENT = Align.topLeft;
 
+    private float defaultX;
+    private float defaultY;
+
     // Speaker
     private Table speakerBox;
     private Label speakerLabel;
@@ -25,6 +28,23 @@ public class WindowMessage extends WindowBase {
     private boolean isTyping = false;
     private final float TYPE_SPEED = 0.03f;
 
+    public static class TextElement {
+        public enum Type { CHAR, PAUSE }
+        public Type type;
+        public char character;
+        public String color;
+
+        public TextElement(Type type, char character, String color) {
+            this.type = type;
+            this.character = character;
+            this.color = color;
+        }
+    }
+
+    private Array<TextElement> elements = new Array<>();
+    private int elementIndex = 0;
+    private boolean isPaused = false;
+
     // Conversation Logic
     private Array<String> messageQueue;
     private Runnable onFinishCallback; // Code to run when conversation ends
@@ -33,6 +53,9 @@ public class WindowMessage extends WindowBase {
         // Create window centered on screen, size 800x180
         super("", (Gdx.graphics.getWidth() - 1000) / 2, 36, 1000, 168);
         setBackgroundDrawable("window-speak-drawable");
+
+        this.defaultX = (Gdx.graphics.getWidth() - 1000) / 2f;
+        this.defaultY = 36f;
 
         this.messageQueue = new Array<>();
         this.alignment = DEFAULT_ALIGNMENT;
@@ -46,6 +69,7 @@ public class WindowMessage extends WindowBase {
         // 1. Create the Label
         textLabel = drawText("", DEFAULT_ALIGNMENT);
         textLabel.setWrap(true);
+        textLabel.getStyle().font.getData().markupEnabled = true;
 
         textLabel.getStyle().font.getData().setLineHeight(standardPadding + 2 * textPadding);
 
@@ -122,17 +146,25 @@ public class WindowMessage extends WindowBase {
         // Pop the next string
         fullText = messageQueue.removeIndex(0);
 
+        // Parse escape codes
+        parseFullText(fullText);
+
         // Reset Typewriter
         textLabel.setText("");
-        charIndex = 0;
+        elementIndex = 0;
         typeTimer = 0;
         isTyping = true;
+        isPaused = false;
     }
 
     private void closeConversation() {
         this.setVisible(false);
 
         GameMessage.getInstance().finish();
+        if (onFinishCallback != null) {
+            onFinishCallback.run();
+            onFinishCallback = null;
+        }
     }
 
     public void setPosition(float x, float y) {
@@ -147,6 +179,8 @@ public class WindowMessage extends WindowBase {
         if (!this.isVisible() && GameMessage.getInstance().hasText()) {
             if (GameMessage.getInstance().getPosition()) {
                 setPosition(GameMessage.getInstance().getX(), GameMessage.getInstance().getY());
+            } else {
+                setPosition(defaultX, defaultY);
             }
             int messageAlignment = GameMessage.getInstance().getAlignment();
             if (messageAlignment != this.alignment) {
@@ -157,18 +191,37 @@ public class WindowMessage extends WindowBase {
             }
             String newSpeaker = GameMessage.getInstance().popSpeaker();
             String newText = GameMessage.getInstance().popText();
+            boolean showBg = GameMessage.getInstance().popShowBackground();
+            if (showBg) {
+                setBackgroundDrawable("window-speak-drawable");
+            } else {
+                this.setBackground((com.badlogic.gdx.scenes.scene2d.utils.Drawable) null);
+            }
 
             // Pass both to the window
             this.showMessage(newSpeaker, newText);
         }
 
-        // 1. Handle Input (Z key or Enter to advance)
+        // 1. Handle Input (J key or Enter to advance)
         if (Gdx.input.isKeyJustPressed(Input.Keys.J) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            if (isTyping) {
-                // If typing, SKIP to the end
-                charIndex = fullText.length();
-                textLabel.setText(fullText);
-                isTyping = false;
+            if (isPaused) {
+                isPaused = false;
+                elementIndex++;
+                typeTimer = 0;
+            } else if (isTyping) {
+                // Skip to next pause or the end
+                while (elementIndex < elements.size) {
+                    TextElement el = elements.get(elementIndex);
+                    if (el.type == TextElement.Type.PAUSE) {
+                        isPaused = true;
+                        break;
+                    }
+                    elementIndex++;
+                }
+                textLabel.setText(buildMarkupString(elementIndex));
+                if (elementIndex >= elements.size) {
+                    isTyping = false;
+                }
             } else {
                 // If done typing, Go to NEXT message
                 nextMessage();
@@ -176,20 +229,102 @@ public class WindowMessage extends WindowBase {
         }
 
         // 2. Handle Typewriter Effect
-        if (isTyping) {
+        if (isTyping && !isPaused) {
             typeTimer += delta;
-            if (typeTimer >= TYPE_SPEED) {
-                typeTimer = 0;
-                charIndex++;
+            while (typeTimer >= TYPE_SPEED) {
+                typeTimer -= TYPE_SPEED;
 
-                // Append text safely
-                textLabel.setText(fullText.substring(0, charIndex));
-
-                // Check if done
-                if (charIndex >= fullText.length()) {
+                if (elementIndex >= elements.size) {
                     isTyping = false;
+                    break;
+                }
+
+                TextElement el = elements.get(elementIndex);
+                if (el.type == TextElement.Type.PAUSE) {
+                    isPaused = true;
+                    break;
+                } else {
+                    elementIndex++;
+                    textLabel.setText(buildMarkupString(elementIndex));
                 }
             }
         }
+    }
+
+    private void parseFullText(String text) {
+        elements.clear();
+        if (text == null) return;
+
+        String activeColor = null;
+        int i = 0;
+        int len = text.length();
+        while (i < len) {
+            char c = text.charAt(i);
+            if (c == '\\' && i + 1 < len) {
+                char next = text.charAt(i + 1);
+                if (next == '!') {
+                    elements.add(new TextElement(TextElement.Type.PAUSE, '\0', activeColor));
+                    i += 2;
+                } else if (next == 'c' || next == 'C') {
+                    if (i + 2 < len && text.charAt(i + 2) == '[') {
+                        int closeBracket = text.indexOf(']', i + 3);
+                        if (closeBracket != -1) {
+                            String colorVal = text.substring(i + 3, closeBracket).trim();
+                            if (colorVal.isEmpty() || colorVal.equalsIgnoreCase("default") || colorVal.equalsIgnoreCase("normal")) {
+                                activeColor = null;
+                            } else {
+                                // Normalize hex values (e.g. ff0000 -> #ff0000)
+                                if (colorVal.matches("^[0-9a-fA-F]{6,8}$")) {
+                                    activeColor = "#" + colorVal;
+                                } else {
+                                    activeColor = colorVal;
+                                }
+                            }
+                            i = closeBracket + 1;
+                        } else {
+                            elements.add(new TextElement(TextElement.Type.CHAR, '\\', activeColor));
+                            i++;
+                        }
+                    } else {
+                        elements.add(new TextElement(TextElement.Type.CHAR, '\\', activeColor));
+                        i++;
+                    }
+                } else if (next == 'n') {
+                    elements.add(new TextElement(TextElement.Type.CHAR, '\n', activeColor));
+                    i += 2;
+                } else {
+                    elements.add(new TextElement(TextElement.Type.CHAR, next, activeColor));
+                    i += 2;
+                }
+            } else {
+                elements.add(new TextElement(TextElement.Type.CHAR, c, activeColor));
+                i++;
+            }
+        }
+    }
+
+    private String buildMarkupString(int upToLimit) {
+        StringBuilder sb = new StringBuilder();
+        String activeColor = null;
+        for (int i = 0; i < upToLimit; i++) {
+            TextElement el = elements.get(i);
+            if (el.type == TextElement.Type.CHAR) {
+                if (el.color != null && !el.color.equals(activeColor)) {
+                    if (activeColor != null) {
+                        sb.append("[]");
+                    }
+                    activeColor = el.color;
+                    sb.append("[").append(activeColor).append("]");
+                } else if (el.color == null && activeColor != null) {
+                    sb.append("[]");
+                    activeColor = null;
+                }
+                sb.append(el.character);
+            }
+        }
+        if (activeColor != null) {
+            sb.append("[]");
+        }
+        return sb.toString();
     }
 }

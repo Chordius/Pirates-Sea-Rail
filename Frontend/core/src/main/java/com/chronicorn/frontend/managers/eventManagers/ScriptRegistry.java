@@ -1,6 +1,13 @@
 package com.chronicorn.frontend.managers.eventManagers;
 
 import com.chronicorn.frontend.scripts.*;
+import com.chronicorn.frontend.scripts.jailscripts.Jail1BScript;
+import com.chronicorn.frontend.scripts.jailscripts.Jail2BScript;
+import com.chronicorn.frontend.scripts.jailscripts.Jail3BScript;
+import com.chronicorn.frontend.scripts.legacyscripts.Level0Script;
+import com.chronicorn.frontend.scripts.legacyscripts.Level1Script;
+import com.chronicorn.frontend.scripts.legacyscripts.Level2Script;
+import com.chronicorn.frontend.scripts.legacyscripts.LevelBossScript;
 // import com.chronicorn.frontend.scripts.BossLevelScript;
 
 public class ScriptRegistry {
@@ -12,6 +19,11 @@ public class ScriptRegistry {
             case "Level2-48": return new Level2Script();
             case "LevelBoss": return new LevelBossScript();
             case "test": return new TestScript();
+            case "Beach-Intro": return new BeachIntroScript();
+            case "CherryTown": return new CherryTownScript();
+            case "Jail-1B": return new Jail1BScript();
+            case "Jail-2B": return  new Jail2BScript();
+            case "Jail-3B": return new Jail3BScript();
             default: return new MapScript() {
                 @Override public void onMapLoad(EventManager e) {}
                 @Override public void onTrigger(String t, EventManager e) {}

@@ -25,6 +25,8 @@ public class NetworkManager {
     static {
         // Ensures LibGDX outputs standard JSON that Spring Boot's Jackson parser can read
         json.setOutputType(JsonWriter.OutputType.json);
+        // Ignore fields that are not in the DTO (prevents crashes on unexpected backend properties)
+        json.setIgnoreUnknownFields(true);
     }
 
     // ==========================================
@@ -47,14 +49,26 @@ public class NetworkManager {
         sendPostRequest("/gacha/verify", request, Boolean.class, callback);
     }
 
-    public static void pullGacha(String userId, NetworkCallback<GachaResult> callback) {
+    public static void pullGacha(String userId, String bannerId, NetworkCallback<GachaResult> callback) {
         // Notice payload is null here because the UUID is passed in the URL path
-        sendPostRequest("/gacha/pull/" + userId, null, GachaResult.class, callback);
+        sendPostRequest("/gacha/pull/" + userId + "?bannerId=" + bannerId, null, GachaResult.class, callback);
+    }
+
+    public static void pull10Gacha(String userId, String bannerId, NetworkCallback<GachaResult[]> callback) {
+        sendPostRequest("/gacha/pull10/" + userId + "?bannerId=" + bannerId, null, GachaResult[].class, callback);
     }
 
     public static void buyCurrency(String localUserId, double cost, int currencyAmount, NetworkCallback<String> callback) {
         PurchaseRequest request = new PurchaseRequest(localUserId, cost, currencyAmount);
         sendPostRequest("/payment/buy-currency", request, String.class, callback);
+    }
+
+    public static void grantCharacter(String userId, String charId, NetworkCallback<GachaResult> callback) {
+        sendPostRequest("/gacha/grant/" + userId + "/" + charId, null, GachaResult.class, callback);
+    }
+
+    public static void getUserInfo(String localUserId, NetworkCallback<com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse> callback) {
+        sendGetRequest("/users/" + localUserId, com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse.class, callback);
     }
 
     // HELPER METHOD
@@ -86,6 +100,47 @@ public class NetworkManager {
                         }
                     } else {
                         // Extract the error message Spring Boot sent back
+                        callback.onError("Error " + statusCode + ": " + responseString);
+                    }
+                });
+            }
+
+            @Override
+            public void failed(Throwable t) {
+                Gdx.app.postRunnable(() -> callback.onError("Network Failure: " + t.getMessage()));
+            }
+
+            @Override
+            public void cancelled() {
+                Gdx.app.postRunnable(() -> callback.onError("Request Cancelled"));
+            }
+        });
+    }
+
+    private static <T> void sendGetRequest(String endpoint, final Class<T> responseType, final NetworkCallback<T> callback) {
+        HttpRequestBuilder requestBuilder = new HttpRequestBuilder();
+        Net.HttpRequest httpRequest = requestBuilder.newRequest()
+            .method(Net.HttpMethods.GET)
+            .url(BASE_URL + endpoint)
+            .header("Accept", "application/json")
+            .build();
+
+        Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
+            @Override
+            public void handleHttpResponse(Net.HttpResponse httpResponse) {
+                final int statusCode = httpResponse.getStatus().getStatusCode();
+                final String responseString = httpResponse.getResultAsString();
+
+                Gdx.app.postRunnable(() -> {
+                    if (statusCode >= 200 && statusCode < 300) {
+                        if (responseType == String.class) {
+                            callback.onSuccess((T) responseString);
+                        } else if (responseType == Boolean.class) {
+                            callback.onSuccess((T) Boolean.valueOf(responseString));
+                        } else {
+                            callback.onSuccess(json.fromJson(responseType, responseString));
+                        }
+                    } else {
                         callback.onError("Error " + statusCode + ": " + responseString);
                     }
                 });

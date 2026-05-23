@@ -50,6 +50,7 @@ public class Player implements PhysicsObjects {
     // --- CONDITION FLAGS ---
     public boolean dead = false;
     public boolean isBusy = false; // Used to freeze player during events
+    private boolean transparent = false;
 
     // --- OVERWORLD STRIKE (NEW) ---
     private boolean isStriking = false;
@@ -287,6 +288,8 @@ public class Player implements PhysicsObjects {
     public void setCurrentDirection(Direction dir) { this.currentDirection = dir; }
     public boolean isDead() { return dead; }
     public boolean isMoving() { return velocity.len() > 10f; }
+    public boolean isTransparent() { return transparent; }
+    public void setTransparent(boolean transparent) { this.transparent = transparent; }
 
     // --- ANIMATION ---
     private void initializeAnimations() {
@@ -362,6 +365,8 @@ public class Player implements PhysicsObjects {
 
     // --- RENDER ---
     public void render(SpriteBatch batch) {
+        if (transparent) return;
+
         renderGhosts(batch);
 
         if (currentFrame != null) {

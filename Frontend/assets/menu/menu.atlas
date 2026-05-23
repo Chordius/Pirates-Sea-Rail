@@ -1,0 +1,12 @@
+menu.png
+size:1024,256
+filter:Linear,Linear
+repeat:none
+crew
+bounds:262,2,128,128
+gacha
+bounds:392,2,128,128
+items
+bounds:2,2,128,128
+settings
+bounds:132,2,128,128

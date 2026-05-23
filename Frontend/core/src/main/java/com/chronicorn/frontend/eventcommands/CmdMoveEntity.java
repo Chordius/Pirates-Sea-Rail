@@ -28,8 +28,12 @@ public class CmdMoveEntity implements EventCommand {
         if (obj instanceof MapEvent) {
             targetEvent = (MapEvent) obj;
 
-            // 2. Tell the event to start sliding
-            targetEvent.moveGrid(direction, amountInTiles * TILE_SIZE);
+            if (direction >= 4 && direction <= 7) {
+                targetEvent.turn(direction - 4);
+            } else {
+                // 2. Tell the event to start sliding
+                targetEvent.moveGrid(direction, amountInTiles * TILE_SIZE);
+            }
         }
 
     }

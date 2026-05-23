@@ -13,6 +13,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MapEvent extends InteractiveObject {
+    public enum MoveRouteType {
+        STATIC,
+        RANDOM,
+        CUSTOM
+    }
+
     private String scriptId = "";
     private boolean isStatic;
 
@@ -28,6 +34,13 @@ public class MapEvent extends InteractiveObject {
     private float visualHeight = 64f;
     private int characterIndex;
     private String spriteSheetName = "";
+
+    // Autonomous Movement Fields
+    private MoveRouteType moveRouteType = MoveRouteType.STATIC;
+    private int[] moveRoute = new int[]{};
+    private int routeIndex = 0;
+    private float stepTimer = 0f;
+    private float stepDelay = 2.0f; // Seconds to wait between steps
 
     public MapEvent(String name, float x, float y, float width, float height) {
         super(name, x, y, width, height);
@@ -69,6 +82,31 @@ public class MapEvent extends InteractiveObject {
         return this;
     }
 
+    public MapEvent initialDirection(int direction) {
+        this.currentDirection = direction;
+        if (idleFrames != null && idleFrames.containsKey(direction)) {
+            this.currentFrame = idleFrames.get(direction);
+        }
+        return this;
+    }
+
+    public MapEvent moveRouteType(MoveRouteType moveRouteType) {
+        this.moveRouteType = moveRouteType;
+        return this;
+    }
+
+    public MapEvent moveRoute(int[] moveRoute) {
+        this.moveRoute = (moveRoute != null) ? moveRoute : new int[]{};
+        this.routeIndex = 0;
+        return this;
+    }
+
+    public MapEvent stepDelay(float stepDelay) {
+        this.stepDelay = stepDelay;
+        this.stepTimer = stepDelay; // Initialize timer
+        return this;
+    }
+
     private void initializeAnimations(String spriteSheetName) {
         walkAnimations = new HashMap<>();
         idleFrames = new HashMap<>();
@@ -105,7 +143,7 @@ public class MapEvent extends InteractiveObject {
             idleFrames.put(i, tmpFrames[rowInImage][startCol + 1]);
         }
 
-        this.currentFrame = idleFrames.get(0);
+        this.currentFrame = idleFrames.get(currentDirection);
     }
 
     public void update(float delta) {
@@ -130,6 +168,16 @@ public class MapEvent extends InteractiveObject {
             }
 
             this.bounds.setPosition(this.x, this.y); // Update physics bounds
+        } else {
+            // Autonomous movement check when not moving
+            boolean isGameBusy = LevelMapManager.getInstance().getEventManager() != null && LevelMapManager.getInstance().getEventManager().isBusy();
+            if (!isGameBusy && moveRouteType != MoveRouteType.STATIC) {
+                stepTimer -= delta;
+                if (stepTimer <= 0) {
+                    takeAutonomousStep();
+                    stepTimer = stepDelay; // Reset step delay
+                }
+            }
         }
 
         // --- UPDATE ANIMATION EXACTLY LIKE PLAYER ---
@@ -138,6 +186,49 @@ public class MapEvent extends InteractiveObject {
                 currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);
             } else {
                 currentFrame = idleFrames.get(currentDirection);
+            }
+        }
+    }
+
+    private void takeAutonomousStep() {
+        int nextDir = -1;
+        if (moveRouteType == MoveRouteType.RANDOM) {
+            nextDir = (int) (Math.random() * 4);
+        } else if (moveRouteType == MoveRouteType.CUSTOM && moveRoute.length > 0) {
+            nextDir = moveRoute[routeIndex];
+        }
+
+        if (nextDir != -1) {
+            if (nextDir >= 4 && nextDir <= 7) {
+                // Look/Turn command
+                int lookDir = nextDir - 4;
+                turn(lookDir);
+                if (moveRouteType == MoveRouteType.CUSTOM) {
+                    routeIndex = (routeIndex + 1) % moveRoute.length;
+                }
+                return;
+            }
+
+            float TILE_SIZE = 48f;
+            float nextX = this.x;
+            float nextY = this.y;
+            switch (nextDir) {
+                case 0: nextY -= TILE_SIZE; break; // Down
+                case 1: nextX -= TILE_SIZE; break; // Left
+                case 2: nextX += TILE_SIZE; break; // Right
+                case 3: nextY += TILE_SIZE; break; // Up
+            }
+
+            // Check collision
+            boolean blocked = LevelMapManager.getInstance().isAreaBlocked(nextX, nextY, this.width, this.height, this);
+            if (!blocked) {
+                moveGrid(nextDir, TILE_SIZE);
+                if (moveRouteType == MoveRouteType.CUSTOM) {
+                    routeIndex = (routeIndex + 1) % moveRoute.length;
+                }
+            } else {
+                // Update direction visual even if blocked, so they face the wall they bumped into
+                turn(nextDir);
             }
         }
     }
@@ -152,6 +243,15 @@ public class MapEvent extends InteractiveObject {
             case 1: targetPosition.x -= tileSize; break; // Left
             case 2: targetPosition.x += tileSize; break; // Right
             case 3: targetPosition.y += tileSize; break; // Up
+        }
+    }
+
+    public void turn(int direction) {
+        if (direction >= 0 && direction <= 3) {
+            this.currentDirection = direction;
+            if (idleFrames != null && idleFrames.containsKey(direction)) {
+                this.currentFrame = idleFrames.get(direction);
+            }
         }
     }
 

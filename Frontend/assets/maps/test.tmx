@@ -71,7 +71,7 @@
     <property name="character_index" type="int" value="4"/>
     <property name="is_solid" type="bool" value="true"/>
     <property name="is_static" type="bool" value="false"/>
-    <property name="script_id" value="Maid_Talk"/>
+    <property name="script_id" value="Maid_Give"/>
     <property name="sprite_sheet" type="file" value="../characters/feschar_big_001.png"/>
     <property name="type" value="MapEvent"/>
    </properties>

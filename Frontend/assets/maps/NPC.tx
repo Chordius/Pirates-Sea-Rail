@@ -2,12 +2,16 @@
 <template>
  <object name="NPC" type="MapEvent" width="48" height="48">
   <properties>
-   <property name="base_speed" type="float" value="0"/>
+   <property name="autonomous_move_delay" type="int" value="1"/>
+   <property name="autonomous_move_route" value=""/>
+   <property name="autonomous_move_type" value="STATIC"/>
+   <property name="base_speed" type="float" value="70"/>
    <property name="character_index" type="int" value="0"/>
-   <property name="is_solid" type="bool" value="false"/>
+   <property name="initial_direction" value="DOWN"/>
+   <property name="is_solid" type="bool" value="true"/>
    <property name="is_static" type="bool" value="false"/>
    <property name="script_id" value=""/>
-   <property name="sprite_sheet" type="file" value=""/>
+   <property name="sprite_sheet" type="file" value="../characters/feschar_big_001.png"/>
    <property name="type" value="MapEvent"/>
   </properties>
  </object>

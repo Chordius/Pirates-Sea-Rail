@@ -94,6 +94,11 @@ public class ShaderManager {
     public static void dispose() {
         if (portraitFadeShader != null) {
             portraitFadeShader.dispose();
+            portraitFadeShader = null;
+        }
+        if (additiveGlowShader != null) {
+            additiveGlowShader.dispose();
+            additiveGlowShader = null;
         }
     }
 }

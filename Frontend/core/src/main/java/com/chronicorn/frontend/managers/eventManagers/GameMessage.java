@@ -11,6 +11,7 @@ public class GameMessage {
     private float y;
     private boolean changePosition = false;
     private int alignment = Align.top;
+    private boolean showBackground = true;
 
     public static GameMessage getInstance() {
         return instance;
@@ -81,5 +82,15 @@ public class GameMessage {
 
     public boolean isBusy() {
         return isBusy;
+    }
+
+    public void setShowBackground(boolean showBackground) {
+        this.showBackground = showBackground;
+    }
+
+    public boolean popShowBackground() {
+        boolean bg = showBackground;
+        showBackground = true; // Reset to default
+        return bg;
     }
 }

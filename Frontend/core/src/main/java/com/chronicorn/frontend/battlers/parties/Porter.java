@@ -15,6 +15,7 @@ public class Porter extends Actor {
             21
         );
 
+        this.setId("C002");
         this.learnSkill("fire_punch");
 
         this.element = Elements.FIRE;
