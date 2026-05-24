@@ -44,15 +44,13 @@ public class ItemsTable extends Table {
 
         Stack leftStack = new Stack();
 
-        // ADDED: Gradient background container for active party visibility panel
         Table rosterBgPanel = new Table();
         rosterBgPanel.setBackground(ImageManager.skin.getDrawable("gradient-bg"));
-        rosterBgPanel.top().left();
+        rosterBgPanel.center();
         rosterBgPanel.add(leftRosterContainer).fill().expand();
 
         Table backgroundLayer = new Table();
         backgroundLayer.top().left().padTop(75);
-        // CHANGED: Added the background-wrapped panel instead of raw container
         backgroundLayer.add(rosterBgPanel).width(320).height(380).left();
 
         leftStack.add(backgroundLayer);
@@ -76,7 +74,9 @@ public class ItemsTable extends Table {
         detailsBgContainer.top().left().pad(20);
 
         rightPanel.add(scrollPane).width(560).height(450).top().left();
-        rightPanel.add(detailsBgContainer).width(450).height(450).top().left().padLeft(20);
+
+        // FIXED 1: Replaced simple padLeft with symmetrical window boundaries to minimize right negative space
+        rightPanel.add(detailsBgContainer).width(450).height(450).top().left().pad(0, 20, 0, 40);
 
         rightColumn.add(rightPanel).expand().fill().top().left();
 
@@ -119,12 +119,10 @@ public class ItemsTable extends Table {
 
                 Stack cardStack = new Stack();
 
-                // FIXED 1: Set slot wireframe box as base background layer for the filled slot
                 Table slotWireframe = new Table();
                 slotWireframe.setBackground(ImageManager.skin.getDrawable("skill_menu_square_none"));
                 cardStack.add(slotWireframe);
 
-                // FIXED 2: Scale item icon strictly to 48x48 and center it cleanly inside the slot
                 String assetIconKey = item.getIcon();
                 Drawable itemIconDrawable = ImageManager.skin.getDrawable(assetIconKey);
                 Image itemIcon = new Image(itemIconDrawable);
@@ -135,10 +133,9 @@ public class ItemsTable extends Table {
                 iconWrapper.add(itemIcon).size(48, 48).center();
                 cardStack.add(iconWrapper);
 
-                // Quantity label overlay
                 Table qtyTable = new Table();
-                qtyTable.bottom().right().padRight(8).padBottom(8);
-                Label qtyLabel = new Label(String.valueOf(quantity), ImageManager.skin, "menu");
+                qtyTable.bottom().right().padRight(22).padBottom(22);
+                Label qtyLabel = new Label(String.valueOf(quantity), ImageManager.skin, "menu2");
                 qtyLabel.setFontScale(0.85f);
                 qtyLabel.setColor(Color.WHITE);
                 qtyTable.add(qtyLabel);
@@ -162,7 +159,6 @@ public class ItemsTable extends Table {
                 });
                 cardStack.add(clickTarget);
 
-                // Highlight selected item
                 if (selectedItemId != null && selectedItemId.equals(itemId)) {
                     Image selectBorder = new Image(ImageManager.skin.getDrawable("selection-box"));
                     cardStack.add(selectBorder);
@@ -170,7 +166,6 @@ public class ItemsTable extends Table {
 
                 itemsGridContainer.add(cardStack).size(100, 100).pad(8);
             } else {
-                // Render an empty slot
                 Stack emptyStack = new Stack();
                 Table emptyBg = new Table();
                 emptyBg.setBackground(ImageManager.skin.getDrawable("skill_menu_square_none"));
@@ -195,7 +190,7 @@ public class ItemsTable extends Table {
 
         Table partyList = new Table();
         partyList.top().left();
-        partyList.defaults().height(80).width(280).padBottom(10); // Slightly narrow to match gradient container width rules
+        partyList.defaults().height(80).width(280).padBottom(10);
 
         for (final Actor actor : activeParty) {
             if (actor == null) continue;
@@ -226,9 +221,13 @@ public class ItemsTable extends Table {
             Table info = new Table();
             info.left();
             Label nameLbl = new Label(actor.getName(), ImageManager.skin, "menu2");
-            Label hpLbl = new Label("HP: " + actor.getHp() + "/" + actor.getMaxHp(), ImageManager.skin, "menu");
+
+            Label hpLbl = new Label("HP: " + actor.getHp() + "/" + actor.getMaxHp(), ImageManager.skin, "default");
             hpLbl.setFontScale(0.85f);
-            Label enLbl = new Label("EN: " + actor.getEnergy() + "/" + actor.getMaxEnergy(), ImageManager.skin, "menu");
+            // FIXED 2: Change the text rendering color state of the health metric to clear white
+            hpLbl.setColor(Color.WHITE);
+
+            Label enLbl = new Label("EN: " + actor.getEnergy() + "/" + actor.getMaxEnergy(), ImageManager.skin, "default");
             enLbl.setFontScale(0.85f);
 
             info.add(nameLbl).left().row();
@@ -257,9 +256,9 @@ public class ItemsTable extends Table {
 
         leftRosterContainer.add(partyList).expandX().fillX().row();
 
-        Label promptLabel = new Label(selectedItemId != null ? "Select target above to use item" : "Select an item to use", ImageManager.skin, "menu");
-        promptLabel.setFontScale(0.85f);
-        promptLabel.setColor(selectedItemId != null ? Color.YELLOW : Color.LIGHT_GRAY);
+        // FIXED 3: Replaced the unoutlined "menu" style sheet marker with the outlined "menu3" style layout configuration
+        Label promptLabel = new Label(selectedItemId != null ? "Select target" : "Select an item to use", ImageManager.skin, "menu2");
+        promptLabel.setColor(selectedItemId != null ? Color.GOLD : Color.LIGHT_GRAY);
         leftRosterContainer.add(promptLabel).padTop(10).center();
     }
 
@@ -288,7 +287,7 @@ public class ItemsTable extends Table {
             return;
         }
 
-        detailsBgContainer.defaults().align(Align.left).space(12);
+        detailsBgContainer.defaults().align(Align.left).space(12).padLeft(25);;
 
         Label nameLbl = new Label(item.getName(), ImageManager.skin, "menu2");
         detailsBgContainer.add(nameLbl).width(240).row();
@@ -303,14 +302,12 @@ public class ItemsTable extends Table {
         Image itemIcon = new Image(ImageManager.skin.getDrawable(item.getIcon()));
         itemIcon.setScaling(com.badlogic.gdx.utils.Scaling.fit);
 
-        // FIXED 3: Applied wireframe container background to item detailed pane descriptor box
         Table detailsFaceBg = new Table();
         detailsFaceBg.setBackground(ImageManager.skin.getDrawable("skill_menu_square_none"));
         detailsFaceBg.add(itemIcon).size(48, 48).center();
 
         Label qtyLbl = new Label("Quantity: " + quantity, ImageManager.skin, "menu");
 
-        // Adjusted layout box boundary matching
         iconRow.add(detailsFaceBg).size(64, 64).padRight(12);
         iconRow.add(qtyLbl).left();
         detailsBgContainer.add(iconRow).row();

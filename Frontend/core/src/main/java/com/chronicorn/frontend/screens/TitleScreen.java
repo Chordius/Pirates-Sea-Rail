@@ -74,40 +74,40 @@ public class TitleScreen implements Screen {
             stage.addActor(backgroundImg);
         }
 
-        mainTable = new Table();
-        mainTable.setFillParent(true);
-        stage.addActor(mainTable);
-
-        // --- TITLE LOGO WITH SPINNING INDICATOR BEHIND IT ---
-        Stack titleStack = new Stack();
-
+        // --- FIXED: Render the Spinning Wheel as an independent, absolute background layer ---
         if (userIndicatorTexture != null) {
             Image indicatorImg = new Image(userIndicatorTexture);
-            indicatorImg.setScaling(Scaling.fit);
 
-            Table indicatorTable = new Table();
-            // FIXED: Enabling transform calculations anchors rotations directly to this cell table center point
-            indicatorTable.setTransform(true);
-            indicatorTable.setOrigin(Align.center);
+            // Explicitly set its physical draw size to match the original layout asset bounds
+            indicatorImg.setSize(420, 420f);
 
-            indicatorTable.add(indicatorImg).size(320, 320).center();
-            // FIXED: Run the looping rotation action on the matrix container table itself instead of the raw child image
-            indicatorTable.addAction(Actions.forever(Actions.rotateBy(360f, 10f)));
+            // FIXED: Set the rotation origin point directly to your specific pixel offsets (214, 196)
+            indicatorImg.setOrigin(215f, 220f);
 
-            titleStack.add(indicatorTable);
+            // Position it perfectly in the middle of the screen horizontally, and slightly elevated vertically
+            float screenCenterX = Gdx.graphics.getWidth() / 2f - 214f;
+            float screenCenterY = Gdx.graphics.getHeight() / 2f - 120f; // Drop down slightly to fit behind text logo
+            indicatorImg.setPosition(screenCenterX, screenCenterY);
+
+            // Trigger the infinite spinning loop action directly on the image now that the origin point is correct
+            indicatorImg.addAction(Actions.forever(Actions.rotateBy(360f, 12f)));
+            stage.addActor(indicatorImg);
         }
 
+        // --- INTERFACE LAYER OVERLAY ---
+        mainTable = new Table();
+        mainTable.setFillParent(true);
+        mainTable.center();
+        stage.addActor(mainTable);
+
+        // --- TITLE TEXT LOGO ---
         if (titleLogoTexture != null) {
             Image titleImage = new Image(titleLogoTexture);
             titleImage.setScaling(Scaling.fit);
 
-            Table titleTable = new Table();
-            titleTable.add(titleImage).width(700).height(200).center();
-            titleStack.add(titleTable);
+            // FIXED: Increased size allocation directly so the title is large and prominent
+            mainTable.add(titleImage).width(850).height(245).center().padBottom(40).row();
         }
-
-        // FIXED: Increased padBottom from 50 to 90 to lower the buttons underneath by exactly 40px
-        mainTable.add(titleStack).padBottom(90).row();
 
         // --- BUTTONS ---
         boolean isLocal = com.chronicorn.frontend.managers.networkManager.NetworkConfigure.ACTIVE_ENV == com.chronicorn.frontend.managers.networkManager.NetworkConfigure.Environment.LOCAL
@@ -142,9 +142,10 @@ public class TitleScreen implements Screen {
             buttons = new TextButton[] { playButton };
         }
 
-        mainTable.add(buttons[0]).width(350).height(70).padBottom(20).row();
+        // FIXED: Kept plain buttons with fixed layout parameters, no scaling mutations applied
+        mainTable.add(buttons[0]).width(350).height(55).padBottom(15).row();
         if (isLocal) {
-            mainTable.add(buttons[1]).width(350).height(70).row();
+            mainTable.add(buttons[1]).width(350).height(55).row();
         }
 
         updateVisualFocus();
@@ -255,14 +256,15 @@ public class TitleScreen implements Screen {
     private TextButton createTitleButton(String text, final int index) {
         TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
         style.font = ImageManager.skin.get("menu3", Label.LabelStyle.class).font;
-        style.fontColor = Color.WHITE;
+
+        // FIXED: Set initial baseline color state to your requested palette choice
 
         TextButton button = new TextButton(text, style);
 
         button.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer,
-                    com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                              com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
                 if (pointer == -1) {
                     focusedIndex = index;
                     updateVisualFocus();
@@ -311,13 +313,14 @@ public class TitleScreen implements Screen {
     private void updateVisualFocus() {
         for (int i = 0; i < buttons.length; i++) {
             if (i == focusedIndex) {
-                buttons[i].getLabel().setColor(Color.YELLOW);
+                // FIXED: Focused button stays CFC7B3 while relying on the alpha action to signal navigation focus
+                buttons[i].getLabel().setColor(Color.valueOf("CFC7B3"));
                 buttons[i].clearActions();
                 buttons[i].addAction(Actions.forever(
-                    Actions.sequence(Actions.alpha(0.5f, 0.4f), Actions.alpha(1.0f, 0.4f))));
+                    Actions.sequence(Actions.alpha(0.4f, 0.4f), Actions.alpha(1.0f, 0.4f))));
             } else {
-                // FIXED: Replaces Color.WHITE with your custom fallback hexadecimal color value
-                buttons[i].getLabel().setColor(Color.valueOf("CFC7B3"));
+                // FIXED: Unfocused options fade out slightly to a muted version so they don't draw attention
+                buttons[i].getLabel().setColor(Color.valueOf("9E9683"));
                 buttons[i].clearActions();
                 buttons[i].getColor().a = 1f;
             }

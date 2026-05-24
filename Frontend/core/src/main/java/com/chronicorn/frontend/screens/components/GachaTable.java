@@ -37,7 +37,7 @@ public class GachaTable extends Table {
     private ButtonGroup<Button> ribbonGroup;
 
     // Hardcoded for the example: List of banner IDs
-    private String[] activeBanners = { "deal", "ragnar", "money" };
+    private String[] activeBanners = { "deal", "money" };
 
     // Store currently selected banner for the API
     private String currentBannerSelection;
