@@ -1,1 +1,12 @@
-rootProject.name = 'Backend'
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    // This allows Gradle to safely map the container JDK toolchain
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+rootProject.name = 'Pirates-Sea-Rail'
