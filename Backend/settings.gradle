@@ -5,8 +5,8 @@ pluginManagement {
 }
 
 plugins {
-    // This allows Gradle to safely map the container JDK toolchain
-    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+    // Upgrading to 1.0.0 bypasses the broken IBM_SEMERU references completely
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
 }
 
 rootProject.name = 'Pirates-Sea-Rail'
