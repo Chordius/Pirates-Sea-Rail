@@ -26,6 +26,14 @@ public class GameSession {
         return instance;
     }
 
+    public PlayerParty getParty() {
+        return party;
+    }
+
+    public PlayerInventory getInventory() {
+        return inventory;
+    }
+
     // --- TIMER LOGIC ---
     public void update(float delta) {
         if (isTimerRunning) {

@@ -91,6 +91,10 @@ public class Skill {
 
     public String getSkillType() { return skillType; }
 
+    public boolean isShowConditionMet(Battler user) {
+        return mechanics.isShowConditionMet(user);
+    }
+
     public Array<String> getActionSequence() {
         if (actionSequence == null) {
             Array<String> sequence = new Array<>();

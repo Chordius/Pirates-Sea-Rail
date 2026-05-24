@@ -73,15 +73,15 @@ public class SaveManager {
 
             // 3. Inventory Consumables
             saveData.inventoryConsumables = new HashMap<>();
-            if (session.inventory != null && session.inventory.getAllItems() != null) {
-                saveData.inventoryConsumables.putAll(session.inventory.getAllItems());
+            if (session.getInventory() != null && session.getInventory().getAllItems() != null) {
+                saveData.inventoryConsumables.putAll(session.getInventory().getAllItems());
             }
 
             // 4. Inventory Equipments
             saveData.ownedEquipments = new Array<>();
             Map<Equippable, Integer> equipToIndex = new HashMap<>();
-            if (session.inventory != null && session.inventory.getOwnedEquipments() != null) {
-                Array<Equippable> ownedEquips = session.inventory.getOwnedEquipments();
+            if (session.getInventory() != null && session.getInventory().getOwnedEquipments() != null) {
+                Array<Equippable> ownedEquips = session.getInventory().getOwnedEquipments();
                 for (int i = 0; i < ownedEquips.size; i++) {
                     Equippable eq = ownedEquips.get(i);
                     equipToIndex.put(eq, i);
@@ -98,8 +98,8 @@ public class SaveManager {
 
             // 5. Party Characters
             saveData.ownedCharacters = new ObjectMap<>();
-            if (session.party != null && session.party.getOwnedCharacters() != null) {
-                for (Map.Entry<String, Actor> entry : session.party.getOwnedCharacters().entrySet()) {
+            if (session.getParty() != null && session.getParty().getOwnedCharacters() != null) {
+                for (Map.Entry<String, Actor> entry : session.getParty().getOwnedCharacters().entrySet()) {
                     String charId = entry.getKey();
                     Actor actor = entry.getValue();
 
@@ -121,8 +121,8 @@ public class SaveManager {
             }
 
             // 6. Active Party
-            if (session.party != null && session.party.getActivePartyIdsArray() != null) {
-                String[] activeIds = session.party.getActivePartyIdsArray();
+            if (session.getParty() != null && session.getParty().getActivePartyIdsArray() != null) {
+                String[] activeIds = session.getParty().getActivePartyIdsArray();
                 saveData.activePartyIds = new String[activeIds.length];
                 System.arraycopy(activeIds, 0, saveData.activePartyIds, 0, activeIds.length);
             }
@@ -164,55 +164,95 @@ public class SaveManager {
                 return;
             }
 
-            final List<String> verifiedOwnedIds = new ArrayList<>();
-            final int totalChecks = charactersToVerify.size();
-            final int[] completedChecks = { 0 };
+            final String[] charIdsArray = charactersToVerify.toArray(new String[0]);
 
-            for (final String charId : charactersToVerify) {
-                NetworkManager.verifyParty(Main.currentLocalId, new String[] { charId },
-                        new NetworkCallback<Boolean>() {
-                            @Override
-                            public void onSuccess(Boolean result) {
-                                if (result != null && result) {
-                                    synchronized (verifiedOwnedIds) {
-                                        verifiedOwnedIds.add(charId);
-                                    }
-                                } else {
-                                    System.out.println(
-                                            "SaveManager: Character " + charId + " is illegal (failed verification).");
-                                }
-                                checkCompletion();
-                            }
+            // Single bulk verification request
+            NetworkManager.verifyParty(Main.currentLocalId, charIdsArray, new NetworkCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean allVerified) {
+                    if (allVerified != null && allVerified) {
+                        // Bulk verification succeeded! All characters are owned.
+                        System.out.println("SaveManager: Bulk verification succeeded for all characters.");
+                        applySaveDataAndStart(saveData, charactersToVerify, loadCallback);
+                    } else {
+                        // Verification failed for at least one character. Fallback to individual checks.
+                        System.out.println("SaveManager: Bulk verification returned false. Checking characters individually...");
+                        verifyCharactersIndividually(saveData, charactersToVerify, loadCallback);
+                    }
+                }
 
-                            @Override
-                            public void onError(String errorMessage) {
-                                System.err.println("SaveManager: Verification failed for character " + charId + ": "
-                                        + errorMessage);
-                                checkCompletion();
-                            }
-
-                            private void checkCompletion() {
-                                boolean allDone = false;
-                                synchronized (completedChecks) {
-                                    completedChecks[0]++;
-                                    if (completedChecks[0] == totalChecks) {
-                                        allDone = true;
-                                    }
-                                }
-                                if (allDone) {
-                                    Gdx.app.postRunnable(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            applySaveDataAndStart(saveData, verifiedOwnedIds, loadCallback);
-                                        }
-                                    });
-                                }
-                            }
-                        });
-            }
+                @Override
+                public void onError(String errorMessage) {
+                    // Check if it's an explicit 403 / unowned check, otherwise it is a network failure
+                    if (errorMessage != null && errorMessage.contains("Error 403")) {
+                        System.out.println("SaveManager: Bulk verification returned 403. Checking characters individually...");
+                        verifyCharactersIndividually(saveData, charactersToVerify, loadCallback);
+                    } else {
+                        // Network error! Do NOT prune characters. Trust the local save.
+                        System.err.println("SaveManager: Network error during bulk verification: " + errorMessage + ". Trusting local save.");
+                        applySaveDataAndStart(saveData, charactersToVerify, loadCallback);
+                    }
+                }
+            });
 
         } catch (Exception e) {
             Gdx.app.error("SaveManager", "Error loading game: " + e.getMessage(), e);
+        }
+    }
+
+    private void verifyCharactersIndividually(final SaveData saveData, final List<String> charactersToVerify, final Runnable loadCallback) {
+        final List<String> verifiedOwnedIds = new ArrayList<>();
+        final int totalChecks = charactersToVerify.size();
+        final int[] completedChecks = { 0 };
+
+        for (final String charId : charactersToVerify) {
+            NetworkManager.verifyParty(Main.currentLocalId, new String[] { charId },
+                    new NetworkCallback<Boolean>() {
+                        @Override
+                        public void onSuccess(Boolean result) {
+                            if (result != null && result) {
+                                synchronized (verifiedOwnedIds) {
+                                    verifiedOwnedIds.add(charId);
+                                }
+                            } else {
+                                System.out.println(
+                                        "SaveManager: Character " + charId + " is illegal (failed verification).");
+                            }
+                            checkCompletion();
+                        }
+
+                        @Override
+                        public void onError(String errorMessage) {
+                            // If it's a network error (not 403), trust the local save for this character
+                            if (errorMessage != null && !errorMessage.contains("Error 403")) {
+                                System.err.println("SaveManager: Network error during individual verification for " + charId + ": " + errorMessage + ". Keeping character.");
+                                synchronized (verifiedOwnedIds) {
+                                    verifiedOwnedIds.add(charId);
+                                }
+                            } else {
+                                System.err.println("SaveManager: Verification failed (unowned) for character " + charId + ": " + errorMessage);
+                            }
+                            checkCompletion();
+                        }
+
+                        private void checkCompletion() {
+                            boolean allDone = false;
+                            synchronized (completedChecks) {
+                                completedChecks[0]++;
+                                if (completedChecks[0] == totalChecks) {
+                                    allDone = true;
+                                }
+                            }
+                            if (allDone) {
+                                Gdx.app.postRunnable(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        applySaveDataAndStart(saveData, verifiedOwnedIds, loadCallback);
+                                    }
+                                });
+                            }
+                        }
+                    });
         }
     }
 
@@ -253,7 +293,7 @@ public class SaveManager {
             session.inventory = new com.chronicorn.frontend.managers.systems.PlayerInventory();
             if (saveData.inventoryConsumables != null) {
                 for (Map.Entry<String, Integer> entry : saveData.inventoryConsumables.entrySet()) {
-                    session.inventory.addItem(entry.getKey(), entry.getValue());
+                    session.getInventory().addItem(entry.getKey(), entry.getValue());
                 }
             }
 
@@ -273,7 +313,7 @@ public class SaveManager {
                         } catch (Exception e) {
                             System.err.println("SaveManager: Failed to parse stats for equippable: " + e.getMessage());
                         }
-                        session.inventory.getOwnedEquipments().add(eq);
+                        session.getInventory().getOwnedEquipments().add(eq);
                         restoredEquipments.add(eq);
                     }
                 }
@@ -307,7 +347,7 @@ public class SaveManager {
                         }
                     }
 
-                    session.party.getOwnedCharacters().put(charId, actor);
+                    session.getParty().getOwnedCharacters().put(charId, actor);
                 }
             }
 
@@ -316,9 +356,9 @@ public class SaveManager {
                 for (int i = 0; i < saveData.activePartyIds.length; i++) {
                     String charId = saveData.activePartyIds[i];
                     if (charId != null && verifiedOwnedIds.contains(charId)) {
-                        session.party.setActivePartyMember(i, charId);
+                        session.getParty().setActivePartyMember(i, charId);
                     } else {
-                        session.party.setActivePartyMember(i, null);
+                        session.getParty().setActivePartyMember(i, null);
                     }
                 }
             }

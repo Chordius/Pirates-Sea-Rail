@@ -54,6 +54,19 @@ public class SkillMenuBuilder {
         nameLabel.setTouchable(Touchable.disabled);
         buttonGroup.addActor(nameLabel);
 
+        // 2.5. Skill Icon
+        String iconName = skill.getIconId();
+        if (iconName != null && !iconName.isEmpty() && skin.has(iconName, com.badlogic.gdx.scenes.scene2d.utils.Drawable.class)) {
+            Image iconImg = new Image(skin.getDrawable(iconName));
+            float iconSize = 42f;
+            float iconX = (SKILL_BG_X * MODIFIER) - iconSize - 16;
+            float iconY = ((SKILL_BG_Y * MODIFIER) / 2f) - (iconSize / 2f);
+            iconImg.setSize(iconSize, iconSize);
+            iconImg.setPosition(iconX, iconY);
+            iconImg.setTouchable(Touchable.disabled);
+            buttonGroup.addActor(iconImg);
+        }
+
         buttonGroup.setSize(SKILL_BG_X * MODIFIER, SKILL_BG_Y * MODIFIER);
 
         // 3. Set Origin for Scaling

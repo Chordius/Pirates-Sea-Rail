@@ -5,7 +5,11 @@ icon_burn
 bounds:134,2,64,64
 icon_electrocuted
 bounds:68,2,64,64
-icon_second_wind
+icon_hawk_eye
 bounds:2,2,64,64
+icon_hot_talons
+bounds:266,2,64,64
+icon_second_wind_status
+bounds:332,2,64,64
 icon_wind_scar
 bounds:200,2,64,64

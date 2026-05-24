@@ -21,13 +21,13 @@
   },
   "sonic_slash": {
     "name": "Sonic Slash",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_sonic_slash",
     "scope": "SINGLE",
     "element": "WIND",
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
-    "skill_type": "Skill",
+    "skill_type": "Basic Attack",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -45,13 +45,13 @@
   },
   "super_sonic_slash": {
     "name": "Super Sonic Slash",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_sonic_slash",
     "scope": "SINGLE",
     "element": "WIND",
     "basePower": 70,
     "toughnessDMG": 20,
     "energyBonus": 15,
-    "skill_type": "Skill",
+    "skill_type": "Basic Attack",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -70,7 +70,7 @@
   },
   "wind_cutter": {
     "name": "Wind Cutter",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_wind_cutter",
     "scope": "BLAST",
     "element": "WIND",
     "basePower": 70,
@@ -92,7 +92,7 @@
   },
   "second_wind": {
     "name": "Second Wind",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_second_wind",
     "scope": "ALLY",
     "element": "WIND",
     "basePower": 0,
@@ -112,7 +112,7 @@
   },
   "the_wind_way": {
     "name": "The Wind's Ways",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_the_wind_way",
     "scope": "BLAST",
     "element": "WIND",
     "basePower": 90,
@@ -121,24 +121,28 @@
     "skill_type": "Ultimate",
     "sequence": [
       "PERFORM START",
-      "WAIT: 0.2",
-      "ANIMATION: slash",
-      "WAIT: 0.1",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: wind_core",
+      "WAIT: 0.15",
+      "ANIMATION: tornado_base",
+      "ANIMATION: tornado_vortex",
+      "ANIMATION: tornado_debris",
+      "WAIT: 0.15",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "CAMERA RESET",
-      "WAIT: 0.2"
+      "PERFORM FINISH"
     ]
   },
   "fire_punch": {
     "name": "Fire Punch",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_fire_punch",
     "scope": "SINGLE",
     "element": "FIRE",
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
-    "skill_type": "Skill",
+    "skill_type": "Basic Attack",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -152,15 +156,92 @@
       "WAIT: 0.2"
     ]
   },
+  "blazing_eagle": {
+    "name": "Blazing Eagle",
+    "iconId": "icon_blazing_eagle",
+    "scope": "BLAST",
+    "element": "FIRE",
+    "basePower": 70,
+    "toughnessDMG": 40,
+    "energyBonus": 20,
+    "skill_type": "Skill",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.15: 0.15",
+      "WAIT: 0.1",
+
+      "ANIMATION: fire_sweep",
+      "WAIT: 0.32",
+
+      "ANIMATION: fire_uppercut",
+      "WAIT: 0.05",
+      "ANIMATION: fire_burst_short",
+
+      "WAIT: 0.05",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "falcon_dive": {
+    "name": "Falcon Dive",
+    "iconId": "icon_falcon_dive",
+    "scope": "ALL",
+    "element": "FIRE",
+    "basePower": 65,
+    "toughnessDMG": 50,
+    "energyBonus": 30,
+    "skill_type": "Skill",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.15: 0.2",
+      "WAIT: 0.2",
+
+      "ANIMATION: falcon_fist",
+      "ANIMATION: falcon_fist_aura",
+      "WAIT: 0.35",
+
+      "ANIMATION: falcon_fire_geyser",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "flameforce_talon": {
+    "name": "Flameforce Talon",
+    "iconId": "icon_flameforce_talon",
+    "scope": "ALL",
+    "element": "FIRE",
+    "basePower": 120,
+    "toughnessDMG": 90,
+    "energyBonus": 5,
+    "skill_type": "Ultimate",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.2: 0.3",
+      "ANIMATION: ultimate_charge_fire",
+      "WAIT: 0.4",
+      "ANIMATION: flameforce_talon_shatter",
+      "WAIT: 0.1",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
   "splash": {
     "name": "Splash!",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_splash",
     "scope": "SINGLE",
     "element": "WATER",
     "basePower": 50,
-    "toughnessDMG": 20,
-    "energyBonus": 15,
-    "skill_type": "Skill",
+    "toughnessDMG": 15,
+    "energyBonus": 20,
+    "skill_type": "Basic Attack",
+    "description": "Deals 50 Base Power Water DMG to a single enemy.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -176,14 +257,15 @@
   },
   "first_aid": {
     "name": "First Aid",
-    "iconId": "icon_slash_water",
+    "iconId": "icon_first_aid",
     "scope": "ALLY",
     "element": "WATER",
     "basePower": 0,
     "toughnessDMG": 0,
-    "energyBonus": 15,
+    "energyBonus": 30,
     "tag": "support",
     "skill_type": "Skill",
+    "description": "Restores ally's HP by 20% of Reyna's Health plus 200 HP and applies Pristine Health, lasting for 5 turns. Pristine Health provides +30% Incoming Healing to the user. Upon the user falling below 33% HP, dying, or this status decaying, Reyna immediately heals the user equal to 40% of her Health.",
     "sequence": [
       "PERFORM START",
       "ANIMATION: water_buildup",
@@ -194,15 +276,77 @@
       "PERFORM FINISH"
     ]
   },
+  "heed_this_call": {
+    "name": "Heed this Call!",
+    "iconId": "icon_heed_this_call",
+    "scope": "ALL",
+    "element": "WATER",
+    "basePower": 60,
+    "toughnessDMG": 20,
+    "energyBonus": 30,
+    "skill_type": "Skill",
+    "description": "Deals 60 Base Power Magical Water DMG to a group of enemies and heals the party back by 20% of the total DMG done by this skill.",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "ANIMATION: water_cyclone",
+      "WAIT: 0.2",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "hippocratic_oath": {
+    "name": "Hippocratic Oath",
+    "iconId": "icon_hippocratic_oath",
+    "scope": "SELF",
+    "element": "WATER",
+    "basePower": 0,
+    "toughnessDMG": 0,
+    "energyBonus": 5,
+    "skill_type": "Ultimate",
+    "description": "Gains Oathbearer State, lasting for 3 turns. During this State, at the end of every turn, Reyna will deal 25 Base Power Water DMG to all enemies and heal all allies by 25% of her Max HP.",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.2: 0.3",
+      "ANIMATION: radiant_water_glow",
+      "WAIT: 0.4",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "oathbearer_strike": {
+    "name": "Oathbearer's Judgment",
+    "iconId": "icon_hippocratic_oath",
+    "scope": "ALL",
+    "element": "WATER",
+    "basePower": 25,
+    "toughnessDMG": 10,
+    "energyBonus": 0,
+    "skill_type": "Skill",
+    "description": "Deals 25 Base Power Water DMG to all enemies.",
+    "sequence": [
+      "PERFORM START",
+      "ANIMATION: water_burst",
+      "WAIT: 0.15",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "PERFORM FINISH"
+    ]
+  },
   "deal_shoot": {
     "name": "Shoot!",
-    "iconId": "icon_slash_wind",
+    "iconId": "icon_deal_shoot",
     "scope": "SINGLE",
     "element": "LIGHTNING",
     "basePower": 50,
-    "toughnessDMG": 20,
-    "energyBonus": 15,
-    "skill_type": "Skill",
+    "toughnessDMG": 30,
+    "energyBonus": 20,
+    "skill_type": "Basic Attack",
+    "description": "Deals 50 Base Power Lightning DMG to a single enemy.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -219,6 +363,87 @@
       "PERFORM FINISH"
     ]
   },
+  "remarkable_shot": {
+    "name": "Remarkable Shot!",
+    "iconId": "icon_remarkable_shot",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "basePower": 75,
+    "toughnessDMG": 45,
+    "energyBonus": 30,
+    "skill_type": "Enhanced Basic Attack",
+    "description": "Deals 75 Base Power Lightning DMG to a single enemy scaling off MAG. This skill does not consume nor produce Skill Points.",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.1",
+      "ANIMATION: bow_charge_lightning",
+      "WAIT: 0.2",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "ascending_mark": {
+    "name": "Ascending Mark",
+    "iconId": "icon_ascending_mark",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "basePower": 70,
+    "toughnessDMG": 40,
+    "energyBonus": 20,
+    "skill_type": "Skill",
+    "description": "Deals 70 Base Power Lightning DMG to a single enemy, applying Marker. Markers can only be applied to one enemy at a time in battle. A Marker stack increases as the enemy Weakness Bar decreases, up to a maximum of 100 from a full bar. Each stack increases Elemental Reaction DMG by 1%. Marker stacks reset when applied to another target or when a reaction occurs.",
+    "sequence": [
+      "PERFORM START",
+      "ANIMATION: triple_shot",
+      "WAIT: 0.15",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "PERFORM FINISH"
+    ]
+  },
+  "ace_archer": {
+    "name": "Ace Archer",
+    "iconId": "icon_ace_archer",
+    "scope": "SELF",
+    "element": "LIGHTNING",
+    "basePower": 0,
+    "toughnessDMG": 0,
+    "energyBonus": 30,
+    "skill_type": "Skill",
+    "description": "Enters Ace Mode state for 5 turns. Dominique will gain Remarkable Shot! as an Enhanced Basic ATK and all attacks deal 1.5x Toughness.",
+    "sequence": [
+      "PERFORM START",
+      "ANIMATION: electrical_aura",
+      "WAIT: 0.3",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "PERFORM FINISH"
+    ]
+  },
+  "one_shot": {
+    "name": "One-Shot",
+    "iconId": "icon_one_shot",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "basePower": 120,
+    "toughnessDMG": 120,
+    "energyBonus": 5,
+    "skill_type": "Ultimate",
+    "description": "Deals 120 Base Power Lightning DMG to a single enemy, applying Marker. Provides additional Marker stacks equal to 30% of the DMG dealt up to a maximum of 100. These bonus markers can overflow the previous cap of 100.",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.25: 0.2",
+      "ANIMATION: ultimate_snipe_charge",
+      "WAIT: 0.5",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+
   "reaction_overload": {
     "name": "Overload",
     "scope": "BLAST",

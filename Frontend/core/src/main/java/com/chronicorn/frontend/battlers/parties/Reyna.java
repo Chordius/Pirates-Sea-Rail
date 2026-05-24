@@ -18,6 +18,8 @@ public class Reyna extends Actor {
         this.setId("C003");
         this.learnSkill("splash");
         this.learnSkill("first_aid");
+        this.learnSkill("heed_this_call");
+        this.learnSkill("hippocratic_oath");
 
         this.element = Elements.WATER;
     }

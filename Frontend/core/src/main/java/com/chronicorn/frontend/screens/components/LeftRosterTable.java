@@ -122,7 +122,7 @@ public class LeftRosterTable extends Table {
         listContainer.clearChildren();
         rosterGroup.clear();
 
-        java.util.List<Actor> activeParty = GameSession.getInstance().party.getActivePartyActors();
+        java.util.List<Actor> activeParty = GameSession.getInstance().getParty().getActivePartyActors();
 
         if (activeParty.isEmpty()) {
             listContainer.add(new Label("Party is empty.", ImageManager.skin)).pad(20);

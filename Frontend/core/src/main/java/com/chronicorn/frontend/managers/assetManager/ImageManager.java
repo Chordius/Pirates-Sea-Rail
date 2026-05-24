@@ -79,7 +79,8 @@ public class ImageManager {
         // Left/Right: 30px (covers the half-circle curves)
         // Top: 25px (covers the top curve)
         // Bottom: 33px (covers the bottom curve PLUS the shadow)
-        // This leaves 2 pixels (60 - 25 - 33) in the middle to stretch vertically if needed.
+        // This leaves 2 pixels (60 - 25 - 33) in the middle to stretch vertically if
+        // needed.
         NinePatch buttonPatch = new NinePatch(rawButtonTex, 20, 20, 25, 33);
 
         // 3. Wrap in a Drawable and add PADDING
@@ -176,7 +177,8 @@ public class ImageManager {
     private static void loadSliderTexture() {
         if (!skin.has("white-pixel", Texture.class)) {
             Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pixmap.setColor(Color.WHITE); pixmap.fill();
+            pixmap.setColor(Color.WHITE);
+            pixmap.fill();
             skin.add("white-pixel", new Texture(pixmap));
             pixmap.dispose();
         }
@@ -241,8 +243,10 @@ public class ImageManager {
         // 1. Load the raw .ttf file
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/Anago-Book.ttf"));
         FreeTypeFontGenerator generatorCombat = new FreeTypeFontGenerator(Gdx.files.internal("fonts/gamefont.TTF"));
-        FreeTypeFontGenerator generatorStyled = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ClearGothic Regular.ttf"));
-        FreeTypeFontGenerator generatorStyledBold = new FreeTypeFontGenerator(Gdx.files.internal("fonts/ClearGothic Bold.ttf"));
+        FreeTypeFontGenerator generatorStyled = new FreeTypeFontGenerator(
+                Gdx.files.internal("fonts/ClearGothic Regular.ttf"));
+        FreeTypeFontGenerator generatorStyledBold = new FreeTypeFontGenerator(
+                Gdx.files.internal("fonts/ClearGothic Bold.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 
         // --- STYLE 1: Standard UI Font (HP, Menus) ---
@@ -311,13 +315,13 @@ public class ImageManager {
         BitmapFont damageFont = generatorCombat.generateFont(parameter);
 
         parameter.borderColor = Color.WHITE;
-        parameter.shadowOffsetX = 0;         // NO SHADOW
+        parameter.shadowOffsetX = 0; // NO SHADOW
         parameter.shadowOffsetY = 0;
         BitmapFont damageShineFont = generatorCombat.generateFont(parameter);
 
         // --- STYLE 4: Reactions (Huge, Specific Border) ---
         parameter.size = 36;
-        parameter.color = Color.WHITE;       // FIXED: Now Cyan will actually look Cyan!
+        parameter.color = Color.WHITE; // FIXED: Now Cyan will actually look Cyan!
         parameter.borderWidth = 4f;
         parameter.borderColor = Color.BLACK; // Changed to black so tints don't look muddy
         parameter.shadowOffsetX = 2;
@@ -329,8 +333,6 @@ public class ImageManager {
         parameter.shadowOffsetX = 0;
         parameter.shadowOffsetY = 0;
         BitmapFont reactionShineFont = generatorCombat.generateFont(parameter);
-
-
 
         // 2. Dispose of the generator to prevent memory leaks (Remember your VRAM!)
         generator.dispose();
@@ -366,7 +368,8 @@ public class ImageManager {
         Texture bgTexture = new Texture(Gdx.files.internal("Window4.png"));
 
         // 2. Create the NinePatch
-        // The integers define the width of the left, right, top, and bottom borders in pixels.
+        // The integers define the width of the left, right, top, and bottom borders in
+        // pixels.
         // If your left fade is 200px wide, pass 200 for the left argument.
         // This ensures the fade never stretches, only the solid center stretches.
         int leftFadeWidth = 180;
@@ -434,14 +437,19 @@ public class ImageManager {
         loadActorAsset(gameParty);
         loadEnemyAsset(gameTroop);
 
+        TextureAtlas skill_icons = loadAtlasManaged("battlehud/skill_icon.atlas");
+        skin.addRegions(skill_icons);
+
         // 3. Load skill icons
-//        for (Action skill : availableSkills) {
-//            String iconName = "icon_" + skill.getIconId();
-//            if (!skin.has(iconName, Drawable.class)) { // Prevent duplicate loading
-//                Texture iconTex = new Texture(Gdx.files.internal("ui/skills/" + iconName + ".png"));
-//                skin.add(iconName, new TextureRegionDrawable(new TextureRegion(iconTex)), Drawable.class);
-//            }
-//        }
+        // for (Action skill : availableSkills) {
+        // String iconName = "icon_" + skill.getIconId();
+        // if (!skin.has(iconName, Drawable.class)) { // Prevent duplicate loading
+        // Texture iconTex = new Texture(Gdx.files.internal("ui/skills/" + iconName +
+        // ".png"));
+        // skin.add(iconName, new TextureRegionDrawable(new TextureRegion(iconTex)),
+        // Drawable.class);
+        // }
+        // }
     }
 
     public static void loadActorAsset(ArrayList<Actor> activeBattlers) {
@@ -475,7 +483,8 @@ public class ImageManager {
             barUltStyle.background = drawUltBg;
             barUltStyle.knobBefore = drawUltFill;
             skin.add("ult-battle-bar" + battler.getName().toLowerCase(), barUltStyle);
-            skin.add("ult-battle-bar" + battler.getName().toLowerCase() + "_ghost", new TextureRegionDrawable(new TextureRegion(ultBarFill)), Drawable.class);
+            skin.add("ult-battle-bar" + battler.getName().toLowerCase() + "_ghost",
+                    new TextureRegionDrawable(new TextureRegion(ultBarFill)), Drawable.class);
         }
     }
 
@@ -565,6 +574,7 @@ public class ImageManager {
             skin.add(enemyCode, new TextureRegionDrawable(new TextureRegion(enemyAsset)), Drawable.class);
         }
     }
+
     public static void unloadBattleAssets(Array<Battler> activeBattlers, Array<Action> availableSkills) {
         // Remove from skin and dispose the base textures to free up RAM
         skin.remove("skill_bg_green", Drawable.class);
@@ -610,6 +620,9 @@ public class ImageManager {
 
         TextureAtlas skillMenuBgAtlas = loadAtlasManaged("menu/skill_menu_square.atlas");
         skin.addRegions(skillMenuBgAtlas);
+
+        TextureAtlas skillIconsAtlas = loadAtlasManaged("battlehud/skill_icon.atlas");
+        skin.addRegions(skillIconsAtlas);
 
         TextureAtlas faceAtlas = loadAtlasManaged("portraits/face.atlas");
         skin.addRegions(faceAtlas);
@@ -685,6 +698,42 @@ public class ImageManager {
         equipWeaponWind.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
         skin.add("equipweapon_wind", new TextureRegionDrawable(new TextureRegion(equipWeaponWind)), Drawable.class);
 
+        Texture equipHintFire = loadTextureManaged("menu/element_specific/equiphint_fire.png", true);
+        equipHintFire.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equiphint_fire", new TextureRegionDrawable(new TextureRegion(equipHintFire)), Drawable.class);
+
+        Texture equipWeaponFire = loadTextureManaged("menu/element_specific/equipweapon_fire.png", true);
+        equipWeaponFire.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equipweapon_fire", new TextureRegionDrawable(new TextureRegion(equipWeaponFire)), Drawable.class);
+
+        Texture equipHintLightning = loadTextureManaged("menu/element_specific/equiphint_lightning.png", true);
+        equipHintLightning.setFilter(Texture.TextureFilter.MipMapLinearLinear,
+                Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equiphint_lightning", new TextureRegionDrawable(new TextureRegion(equipHintLightning)),
+                Drawable.class);
+
+        Texture equipWeaponLightning = loadTextureManaged("menu/element_specific/equipweapon_lightning.png", true);
+        equipWeaponLightning.setFilter(Texture.TextureFilter.MipMapLinearLinear,
+                Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equipweapon_lightning", new TextureRegionDrawable(new TextureRegion(equipWeaponLightning)),
+                Drawable.class);
+
+        Texture equipHintWater = loadTextureManaged("menu/element_specific/equiphint_water.png", true);
+        equipHintWater.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equiphint_water", new TextureRegionDrawable(new TextureRegion(equipHintWater)), Drawable.class);
+
+        Texture equipWeaponWater = loadTextureManaged("menu/element_specific/equipweapon_water.png", true);
+        equipWeaponWater.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equipweapon_water", new TextureRegionDrawable(new TextureRegion(equipWeaponWater)), Drawable.class);
+
+        Texture equipHintEarth = loadTextureManaged("menu/element_specific/equiphint_earth.png", true);
+        equipHintEarth.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equiphint_earth", new TextureRegionDrawable(new TextureRegion(equipHintEarth)), Drawable.class);
+
+        Texture equipWeaponEarth = loadTextureManaged("menu/element_specific/equipweapon_earth.png", true);
+        equipWeaponEarth.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
+        skin.add("equipweapon_earth", new TextureRegionDrawable(new TextureRegion(equipWeaponEarth)), Drawable.class);
+
         Texture equipMenu = loadTextureManaged("menu/equip_menu.png", true);
         equipMenu.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.MipMapLinearLinear);
         skin.add("equip_menu", new TextureRegionDrawable(new TextureRegion(equipMenu)), Drawable.class);
@@ -746,8 +795,7 @@ public class ImageManager {
     }
 
     public static void initPortraitShaders() {
-        String vertexShader =
-            "attribute vec4 a_position;\n" +
+        String vertexShader = "attribute vec4 a_position;\n" +
                 "attribute vec4 a_color;\n" +
                 "attribute vec2 a_texCoord0;\n" +
                 "uniform mat4 u_projTrans;\n" +
@@ -759,8 +807,7 @@ public class ImageManager {
                 "    gl_Position =  u_projTrans * a_position;\n" +
                 "}\n";
 
-        String fragmentShader =
-            "#ifdef GL_ES\n" +
+        String fragmentShader = "#ifdef GL_ES\n" +
                 "precision mediump float;\n" +
                 "#endif\n" +
                 "varying vec4 v_color;\n" +
@@ -791,15 +838,22 @@ public class ImageManager {
     }
 
     public static void dispose() {
-        if (skin != null) skin.dispose();
+        if (skin != null)
+            skin.dispose();
         // Dispose any textures we loaded and tracked here
         for (Texture t : textureCache.values()) {
-            try { t.dispose(); } catch (Exception ignored) {}
+            try {
+                t.dispose();
+            } catch (Exception ignored) {
+            }
         }
         textureCache.clear();
         // Dispose any atlases we loaded and tracked here
         for (TextureAtlas a : atlasCache.values()) {
-            try { a.dispose(); } catch (Exception ignored) {}
+            try {
+                a.dispose();
+            } catch (Exception ignored) {
+            }
         }
         atlasCache.clear();
         characterCache.clear();
@@ -855,16 +909,36 @@ public class ImageManager {
             int rowIndex = -1;
             String typeUpper = balloonType.toUpperCase();
             switch (typeUpper) {
-                case "SURPRISED": rowIndex = 0; break;
-                case "QUESTION": rowIndex = 1; break;
-                case "DELIGHTED": rowIndex = 2; break;
-                case "LOVE": rowIndex = 3; break;
-                case "ANGRY": rowIndex = 4; break;
-                case "WORRIED": rowIndex = 5; break;
-                case "COBWEB": rowIndex = 6; break;
-                case "SILENCE": rowIndex = 7; break;
-                case "IDEA": rowIndex = 8; break;
-                case "SLEEP": rowIndex = 9; break;
+                case "SURPRISED":
+                    rowIndex = 0;
+                    break;
+                case "QUESTION":
+                    rowIndex = 1;
+                    break;
+                case "DELIGHTED":
+                    rowIndex = 2;
+                    break;
+                case "LOVE":
+                    rowIndex = 3;
+                    break;
+                case "ANGRY":
+                    rowIndex = 4;
+                    break;
+                case "WORRIED":
+                    rowIndex = 5;
+                    break;
+                case "COBWEB":
+                    rowIndex = 6;
+                    break;
+                case "SILENCE":
+                    rowIndex = 7;
+                    break;
+                case "IDEA":
+                    rowIndex = 8;
+                    break;
+                case "SLEEP":
+                    rowIndex = 9;
+                    break;
                 default:
                     try {
                         rowIndex = Integer.parseInt(balloonType) - 1;

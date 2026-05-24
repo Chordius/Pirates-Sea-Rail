@@ -284,10 +284,10 @@ public class GachaTable extends Table {
                                     System.out.println(
                                             "Gacha Pulled: " + result.pulledCharId + " (New: " + result.isNew + ")");
                                     if (result.pulledCharId != null && result.pulledCharId.startsWith("W")) {
-                                        GameSession.getInstance().inventory.addItem(result.pulledCharId, 1);
+                                        GameSession.getInstance().getInventory().addItem(result.pulledCharId, 1);
                                         System.out.println("Added Weapon/Equippable to inventory instances.");
                                     } else {
-                                        GameSession.getInstance().party.unlockCharacter(result.pulledCharId,
+                                        GameSession.getInstance().getParty().unlockCharacter(result.pulledCharId,
                                                 ActorFactory.createActor(result.pulledCharId));
                                     }
                                     refreshUserCurrency();
@@ -317,7 +317,7 @@ public class GachaTable extends Table {
                                     for (GachaResult result : results) {
                                         System.out.println("Gacha Pulled: " + result.pulledCharId + " (New: "
                                                 + result.isNew + ")");
-                                        GameSession.getInstance().party.unlockCharacter(result.pulledCharId,
+                                        GameSession.getInstance().getParty().unlockCharacter(result.pulledCharId,
                                                 ActorFactory.createActor(result.pulledCharId));
                                     }
 

@@ -41,7 +41,7 @@ public class PartySelectionTable extends Table {
             activeSlots[i] = null;
         }
 
-        java.util.List<Actor> currentParty = GameSession.getInstance().party.getActivePartyActors();
+        java.util.List<Actor> currentParty = GameSession.getInstance().getParty().getActivePartyActors();
         for (int i = 0; i < Math.min(4, currentParty.size()); i++) {
             activeSlots[i] = currentParty.get(i);
         }
@@ -56,7 +56,7 @@ public class PartySelectionTable extends Table {
         gridContainer = new Table();
         gridContainer.top().left();
 
-        Map<String, Actor> ownedCharacters = GameSession.getInstance().party.getOwnedCharacters();
+        Map<String, Actor> ownedCharacters = GameSession.getInstance().getParty().getOwnedCharacters();
 
         int columns = 5;
         int currentCol = 0;
@@ -159,9 +159,9 @@ public class PartySelectionTable extends Table {
 
                 for (int i = 0; i < 4; i++) {
                     if (activeSlots[i] != null) {
-                        GameSession.getInstance().party.setActivePartyMember(i, activeSlots[i].getId());
+                        GameSession.getInstance().getParty().setActivePartyMember(i, activeSlots[i].getId());
                     } else {
-                        GameSession.getInstance().party.setActivePartyMember(i, null);
+                        GameSession.getInstance().getParty().setActivePartyMember(i, null);
                     }
                 }
 

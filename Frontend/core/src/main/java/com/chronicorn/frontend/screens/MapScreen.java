@@ -74,6 +74,10 @@ public class MapScreen implements Screen {
     private com.badlogic.gdx.InputMultiplexer inputMultiplexer;
 
     public MapScreen() {
+        this(true);
+    }
+
+    public MapScreen(boolean isNewGame) {
         batch = new SpriteBatch();
         camera = new OrthographicCamera();
         viewport = new FitViewport(WORLD_WIDTH, WORLD_HEIGHT, camera);
@@ -102,8 +106,9 @@ public class MapScreen implements Screen {
         LevelMapManager.getInstance().setPlayer(player);
         // player.addObserver(gameHUD);
         LevelMapManager.getInstance().setEventManager(eventManager);
-        if (!SaveManager.getInstance().hasSaveFile())
+        if (isNewGame) {
             LevelMapManager.getInstance().changeLevel("LevelIntro");
+        }
 
         // Setup Input
         this.dashCommand = new Dash(player);

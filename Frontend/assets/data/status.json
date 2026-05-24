@@ -9,10 +9,48 @@
     "iconId": "icon_wind_scar",
     "turns": 3
   },
+  "hawk_eye": {
+    "name": "Hawk's Eye",
+    "iconId": "icon_hawk_eye",
+    "turns": 3
+  },
+  "hot_talons": {
+    "name": "Hot Talons",
+    "iconId": "icon_hot_talons",
+    "turns": 2
+  },
+  "pristine_health": {
+    "name": "Pristine Health",
+    "iconId": "icon_pristine_health",
+    "turns": 5,
+    "turnType": "turn",
+    "description": "Provides +30% Incoming Healing. Upon falling below 33% HP, dying, or status expiration, triggers an immediate burst heal equal to 40% of Reyna's max HP."
+  },
+  "oathbearer": {
+    "name": "Oathbearer",
+    "iconId": "icon_oathbearer",
+    "turns": 3,
+    "turnType": "turn",
+    "description": "At the end of every turn, deals 25 Base Power Water DMG to all enemies and heals all allies by 25% of Reyna's Max HP."
+  },
   "second_wind": {
     "name": "Second Wind",
-    "iconId": "icon_second_wind",
+    "iconId": "icon_second_wind_status",
     "turns": 3
+  },
+  "dominique_marker": {
+    "name": "Marker",
+    "iconId": "icon_target_marker",
+    "turns": 99,
+    "turnType": "turn",
+    "description": "Tracks marker stacks from Dominique's attacks. Increases reaction damage on the target."
+  },
+  "ace_mode": {
+    "name": "Ace Mode",
+    "iconId": "icon_ace_mode",
+    "turns": 5,
+    "turnType": "turn",
+    "description": "Replaces standard basic attack with Remarkable Shot! and increases Toughness Damage dealing potential by 1.5x."
   },
   "smothered": {
     "name": "Smothered",

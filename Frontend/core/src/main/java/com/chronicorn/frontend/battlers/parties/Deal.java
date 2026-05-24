@@ -17,6 +17,10 @@ public class Deal extends Actor {
 
         this.setId("C004");
         this.learnSkill("deal_shoot");
+        this.learnSkill("remarkable_shot");
+        this.learnSkill("ascending_mark");
+        this.learnSkill("ace_archer");
+        this.learnSkill("one_shot");
 
         this.element = Elements.LIGHTNING;
     }

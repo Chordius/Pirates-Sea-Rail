@@ -53,11 +53,7 @@ public class GachaController {
                 request.getPartyCharIds()
         );
 
-        if (ownedCount == request.getPartyCharIds().size()) {
-            return ResponseEntity.ok(true);
-        } else {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(false);
-        }
+        return ResponseEntity.ok(ownedCount == request.getPartyCharIds().size());
     }
 
     @PostMapping("/grant/{userId}/{charId}")

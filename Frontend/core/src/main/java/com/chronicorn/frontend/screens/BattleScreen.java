@@ -106,7 +106,7 @@ public class BattleScreen implements Screen {
         enemies = new Array<>();
 
         // Load active party from GameSession, or fall back to default party if empty
-        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().party.getActivePartyActors();
+        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().getParty().getActivePartyActors();
         if (activeParty == null || activeParty.isEmpty()) {
             allBattlers.add(new Sailor());
             allBattlers.add(new Porter());
@@ -326,6 +326,9 @@ public class BattleScreen implements Screen {
         Array<Skill> normalSkills = new Array<>();
         Skill ultimateSkill = null;
         for (Skill skill : activeActor.getSkills()) {
+            if (!skill.isShowConditionMet(activeActor)) {
+                continue;
+            }
             if ("Ultimate".equals(skill.getSkillType())) {
                 if (ultimateSkill == null) {
                     ultimateSkill = skill;

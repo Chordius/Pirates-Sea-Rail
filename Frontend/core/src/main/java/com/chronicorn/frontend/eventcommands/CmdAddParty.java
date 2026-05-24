@@ -33,7 +33,7 @@ public class CmdAddParty implements EventCommand {
                     System.out.println("Granted character: " + result.pulledCharId);
 
                     // 2. Synchronize the frontend's local session
-                    GameSession.getInstance().party.unlockCharacter(
+                    GameSession.getInstance().getParty().unlockCharacter(
                         result.pulledCharId,
                         ActorFactory.createActor(result.pulledCharId)
                     );

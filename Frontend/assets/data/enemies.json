@@ -14,14 +14,14 @@
 
   "soldier": {
     "name": "Soldier",
-    "maxHp": 70,
-    "attack": 65,
-    "defense": 65,
+    "maxHp": 200,
+    "attack": 80,
+    "defense": 75,
     "magic": 65,
-    "speed": 18,
-    "level": 10,
-    "maxWeakness": 20,
-    "innateElements": ["earth", "fire"],
+    "speed": 20,
+    "level": 5,
+    "maxWeakness": 70,
+    "innateElements": ["earth"],
     "skills": ["basic_attack"]
   },
 

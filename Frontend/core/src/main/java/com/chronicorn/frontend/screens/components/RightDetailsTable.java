@@ -13,6 +13,7 @@ import com.badlogic.gdx.utils.Scaling;
 import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.custom.FadingPortrait;
+import com.chronicorn.frontend.skills.Skill;
 
 public class RightDetailsTable extends Table {
 
@@ -20,6 +21,7 @@ public class RightDetailsTable extends Table {
     public interface EquipWeaponsListener {
         void onEquipWeaponsClicked();
     }
+
     private EquipWeaponsListener equipListener;
 
     public void setEquipListener(EquipWeaponsListener listener) {
@@ -66,10 +68,12 @@ public class RightDetailsTable extends Table {
         equipHintImage.setScaling(Scaling.none);
         equipHintImage.setVisible(false); // Hidden by default
 
-        // CRITICAL: Disable touch on the hint so it doesn't interrupt the hover state when the mouse crosses it
+        // CRITICAL: Disable touch on the hint so it doesn't interrupt the hover state
+        // when the mouse crosses it
         equipHintImage.setTouchable(Touchable.disabled);
 
-        // A wrapper table to position the hint exactly where you want it (bottom-leftish)
+        // A wrapper table to position the hint exactly where you want it
+        // (bottom-leftish)
         Table hintLayer = new Table();
         hintLayer.setTouchable(Touchable.disabled);
         hintLayer.add(equipHintImage).bottom().padTop(120).padRight(30);
@@ -80,7 +84,8 @@ public class RightDetailsTable extends Table {
         // --- HOVER & CLICK LOGIC ---
         portraitStack.addListener(new ClickListener() {
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+            public void enter(InputEvent event, float x, float y, int pointer,
+                    com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
                 // pointer == -1 ensures this is a mouse hover, not a touch drag
                 if (pointer == -1 && portraitImage.getDrawable() != null) {
@@ -89,24 +94,22 @@ public class RightDetailsTable extends Table {
                     equipHintImage.getColor().a = 0f;
                     // Slight pop-in animation
                     equipHintImage.addAction(Actions.parallel(
-                        Actions.fadeIn(0.2f),
-                        Actions.sequence(
-                            Actions.moveBy(0, -10f),
-                            Actions.moveBy(0, 10f, 0.3f, Interpolation.swingOut)
-                        )
-                    ));
+                            Actions.fadeIn(0.2f),
+                            Actions.sequence(
+                                    Actions.moveBy(0, -10f),
+                                    Actions.moveBy(0, 10f, 0.3f, Interpolation.swingOut))));
                 }
             }
 
             @Override
-            public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+            public void exit(InputEvent event, float x, float y, int pointer,
+                    com.badlogic.gdx.scenes.scene2d.Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
                 if (pointer == -1) {
                     equipHintImage.clearActions();
                     equipHintImage.addAction(Actions.sequence(
-                        Actions.fadeOut(0.15f),
-                        Actions.visible(false)
-                    ));
+                            Actions.fadeOut(0.15f),
+                            Actions.visible(false)));
                 }
             }
 
@@ -230,9 +233,24 @@ public class RightDetailsTable extends Table {
         skillsTable.clearChildren();
         String skillBgName = "skill_menu_squarae_" + elementStr;
 
+        com.badlogic.gdx.utils.Array<Skill> visibleSkills = new com.badlogic.gdx.utils.Array<>();
+        for (Skill s : actor.getSkills()) {
+            if (s.isShowConditionMet(actor)) {
+                visibleSkills.add(s);
+            }
+        }
+
         for (int i = 0; i < 4; i++) {
             Table skillBox = new Table();
             skillBox.setBackground(ImageManager.skin.getDrawable(skillBgName));
+
+            if (i < visibleSkills.size) {
+                Skill skill = visibleSkills.get(i);
+                String iconName = skill.getIconId();
+                Image iconImg = new Image(ImageManager.skin.getDrawable(iconName));
+                iconImg.setScaling(Scaling.fit);
+                skillBox.add(iconImg).size(48, 48).center();
+            }
             skillsTable.add(skillBox).size(72, 72).padLeft(28);
         }
     }
@@ -254,73 +272,65 @@ public class RightDetailsTable extends Table {
 
         // 3. Defer coordinate capture
         this.addAction(Actions.sequence(
-            Actions.delay(0.02f),
-            Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    // FORCE LAYOUT OVERWRITE
-                    // This forces LibGDX to re-snap the elements to their exact designated
-                    // cell bounds, destroying any stray mid-animation coordinates.
-                    RightDetailsTable.this.invalidate();
-                    RightDetailsTable.this.layout();
+                Actions.delay(0.02f),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        // FORCE LAYOUT OVERWRITE
+                        // This forces LibGDX to re-snap the elements to their exact designated
+                        // cell bounds, destroying any stray mid-animation coordinates.
+                        RightDetailsTable.this.invalidate();
+                        RightDetailsTable.this.layout();
 
-                    if (detailsColumn != null) {
-                        detailsColumn.invalidate();
-                        detailsColumn.layout();
+                        if (detailsColumn != null) {
+                            detailsColumn.invalidate();
+                            detailsColumn.layout();
+                        }
+
+                        // Capture the stable coordinates
+                        float portX = portraitColumn.getX();
+                        float portY = portraitColumn.getY();
+
+                        float headX = headerTable.getX();
+                        float headY = headerTable.getY();
+
+                        float attrX = attributesTable.getX();
+                        float attrY = attributesTable.getY();
+
+                        float skillX = skillsTable.getX();
+                        float skillY = skillsTable.getY();
+
+                        // Teleport away
+                        portraitColumn.setPosition(portX, portY - 60f);
+                        headerTable.setPosition(headX + 80f, headY);
+                        attributesTable.setPosition(attrX + 80f, attrY);
+                        skillsTable.setPosition(skillX + 80f, skillY);
+
+                        // Animate back to the captured coordinates
+                        portraitColumn.addAction(Actions.parallel(
+                                Actions.fadeIn(0.4f),
+                                Actions.moveTo(portX, portY, 0.45f, Interpolation.swingOut)));
+
+                        float delayStep = 0.12f;
+
+                        headerTable.addAction(Actions.sequence(
+                                Actions.delay(delayStep * 0),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(headX, headY, 0.55f, Interpolation.swingOut))));
+
+                        attributesTable.addAction(Actions.sequence(
+                                Actions.delay(delayStep * 1),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(attrX, attrY, 0.55f, Interpolation.swingOut))));
+
+                        skillsTable.addAction(Actions.sequence(
+                                Actions.delay(delayStep * 2),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(skillX, skillY, 0.55f, Interpolation.swingOut))));
                     }
-
-                    // Capture the stable coordinates
-                    float portX = portraitColumn.getX();
-                    float portY = portraitColumn.getY();
-
-                    float headX = headerTable.getX();
-                    float headY = headerTable.getY();
-
-                    float attrX = attributesTable.getX();
-                    float attrY = attributesTable.getY();
-
-                    float skillX = skillsTable.getX();
-                    float skillY = skillsTable.getY();
-
-                    // Teleport away
-                    portraitColumn.setPosition(portX, portY - 60f);
-                    headerTable.setPosition(headX + 80f, headY);
-                    attributesTable.setPosition(attrX + 80f, attrY);
-                    skillsTable.setPosition(skillX + 80f, skillY);
-
-                    // Animate back to the captured coordinates
-                    portraitColumn.addAction(Actions.parallel(
-                        Actions.fadeIn(0.4f),
-                        Actions.moveTo(portX, portY, 0.45f, Interpolation.swingOut)
-                    ));
-
-                    float delayStep = 0.12f;
-
-                    headerTable.addAction(Actions.sequence(
-                        Actions.delay(delayStep * 0),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(headX, headY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-
-                    attributesTable.addAction(Actions.sequence(
-                        Actions.delay(delayStep * 1),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(attrX, attrY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-
-                    skillsTable.addAction(Actions.sequence(
-                        Actions.delay(delayStep * 2),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(skillX, skillY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-                }
-            })
-        ));
+                })));
     }
 }

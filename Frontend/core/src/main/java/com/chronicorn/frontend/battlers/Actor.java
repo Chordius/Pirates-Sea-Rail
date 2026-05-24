@@ -27,7 +27,7 @@ public class Actor extends Battler {
             int magic,
             int speed) {
         // name, maxHp, speed, isPlayerControlled
-        super(name, maxHp, maxEnergy, attack, defense, magic, speed, 1, true);
+        super(name, maxHp, maxEnergy, attack, defense, magic, speed, 5, true);
     }
 
     public int getShield() {

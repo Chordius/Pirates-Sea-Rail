@@ -88,7 +88,7 @@ public class TitleScreen implements Screen {
 
                     if (savedId != null && !savedId.isEmpty()) {
                         com.chronicorn.frontend.Main.currentLocalId = savedId;
-                        final MapScreen mapScreen = new MapScreen();
+                        final MapScreen mapScreen = new MapScreen(false); // isNewGame = false
                         com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
                             @Override
                             public void run() {
@@ -115,7 +115,7 @@ public class TitleScreen implements Screen {
                     // Auto-login successful
                     com.chronicorn.frontend.Main.currentLocalId = savedId;
                     com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().resetSession();
-                    com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen());
+                    com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen(true)); // isNewGame = true
                 } else {
                     // Start fresh interactive login
                     openLoginWindow();

@@ -1,6 +1,7 @@
 package com.chronicorn.frontend;
 
 import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.chronicorn.frontend.battlers.parties.Deal;
 import com.chronicorn.frontend.battlers.parties.Porter;
 import com.chronicorn.frontend.battlers.parties.Reyna;
@@ -17,9 +18,15 @@ import com.chronicorn.frontend.screens.TitleScreen;
 import com.chronicorn.frontend.skills.SkillDatabase;
 import com.chronicorn.frontend.statuseffect.StatusEffectDatabase;
 import com.chronicorn.frontend.battlers.EnemyDatabase;
+import com.chronicorn.frontend.managers.networkManager.NetworkManager;
+import com.chronicorn.frontend.managers.networkManager.NetworkCallback;
+import com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse;
 
 public class Main extends Game {
     public static String currentLocalId = null;
+
+    private float connectionCheckTimer = 5.0f;
+    private static final float CONNECTION_CHECK_INTERVAL = 5.0f;
 
     @Override
     public void create() {
@@ -39,6 +46,34 @@ public class Main extends Game {
     @Override
     public void render() {
         super.render();
+
+        if (currentLocalId != null && getScreen() != null && !(getScreen() instanceof TitleScreen)) {
+            connectionCheckTimer -= Gdx.graphics.getDeltaTime();
+            if (connectionCheckTimer <= 0) {
+                connectionCheckTimer = CONNECTION_CHECK_INTERVAL;
+                checkBackendConnection();
+            }
+        }
+    }
+
+    private void checkBackendConnection() {
+        NetworkManager.getUserInfo(currentLocalId, new NetworkCallback<UserAuthResponse>() {
+            @Override
+            public void onSuccess(UserAuthResponse result) {
+                // Connection is maintained
+            }
+
+            @Override
+            public void onError(String errorMessage) {
+                Gdx.app.postRunnable(() -> {
+                    if (getScreen() != null && !(getScreen() instanceof TitleScreen)) {
+                        System.err.println("Backend connection lost: " + errorMessage);
+                        currentLocalId = null; // Clear login session
+                        SceneManager.getInstance().changeScreen(new TitleScreen());
+                    }
+                });
+            }
+        });
     }
 
     @Override
