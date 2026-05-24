@@ -8,7 +8,7 @@ public class NetworkConfigure {
     }
 
     // Configure manually here to switch environments
-    public static final Environment ACTIVE_ENV = Environment.LOCAL;
+    public static final Environment ACTIVE_ENV = Environment.PROD;
 
     public static String getBaseUrl() {
         switch (ACTIVE_ENV) {
