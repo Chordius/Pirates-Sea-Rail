@@ -17,6 +17,17 @@ public class VFXActor extends Actor {
     }
 
     @Override
+    public boolean remove() {
+        boolean result = super.remove();
+        this.isFinished = true;
+        return result;
+    }
+
+    public boolean isFinished() {
+        return isFinished;
+    }
+
+    @Override
     public void act(float delta) {
         super.act(delta);
 

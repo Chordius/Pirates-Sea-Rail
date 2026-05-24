@@ -16,6 +16,7 @@ import com.chronicorn.frontend.screens.MapScreen;
 import com.chronicorn.frontend.screens.TitleScreen;
 import com.chronicorn.frontend.skills.SkillDatabase;
 import com.chronicorn.frontend.statuseffect.StatusEffectDatabase;
+import com.chronicorn.frontend.battlers.EnemyDatabase;
 
 public class Main extends Game {
     public static String currentLocalId = null;
@@ -25,6 +26,8 @@ public class Main extends Game {
         SkillDatabase.init();
 
         StatusEffectDatabase.init();
+
+        EnemyDatabase.init();
 
         ImageManager.loadWindowSkin(ImageManager.fontSize);
 

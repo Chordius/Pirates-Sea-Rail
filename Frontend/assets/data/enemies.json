@@ -1,0 +1,66 @@
+{
+  "pirate": {
+    "name": "Pirate",
+    "maxHp": 70,
+    "attack": 65,
+    "defense": 65,
+    "magic": 65,
+    "speed": 18,
+    "level": 10,
+    "maxWeakness": 20,
+    "innateElements": ["earth", "fire"],
+    "skills": ["basic_attack"]
+  },
+
+  "soldier": {
+    "name": "Soldier",
+    "maxHp": 70,
+    "attack": 65,
+    "defense": 65,
+    "magic": 65,
+    "speed": 18,
+    "level": 10,
+    "maxWeakness": 20,
+    "innateElements": ["earth", "fire"],
+    "skills": ["basic_attack"]
+  },
+
+  "goblin": {
+    "name": "Goblin",
+    "maxHp": 35,
+    "attack": 15,
+    "defense": 15,
+    "magic": 15,
+    "speed": 18,
+    "level": 1,
+    "maxWeakness": 50,
+    "innateElements": ["earth", "fire"],
+    "skills": ["basic_attack"]
+  },
+
+  "golem": {
+    "name": "Golem",
+    "maxHp": 35,
+    "attack": 15,
+    "defense": 15,
+    "magic": 15,
+    "speed": 18,
+    "level": 1,
+    "maxWeakness": 50,
+    "innateElements": ["earth", "fire"],
+    "skills": ["basic_attack"]
+  },
+
+  "lord": {
+    "name": "Lord",
+    "maxHp": 35,
+    "attack": 15,
+    "defense": 15,
+    "magic": 15,
+    "speed": 18,
+    "level": 1,
+    "maxWeakness": 50,
+    "innateElements": ["earth", "fire"],
+    "skills": ["basic_attack"]
+  }
+}

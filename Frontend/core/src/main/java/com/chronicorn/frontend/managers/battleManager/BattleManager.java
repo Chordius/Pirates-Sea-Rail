@@ -1,5 +1,6 @@
 package com.chronicorn.frontend.managers.battleManager;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Queue;
 import com.chronicorn.frontend.battlers.Actor;
@@ -29,6 +30,13 @@ public class BattleManager {
     private Battler activeBattler;
     private Action selectedAction;
     private int turn;
+
+    // Party Mana System
+    private int partyMana = 4;
+    private static final int MAX_MANA = 5;
+
+    // Ultimate System Interruption State
+    private boolean wasInInput = false;
 
     public BattleManager(ArrayList<Battler> allBattlers) {
         this.allBattlers = allBattlers;
@@ -166,7 +174,56 @@ public class BattleManager {
     public void submitAction(Action action) {
         action.resolveTargets(allBattlers);
         this.selectedAction = action;
+
+        // Party Mana handling
+        if (action.getUser() instanceof Actor) {
+            Skill skill = action.getSkill();
+            if (skill != null) {
+                if ("Basic Attack".equals(skill.getSkillType())) {
+                    changePartyMana(1);
+                    action.getUser().requestPopup("+1 Mana", Color.SKY);
+                } else {
+                    int cost = skill.getManaCost();
+                    if (cost > 0) {
+                        changePartyMana(-cost);
+                    }
+                }
+            }
+        }
+
         this.currentState = TurnState.EXECUTE_ACTION;
+    }
+
+    public void submitUltimateAction(Action action) {
+        action.resolveTargets(allBattlers);
+
+        // Party Mana handling for Ultimate
+        if (action.getUser() instanceof Actor) {
+            Skill skill = action.getSkill();
+            if (skill != null) {
+                if ("Basic Attack".equals(skill.getSkillType())) {
+                    changePartyMana(1);
+                    action.getUser().requestPopup("+1 Mana", Color.SKY);
+                } else {
+                    int cost = skill.getManaCost();
+                    if (cost > 0) {
+                        changePartyMana(-cost);
+                    }
+                }
+            }
+        }
+
+        // Reset energy to 0
+        action.getUser().energyChange(-action.getUser().getMaxEnergy());
+
+        // Queue follow-up or play immediately if in INPUT state
+        if (this.currentState == TurnState.INPUT) {
+            this.wasInInput = true;
+            this.selectedAction = action;
+            this.currentState = TurnState.EXECUTE_ACTION;
+        } else {
+            queueFollowUp(action);
+        }
     }
 
     // Triggered explicitly by the "ACTION EFFECT" string command
@@ -176,15 +233,49 @@ public class BattleManager {
 
     // Triggered when the queue is completely empty
     public void finishActionExecution() {
-        if (activeBattler != null && activeBattler.isAlive() && followUpQueue.isEmpty()) {
-            activeBattler.triggerActionEnd();
+        // Clean up dead enemies first
+        for (int i = gameTroop.size() - 1; i >= 0; i--) {
+            Enemy enemy = gameTroop.get(i);
+            if (!enemy.isAlive()) {
+                gameTroop.remove(i);
+                allBattlers.remove(enemy);
+                turnQueue.removeValue(enemy, true);
+            }
         }
 
+        // Check if battle has ended
+        boolean playersAlive = false;
+        boolean enemiesAlive = false;
+        for (Battler b : allBattlers) {
+            if (b.isAlive()) {
+                if (b.isPlayerControlled()) playersAlive = true;
+                else enemiesAlive = true;
+            }
+        }
+
+        if (!playersAlive || !enemiesAlive) {
+            selectedAction = null;
+            currentState = TurnState.BATTLE_END;
+            return;
+        }
+
+        // Execute follow-ups if queue is not empty
         if (!followUpQueue.isEmpty()) {
-            // Pop the follow-up, set it as the active action, and execute it immediately
             selectedAction = followUpQueue.removeFirst();
             currentState = TurnState.EXECUTE_ACTION;
             return; // Skip checking battle end until the follow-up finishes
+        }
+
+        // If we were interrupted during INPUT state, return back to INPUT
+        if (wasInInput) {
+            wasInInput = false;
+            selectedAction = null;
+            currentState = TurnState.INPUT;
+            return;
+        }
+
+        if (activeBattler != null && activeBattler.isAlive()) {
+            activeBattler.triggerActionEnd();
         }
 
         selectedAction = null;
@@ -266,5 +357,15 @@ public class BattleManager {
             }
         }
         return aliveMembers;
+    }
+
+    public int getPartyMana() {
+        return partyMana;
+    }
+
+    public void changePartyMana(int amount) {
+        this.partyMana += amount;
+        if (this.partyMana < 0) this.partyMana = 0;
+        if (this.partyMana > MAX_MANA) this.partyMana = MAX_MANA;
     }
 }

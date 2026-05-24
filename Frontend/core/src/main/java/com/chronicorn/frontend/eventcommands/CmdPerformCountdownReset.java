@@ -45,32 +45,29 @@ public class CmdPerformCountdownReset implements EventCommand {
 
         // 2. Display "The time has ended..."
         events.queue(new CmdWindowFlex()
-            .setText("The time has ended...")
-            .setBounds(
-                Gdx.graphics.getWidth() / 2 - 200,
-                Gdx.graphics.getHeight() / 2 - 50,
-                400, 100
-            )
-            .setDuration(3f)
-            .setBlocking(true)
-            .setTransparent(true) // Invisible window background
+                .setText("The time has ended...")
+                .setBounds(
+                        Gdx.graphics.getWidth() / 2 - 200,
+                        Gdx.graphics.getHeight() / 2 - 50,
+                        400, 100)
+                .setDuration(3f)
+                .setBlocking(true)
+                .setTransparent(true) // Invisible window background
         );
 
-        float[] durations = {0.7f, 0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 1.2f};
+        float[] durations = { 0.7f, 0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 1.2f };
 
         for (int i = 0; i <= 6; i++) {
             events.queue(new CmdWindowFlex()
-                .resetContent() // Clear previous text
-                .addImage("Numbers/" + i + ".png") // Ensure you have 1.png, 2.png...
-                .setBounds(
-                    Gdx.graphics.getWidth() / 2 - 480,
-                    Gdx.graphics.getHeight() / 2 - 360,
-                    960, 720
-                )
-                .setDuration(durations[i]) // Use our speeding-up array
-                .setBlocking(true)
-                .setTransparent(true)
-            );
+                    .resetContent() // Clear previous text
+                    .addImage("Numbers/" + i + ".png") // Ensure you have 1.png, 2.png...
+                    .setBounds(
+                            Gdx.graphics.getWidth() / 2 - 480,
+                            Gdx.graphics.getHeight() / 2 - 360,
+                            960, 720)
+                    .setDuration(durations[i]) // Use our speeding-up array
+                    .setBlocking(true)
+                    .setTransparent(true));
             if (i != 6) {
                 events.queue(new CmdPlaySFX("Saint5.wav"));
             }

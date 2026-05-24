@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 import java.util.UUID;
+import com.chronicorn.backend.utils.SecurityUtils;
+
 
 @RestController
 @RequestMapping("/api/users")
@@ -59,6 +61,25 @@ public class UserController {
             }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    // POST: http://localhost:8080/api/users/{userId}/grant-currency
+    @PostMapping("/{userId}/grant-currency")
+    public ResponseEntity<?> grantCurrency(
+            @PathVariable UUID userId,
+            @RequestParam int amount,
+            @RequestParam String key) {
+        try {
+            String expectedKey = SecurityUtils.generateVerificationKey(userId.toString(), amount);
+            if (!expectedKey.equalsIgnoreCase(key)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid verification key.");
+            }
+
+            UserAuthResponseDTO response = userService.grantPremiumCurrency(userId, amount);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 }

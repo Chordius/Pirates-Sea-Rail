@@ -85,6 +85,14 @@ public class GameSession {
         return 0; // Default value if null or not an int
     }
 
+    public ObjectSet<String> getFlags() {
+        return flags;
+    }
+
+    public ObjectMap<String, Object> getVariables() {
+        return variables;
+    }
+
     // --- SNAPSHOT SYSTEM ---
 
     public void createSnapshot() {

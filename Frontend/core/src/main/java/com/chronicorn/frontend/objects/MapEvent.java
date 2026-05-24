@@ -30,10 +30,10 @@ public class MapEvent extends InteractiveObject {
     private Vector2 targetPosition;
     private float moveSpeed = 100f; // Floating point speed
     public boolean isMoving = false;
-    private float visualWidth = 48f;
-    private float visualHeight = 64f;
     private int characterIndex;
     private String spriteSheetName = "";
+    private boolean steppingAnimation = false;
+    private boolean fixedDirection = false;
 
     // Autonomous Movement Fields
     private MoveRouteType moveRouteType = MoveRouteType.STATIC;
@@ -107,6 +107,52 @@ public class MapEvent extends InteractiveObject {
         return this;
     }
 
+    public MapEvent steppingAnimation(boolean steppingAnimation) {
+        this.steppingAnimation = steppingAnimation;
+        return this;
+    }
+
+    public MapEvent fixedDirection(boolean fixedDirection) {
+        this.fixedDirection = fixedDirection;
+        return this;
+    }
+
+    public MapEvent visibilityFlag(String visibilityFlag) {
+        this.visibilityFlag = visibilityFlag;
+        return this;
+    }
+
+    public MapEvent visibilityFlagIs(boolean visibilityFlagIs) {
+        this.visibilityFlagIs = visibilityFlagIs;
+        return this;
+    }
+
+    public boolean isSteppingAnimation() {
+        return steppingAnimation;
+    }
+
+    public void setSteppingAnimation(boolean steppingAnimation) {
+        this.steppingAnimation = steppingAnimation;
+    }
+
+    public boolean isFixedDirection() {
+        return fixedDirection;
+    }
+
+    public void setFixedDirection(boolean fixedDirection) {
+        this.fixedDirection = fixedDirection;
+    }
+
+    public void changeSprite(String spriteSheetName, int characterIndex) {
+        if (spriteSheetName != null) {
+            this.spriteSheetName = new java.io.File(spriteSheetName).getName();
+        } else {
+            this.spriteSheetName = "";
+        }
+        this.characterIndex = characterIndex;
+        initializeAnimations(this.spriteSheetName);
+    }
+
     private void initializeAnimations(String spriteSheetName) {
         walkAnimations = new HashMap<>();
         idleFrames = new HashMap<>();
@@ -178,11 +224,14 @@ public class MapEvent extends InteractiveObject {
                     stepTimer = stepDelay; // Reset step delay
                 }
             }
+            if (steppingAnimation) {
+                stateTime += delta;
+            }
         }
 
         // --- UPDATE ANIMATION EXACTLY LIKE PLAYER ---
         if (!isStatic && walkAnimations != null && !walkAnimations.isEmpty()) {
-            if (isMoving) {
+            if (isMoving || steppingAnimation) {
                 currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);
             } else {
                 currentFrame = idleFrames.get(currentDirection);
@@ -255,17 +304,45 @@ public class MapEvent extends InteractiveObject {
         }
     }
 
+    public void setLocation(float tileX, float tileY) {
+        float TILE_SIZE = 48f;
+        float mapHeight = LevelMapManager.getInstance().getMapHeight();
+
+        float pixelX = tileX * TILE_SIZE;
+        float pixelY = (mapHeight - 1 - tileY) * TILE_SIZE;
+
+        this.x = pixelX;
+        this.y = pixelY;
+        this.targetPosition.set(pixelX, pixelY);
+        this.bounds.setPosition(pixelX, pixelY);
+        this.isMoving = false;
+
+        // Reset idle frame for current direction
+        if (idleFrames != null && idleFrames.containsKey(currentDirection)) {
+            this.currentFrame = idleFrames.get(currentDirection);
+        }
+    }
+
+    public void setLocation(float tileX, float tileY, int direction) {
+        setLocation(tileX, tileY);
+        turn(direction);
+    }
+
     @Override
     public void interact(Player player, EventManager events) {
         if (events.isBusy()) return;
 
-        switch(player.getCurrentDirection()) {
-            case DOWN: this.currentDirection = 3; break;
-            case LEFT: this.currentDirection = 2; break;
-            case RIGHT: this.currentDirection = 1; break;
-            case UP: this.currentDirection = 0; break;
+        if (!fixedDirection) {
+            switch(player.getCurrentDirection()) {
+                case DOWN: this.currentDirection = 3; break;
+                case LEFT: this.currentDirection = 2; break;
+                case RIGHT: this.currentDirection = 1; break;
+                case UP: this.currentDirection = 0; break;
+            }
+            if (idleFrames != null && idleFrames.containsKey(currentDirection)) {
+                this.currentFrame = idleFrames.get(currentDirection);
+            }
         }
-        this.currentFrame = idleFrames.get(currentDirection);
 
         // Fetch the active script for the map the player is currently standing in
         MapScript currentScript = LevelMapManager.getInstance().getCurrentScript();
@@ -278,16 +355,17 @@ public class MapEvent extends InteractiveObject {
 
     @Override
     public void render(com.badlogic.gdx.graphics.g2d.SpriteBatch batch) {
+        if (!isConditionMet()) return;
         if (currentFrame != null) {
+            float frameWidth = currentFrame.getRegionWidth();
+            float frameHeight = currentFrame.getRegionHeight();
 
-            // The physical box (this.width, this.height) from Tiled is 48x48.
-            // We draw the texture using visualWidth (48) and visualHeight (64).
-            // Because LibGDX draws from the bottom-left (this.x, this.y),
-            // the extra 16 pixels will automatically stick out of the TOP of the hitbox!
+            // Center the sprite horizontally over the hitbox bounds
+            float offsetX = (frameWidth - this.width) / 2f;
+            // Draw bottom-aligned, so extra height extends upwards
+            float offsetY = 0f;
 
-            batch.draw(currentFrame, this.x, this.y, visualWidth, visualHeight);
-
-            // NOTE: If you wanted a shadow or hit flash, you'd apply it here just like the Player class!
+            batch.draw(currentFrame, this.x - offsetX, this.y - offsetY, frameWidth, frameHeight);
         }
     }
 }

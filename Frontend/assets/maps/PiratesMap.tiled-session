@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "CherryTown.tmx",
+    "activeFile": "CherryTownDiner.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
     ],
@@ -11,17 +11,18 @@
     "fileStates": {
         "Beach-Intro.tmx": {
             "expandedGroupLayers": [
-                3,
-                2
+                2,
+                3
             ],
             "expandedObjectLayers": [
-                6
+                6,
+                8
             ],
-            "scale": 1,
+            "scale": 0.75,
             "selectedLayer": 7,
             "viewCenter": {
-                "x": 835,
-                "y": 1246.5
+                "x": 960,
+                "y": 959.3333333333334
             }
         },
         "C:/Users/Jesaya/Documents/Game/Resource/Tiled/Tiled_SampleProject_November041122/maps/Tilesets/TileAuto_Ground_05_Rugs.json": {
@@ -60,6 +61,18 @@
                 "x": 694.7368421052631,
                 "y": 959.7254004576657
             }
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/24_fes_Dungeon_A2_MVMZ.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/24_fes_Dungeon_A4_MVMZ.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/24_fes_Dungeon_A5_MV.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/24_fes_Dungeon_B_MV (1).tsx": {
+            "scaleInDock": 1
         },
         "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/Dungeon.tsx": {
             "scaleInDock": 1
@@ -106,8 +119,40 @@
             "scaleInDock": 1,
             "scaleInEditor": 1
         },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Dungeon_B_MV.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Inside_C_MV.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
         "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Outside_B_MV.tsx": {
-            "scaleInDock": 1,
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Outside_C_MV.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_inside_BCDE_02.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_outside_BCDE_01.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_outside_BCDE_03.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_outside_BCDE_38.tsx": {
+            "scaleInDock": 0.5,
+            "scaleInEditor": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_outside_BCDE_39.tsx": {
+            "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "C:/Users/Jesaya/Downloads/Outside_A2.tsx": {
@@ -151,34 +196,80 @@
         },
         "CherryTown.tmx": {
             "expandedGroupLayers": [
+                2,
+                3
+            ],
+            "expandedObjectLayers": [
+                5,
+                8
+            ],
+            "scale": 1.5,
+            "selectedLayer": 8,
+            "viewCenter": {
+                "x": 1860,
+                "y": 1728.3333333333333
+            }
+        },
+        "CherryTownDiner.tmx": {
+            "expandedGroupLayers": [
+                5
+            ],
+            "expandedObjectLayers": [
                 3,
                 2
             ],
+            "scale": 1,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 933,
+                "y": 656.5
+            }
+        },
+        "CherryTownInn.tmx": {
+            "expandedGroupLayers": [
+                2,
+                3
+            ],
             "expandedObjectLayers": [
                 8,
-                5
+                7
             ],
-            "scale": 0.5,
+            "scale": 1,
+            "selectedLayer": 7,
+            "viewCenter": {
+                "x": 888,
+                "y": 792.5
+            }
+        },
+        "CherryTownInnRoom.tmx": {
+            "expandedGroupLayers": [
+                2
+            ],
+            "expandedObjectLayers": [
+                6,
+                7
+            ],
+            "scale": 1.5,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 2517,
-                "y": 1409
+                "x": 408,
+                "y": 312.3333333333333
             }
         },
         "Jail-1B.tmx": {
             "expandedGroupLayers": [
-                3,
-                2
+                2,
+                3
             ],
             "expandedObjectLayers": [
-                5,
-                6
+                6,
+                5
             ],
             "scale": 1,
             "selectedLayer": 1,
             "viewCenter": {
-                "x": 920.5,
-                "y": 537
+                "x": 1006,
+                "y": 552.5
             }
         },
         "Jail-2B.tmx": {
@@ -191,8 +282,8 @@
             "scale": 0.4653716216216216,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 639.2740471869329,
-                "y": 887.4627949183305
+                "x": 887.4627949183302,
+                "y": 888.5372050816696
             }
         },
         "Jail-3B.tmx": {
@@ -205,8 +296,8 @@
             "scale": 0.3663563829787234,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 719.2450090744101,
-                "y": 1127.317604355717
+                "x": 887.1143375680581,
+                "y": 1128.682395644283
             }
         },
         "Jail-4B.tmx": {
@@ -216,9 +307,23 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 562,
-                "y": 462.66666666666674
+                "x": 648,
+                "y": 551.3333333333333
             }
+        },
+        "Level1.tmx": {
+            "expandedObjectLayers": [
+                6
+            ],
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 1034,
+                "y": 863.3333333333333
+            }
+        },
+        "Level1.tmx#24_fes_Dungeon_C_MV": {
+            "scaleInDock": 1
         },
         "Level2-48.tmx": {
             "expandedGroupLayers": [
@@ -247,8 +352,8 @@
             "scale": 0.5,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 648,
-                "y": 407
+                "x": 482,
+                "y": 479
             }
         }
     },
@@ -259,31 +364,36 @@
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 48,
     "map.tileWidth": 48,
-    "map.width": 27,
+    "map.width": 33,
     "openFiles": [
-        "test.tmx",
-        "Level2-48.tmx",
         "Beach-Intro.tmx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Outside_B_MV.tsx",
+        "test.tmx",
+        "Jail-1B.tmx",
+        "Jail-2B.tmx",
+        "Jail-3B.tmx",
+        "Jail-4B.tmx",
         "CherryTown.tmx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/collision.tsx"
+        "CherryTownInn.tmx",
+        "CherryTownInnRoom.tmx",
+        "CherryTownDiner.tmx"
     ],
     "project": "PiratesMap.tiled-project",
-    "property.type": "int",
+    "property.type": "string",
     "recentFiles": [
-        "Level2-48.tmx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Outside_B_MV.tsx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/collision.tsx",
-        "test.tmx",
         "Beach-Intro.tmx",
+        "test.tmx",
+        "Jail-1B.tmx",
+        "Jail-2B.tmx",
+        "Jail-3B.tmx",
+        "Jail-4B.tmx",
         "CherryTown.tmx",
-        "C:/Users/Jesaya/Downloads/Outside_A2.tsx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/TileAuto_Ground_02_Nature.json",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/A2_Outside.tsx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/Outside_A4.tsx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/Outside_A3.tsx",
-        "C:/Users/Jesaya/OneDrive/Tài liệu/College/A. Semester 3/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/RoundandRoundwego2.tsx"
+        "CherryTownInn.tmx",
+        "CherryTownInnRoom.tmx",
+        "CherryTownDiner.tmx",
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_inside_BCDE_02.tsx",
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Inside_C_MV.tsx"
     ],
+    "textEdit.monospace": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {

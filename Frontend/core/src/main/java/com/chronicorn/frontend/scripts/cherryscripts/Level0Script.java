@@ -1,4 +1,4 @@
-package com.chronicorn.frontend.scripts.legacyscripts;
+package com.chronicorn.frontend.scripts.cherryscripts;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Align;
@@ -14,6 +14,7 @@ public class Level0Script implements MapScript {
     public void onMapLoad(EventManager events) {
         // Intro Cutscene Logic
         if (!GameSession.getInstance().isSet("L0_INTRO_DONE")) {
+            events.queue(new CmdAddParty("C001"));
 
             // 1. SEMBUNYIKAN HUD (Supaya layar hitam polos)
             events.queue(new CmdToggleHUD(true));
@@ -56,7 +57,7 @@ public class Level0Script implements MapScript {
             events.queue(new CmdWait(0.5f));
 
             events.queue(new CmdShowText(
-                    "Hey, mister!\\!" +
+                    "Hey, mister?\\!" +
                             "\nWake up!")
                 .showBackground(false)
                 .setAlignment(Align.center)
@@ -66,7 +67,6 @@ public class Level0Script implements MapScript {
 
             // Pindah Level & Fade In
             events.queue(new CmdTransferPlayer("Beach-Intro"));
-            GameSession.getInstance().set("L0_INTRO_DONE");
         }
     }
 

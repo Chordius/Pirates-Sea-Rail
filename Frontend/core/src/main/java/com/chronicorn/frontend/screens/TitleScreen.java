@@ -60,13 +60,48 @@ public class TitleScreen implements Screen {
         }
 
         // --- BUTTONS ---
-        TextButton playButton = createTitleButton("START GAME", 0);
-        TextButton settingsButton = createTitleButton("SETTINGS", 1);
-        TextButton exitButton = createTitleButton("EXIT", 2);
+        TextButton continueButton = null;
+        boolean hasSave = com.chronicorn.frontend.managers.SaveManager.getInstance().hasSaveFile();
+        if (hasSave) {
+            continueButton = createTitleButton("CONTINUE", 0);
+        }
 
-        buttons = new TextButton[]{playButton, settingsButton, exitButton};
+        TextButton playButton = createTitleButton("START GAME", hasSave ? 1 : 0);
+        TextButton settingsButton = createTitleButton("SETTINGS", hasSave ? 2 : 1);
+        TextButton exitButton = createTitleButton("EXIT", hasSave ? 3 : 2);
 
-        // --- LOGIC KLIK (DIUBAH UNTUK LOGIN) ---
+        if (hasSave) {
+            buttons = new TextButton[] { continueButton, playButton, settingsButton, exitButton };
+        } else {
+            buttons = new TextButton[] { playButton, settingsButton, exitButton };
+        }
+
+        // --- LOGIC KLIK ---
+        if (continueButton != null) {
+            continueButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    SoundManager.getInstance().playSound("gate.wav");
+
+                    com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+                    String savedId = prefs.getString("localUserId", null);
+
+                    if (savedId != null && !savedId.isEmpty()) {
+                        com.chronicorn.frontend.Main.currentLocalId = savedId;
+                        final MapScreen mapScreen = new MapScreen();
+                        com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
+                            @Override
+                            public void run() {
+                                com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(mapScreen);
+                            }
+                        });
+                    } else {
+                        openLoginWindow();
+                    }
+                }
+            });
+        }
+
         playButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -104,6 +139,9 @@ public class TitleScreen implements Screen {
         });
 
         // Tambahkan tombol ke Table
+        if (continueButton != null) {
+            mainTable.add(continueButton).width(350).height(70).padBottom(20).row();
+        }
         mainTable.add(playButton).width(350).height(70).padBottom(20).row();
         mainTable.add(settingsButton).width(350).height(70).padBottom(20).row();
         mainTable.add(exitButton).width(350).height(70).row();
@@ -122,15 +160,15 @@ public class TitleScreen implements Screen {
 
         // Letakkan di tengah layar
         loginWindow.setPosition(
-            (Gdx.graphics.getWidth() - loginWindow.getWidth()) / 2,
-            (Gdx.graphics.getHeight() - loginWindow.getHeight()) / 2
-        );
+                (Gdx.graphics.getWidth() - loginWindow.getWidth()) / 2,
+                (Gdx.graphics.getHeight() - loginWindow.getHeight()) / 2);
 
         // Tambahkan ke stage
         stage.addActor(loginWindow);
 
         // (Opsional) Jika ingin tombol Back di login window berfungsi:
-        // Anda perlu modifikasi WindowLogin untuk menerima Runnable callback seperti Settings,
+        // Anda perlu modifikasi WindowLogin untuk menerima Runnable callback seperti
+        // Settings,
         // Tapi untuk sekarang restart game saja jika ingin batal login.
     }
 
@@ -156,13 +194,15 @@ public class TitleScreen implements Screen {
 
     // Helper untuk membuat tombol
     private TextButton createTitleButton(String text, final int index) {
-        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(ImageManager.skin.get(TextButton.TextButtonStyle.class));
+        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(
+                ImageManager.skin.get(TextButton.TextButtonStyle.class));
         TextButton button = new TextButton(text, style);
         button.getLabel().setFontScale(1.5f);
 
         button.addListener(new InputListener() {
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+            public void enter(InputEvent event, float x, float y, int pointer,
+                    com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
                 if (pointer == -1) {
                     focusedIndex = index;
                     updateVisualFocus();
@@ -200,8 +240,10 @@ public class TitleScreen implements Screen {
     }
 
     private void changeFocus(int newIndex) {
-        if (newIndex < 0) newIndex = buttons.length - 1;
-        if (newIndex >= buttons.length) newIndex = 0;
+        if (newIndex < 0)
+            newIndex = buttons.length - 1;
+        if (newIndex >= buttons.length)
+            newIndex = 0;
         focusedIndex = newIndex;
         updateVisualFocus();
     }
@@ -213,8 +255,7 @@ public class TitleScreen implements Screen {
                 buttons[i].getStyle().up = selectionBox;
                 buttons[i].clearActions();
                 buttons[i].addAction(Actions.forever(
-                    Actions.sequence(Actions.alpha(0.5f, 0.4f), Actions.alpha(1.0f, 0.4f))
-                ));
+                        Actions.sequence(Actions.alpha(0.5f, 0.4f), Actions.alpha(1.0f, 0.4f))));
             } else {
                 buttons[i].getStyle().up = null;
                 buttons[i].clearActions();
@@ -244,10 +285,19 @@ public class TitleScreen implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        if (titleLogoTexture != null) titleLogoTexture.dispose();
+        if (titleLogoTexture != null)
+            titleLogoTexture.dispose();
     }
 
-    @Override public void pause() {}
-    @Override public void resume() {}
-    @Override public void hide() {}
+    @Override
+    public void pause() {
+    }
+
+    @Override
+    public void resume() {
+    }
+
+    @Override
+    public void hide() {
+    }
 }

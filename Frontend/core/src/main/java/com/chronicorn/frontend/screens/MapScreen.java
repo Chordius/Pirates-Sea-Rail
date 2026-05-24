@@ -39,7 +39,7 @@ public class MapScreen implements Screen {
     private ShapeRenderer shapeRenderer;
     public float fadeAlpha = 0f;
     private float fadeTarget = 0f; // Where we want to go
-    private float fadeSpeed = 0f;  // How fast to get there
+    private float fadeSpeed = 0f; // How fast to get there
     public Stage stage;
     private GameHUD gameHUD;
 
@@ -64,7 +64,14 @@ public class MapScreen implements Screen {
     private boolean isCountdownTriggered = false;
     private boolean cameraFollow = true;
 
+    // Camera target movement (for manual scrolling)
+    private boolean hasCameraTarget = false;
+    private float cameraTargetX, cameraTargetY;
+    private float cameraScrollSpeed = 0f;
+    private boolean cameraResetToPlayerOnArrive = false;
+
     private BitmapFont hudFont;
+    private com.badlogic.gdx.InputMultiplexer inputMultiplexer;
 
     public MapScreen() {
         batch = new SpriteBatch();
@@ -85,7 +92,7 @@ public class MapScreen implements Screen {
 
         // Setup HUD
         // gameHUD = new GameHUD();
-        //  stage.addActor(gameHUD);
+        // stage.addActor(gameHUD);
         stage.addActor(textWindow);
         stage.addActor(flexWindow);
         eventManager.setUI(textWindow, flexWindow);
@@ -95,15 +102,16 @@ public class MapScreen implements Screen {
         LevelMapManager.getInstance().setPlayer(player);
         // player.addObserver(gameHUD);
         LevelMapManager.getInstance().setEventManager(eventManager);
-        LevelMapManager.getInstance().changeLevel("LevelIntro");
+        if (!SaveManager.getInstance().hasSaveFile())
+            LevelMapManager.getInstance().changeLevel("LevelIntro");
 
         // Setup Input
         this.dashCommand = new Dash(player);
         this.moveCommand = new Move(player);
 
-        InputMultiplexer multiplexer = new InputMultiplexer();
-        multiplexer.addProcessor(stage);
-        Gdx.input.setInputProcessor(multiplexer);
+        inputMultiplexer = new com.badlogic.gdx.InputMultiplexer();
+        inputMultiplexer.addProcessor(stage);
+        Gdx.input.setInputProcessor(inputMultiplexer);
 
         hudFont = ImageManager.font;
     }
@@ -115,6 +123,9 @@ public class MapScreen implements Screen {
             player.isBusy = true; // Halts player movement during events
         } else {
             player.isBusy = false;
+            if (!cameraFollow && !hasCameraTarget) {
+                cameraFollow = true;
+            }
             handleInput();
         }
 
@@ -142,6 +153,24 @@ public class MapScreen implements Screen {
         if (cameraFollow) {
             camera.position.set(player.getPosition().x, player.getPosition().y, 0);
             camera.update();
+        } else if (hasCameraTarget) {
+            if (cameraResetToPlayerOnArrive && player != null) {
+                cameraTargetX = player.getPosition().x;
+                cameraTargetY = player.getPosition().y;
+            }
+            camera.position.x += (cameraTargetX - camera.position.x) * cameraScrollSpeed * delta * 60;
+            camera.position.y += (cameraTargetY - camera.position.y) * cameraScrollSpeed * delta * 60;
+            camera.update();
+
+            if (Math.abs(camera.position.x - cameraTargetX) < 1f && Math.abs(camera.position.y - cameraTargetY) < 1f) {
+                camera.position.x = cameraTargetX;
+                camera.position.y = cameraTargetY;
+                camera.update();
+                hasCameraTarget = false;
+                if (cameraResetToPlayerOnArrive) {
+                    cameraFollow = true;
+                }
+            }
         }
 
         GameSession.getInstance().update(delta);
@@ -179,6 +208,16 @@ public class MapScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             SceneManager.getInstance().transitionToMenu(player);
         }
+
+        // Camera Zoom Controls (O / PageUp to Zoom Out, I / PageDown to Zoom In)
+        if (Gdx.input.isKeyPressed(Input.Keys.PAGE_UP) || Gdx.input.isKeyPressed(Input.Keys.O)) {
+            camera.zoom += 0.02f;
+            camera.update();
+        }
+        if (Gdx.input.isKeyPressed(Input.Keys.PAGE_DOWN) || Gdx.input.isKeyPressed(Input.Keys.I)) {
+            camera.zoom = Math.max(0.1f, camera.zoom - 0.02f);
+            camera.update();
+        }
     }
 
     public void changeScreenFade() {
@@ -188,9 +227,9 @@ public class MapScreen implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(0, 0, 0, fadeAlpha);
-        shapeRenderer.rect(camera.position.x - camera.viewportWidth / 2,
-            camera.position.y - camera.viewportHeight / 2,
-            camera.viewportWidth, camera.viewportHeight);
+        shapeRenderer.rect(camera.position.x - camera.viewportWidth * camera.zoom / 2f,
+                camera.position.y - camera.viewportHeight * camera.zoom / 2f,
+                camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom);
         shapeRenderer.end();
 
         Gdx.gl.glDisable(GL20.GL_BLEND);
@@ -219,24 +258,39 @@ public class MapScreen implements Screen {
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        if (inputMultiplexer != null) {
+            Gdx.input.setInputProcessor(inputMultiplexer);
+        }
+    }
+
     @Override
-    public void pause() {}
+    public void pause() {
+    }
+
     @Override
-    public void resume() {}
+    public void resume() {
+    }
+
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
-        if (batch != null) batch.dispose();
-        if (player != null) player.dispose();
-        if (shapeRenderer != null) shapeRenderer.dispose();
-        if (stage != null) stage.dispose();
+        if (batch != null)
+            batch.dispose();
+        if (player != null)
+            player.dispose();
+        if (shapeRenderer != null)
+            shapeRenderer.dispose();
+        if (stage != null)
+            stage.dispose();
         // Clear input processor so disposed stage doesn't continue receiving events
         try {
             Gdx.input.setInputProcessor(null);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
 
         // Reset level/map resources
         LevelMapManager.getInstance().reset();
@@ -262,5 +316,25 @@ public class MapScreen implements Screen {
 
     public void setCameraFollow(boolean follow) {
         this.cameraFollow = follow;
+        if (follow) {
+            this.hasCameraTarget = false;
+        }
+    }
+
+    public void setCameraTarget(float targetX, float targetY, float speed, boolean resetToPlayer) {
+        this.cameraTargetX = targetX;
+        this.cameraTargetY = targetY;
+        this.cameraScrollSpeed = speed;
+        this.cameraResetToPlayerOnArrive = resetToPlayer;
+        this.hasCameraTarget = true;
+        this.cameraFollow = false;
+    }
+
+    public boolean hasCameraTarget() {
+        return hasCameraTarget;
+    }
+
+    public void clearCameraTarget() {
+        this.hasCameraTarget = false;
     }
 }

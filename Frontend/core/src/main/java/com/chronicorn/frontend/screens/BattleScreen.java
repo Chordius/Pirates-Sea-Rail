@@ -4,17 +4,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
+import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.chronicorn.frontend.battlers.Battler;
+import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
 import com.chronicorn.frontend.battlers.Enemy;
 import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.battlers.enemies.Pirate;
@@ -67,8 +71,15 @@ public class BattleScreen implements Screen {
     private boolean isSelectingTarget = false;
     private AnimationManager animationManager;
     private Action executingAction;
+    private Array<String> enemyIds;
+    private Actor ultimateCaster = null;
 
     public BattleScreen() {
+        this(new Array<>(new String[]{"pirate", "pirate", "pirate", "pirate"}));
+    }
+
+    public BattleScreen(Array<String> enemyIds) {
+        this.enemyIds = enemyIds;
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
@@ -94,24 +105,40 @@ public class BattleScreen implements Screen {
         ArrayList<Battler> allBattlers = new ArrayList<>();
         enemies = new Array<>();
 
-        allBattlers.add(new Sailor());
-        allBattlers.add(new Porter());
-        allBattlers.add(new Reyna());
-        allBattlers.add(new Deal());
-
-        for (Battler b : allBattlers) {
-            ((Actor) b).changeLevel(10);
+        // Load active party from GameSession, or fall back to default party if empty
+        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().party.getActivePartyActors();
+        if (activeParty == null || activeParty.isEmpty()) {
+            allBattlers.add(new Sailor());
+            allBattlers.add(new Porter());
+            allBattlers.add(new Reyna());
+            allBattlers.add(new Deal());
+        } else {
+            allBattlers.addAll(activeParty);
         }
 
-        Enemy enemy1 = new Pirate();
-        Enemy enemy2 = new Pirate();
-        Enemy enemy3 = new Pirate();
-        Enemy enemy4 = new Pirate();
-        allBattlers.add(enemy1);
-        allBattlers.add(enemy2);
-        allBattlers.add(enemy3);
-        allBattlers.add(enemy4);
-        enemies.add(enemy1, enemy2, enemy3, enemy4);
+        for (Battler b : allBattlers) {
+            if (b instanceof Actor) {
+                ((Actor) b).changeLevel(10);
+            }
+        }
+
+        // Instantiate enemies dynamically via EnemyFactory using the passed IDs
+        if (enemyIds != null) {
+            for (String id : enemyIds) {
+                Enemy enemy = com.chronicorn.frontend.battlers.EnemyFactory.createEnemy(id);
+                if (enemy != null) {
+                    allBattlers.add(enemy);
+                    enemies.add(enemy);
+                }
+            }
+        }
+
+        // Fallback if no enemies loaded
+        if (enemies.size == 0) {
+            Enemy fallback = new Pirate();
+            allBattlers.add(fallback);
+            enemies.add(fallback);
+        }
 
         battleManager = new BattleManager(allBattlers);
 
@@ -121,7 +148,15 @@ public class BattleScreen implements Screen {
     }
 
     private void buildUI() {
-        ImageManager.loadBattleBg("village.png");
+        String bgName = "village.png";
+        TiledMap currentMap = LevelMapManager.getInstance().getMap();
+        if (currentMap != null) {
+            String propertyBg = currentMap.getProperties().get("battlebg", String.class);
+            if (propertyBg != null && !propertyBg.trim().isEmpty()) {
+                bgName = propertyBg.trim() + ".png";
+            }
+        }
+        ImageManager.loadBattleBg(bgName);
 
         worldLayer = new Group();
         worldLayer.setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT);
@@ -166,6 +201,14 @@ public class BattleScreen implements Screen {
                             setHoveredAllyTarget(hoveredCard);
                         }
                     }
+
+                    @Override
+                    public void onUltimateClicked(Actor actor) {
+                        if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
+                            && battleManager.getActiveBattler().isPlayerControlled()) {
+                            triggerUltimate(actor);
+                        }
+                    }
                 });
                 actorCards.add(card);
                 partyUIContainer.add(card).padRight(47);
@@ -200,6 +243,13 @@ public class BattleScreen implements Screen {
 
     // --- UI FLOW METHODS ---
 
+    private Battler getCommandingActor() {
+        if (ultimateCaster != null) {
+            return ultimateCaster;
+        }
+        return battleManager.getActiveBattler();
+    }
+
     private void startActorCommandSelection() {
         isInputWindowActive = true;
         Battler activeActor = battleManager.getActiveBattler();
@@ -217,18 +267,91 @@ public class BattleScreen implements Screen {
         }
     }
 
+    private void triggerUltimate(Actor actor) {
+        if (actor == null || !actor.isAlive() || actor.getEnergy() < actor.getMaxEnergy()) {
+            return;
+        }
+        if (ultimateCaster == actor) {
+            return; // Already targeting this ultimate
+        }
+
+        // Cancel any ongoing skill targeting
+        cancelSkillSelection();
+
+        this.ultimateCaster = actor;
+
+        // Ultimate is the first skill with type "Ultimate" in the array
+        Skill ultSkill = null;
+        for (Skill skill : actor.getSkills()) {
+            if ("Ultimate".equals(skill.getSkillType())) {
+                ultSkill = skill;
+                break;
+            }
+        }
+        if (ultSkill == null) {
+            this.ultimateCaster = null;
+            return;
+        }
+
+        isInputWindowActive = true;
+
+        Action action = actor.inputtingAction();
+        action.setSkill(ultSkill);
+
+        updateActorCardVisuals(actor);
+
+        // Hide normal skill builder menu when using ultimate
+        skillMenuContainer.setVisible(false);
+
+        onSelectAction();
+    }
+
     private void showSkillMenu(Battler activeActor) {
         skillMenuContainer.clearChildren();
 
-        Array<Skill> iterableSkills = activeActor.getSkills();
-        if (iterableSkills.size >= 3) {
-            iterableSkills.setSize(3);
+        // Primitive Party Mana UI placed just above the SkillBuilder's skill buttons
+        StringBuilder manaStr = new StringBuilder("Mana: ");
+        int currentMana = battleManager.getPartyMana();
+        for (int i = 0; i < 5; i++) {
+            if (i < currentMana) {
+                manaStr.append("* ");
+            } else {
+                manaStr.append(". ");
+            }
+        }
+        Label manaLabel = new Label(manaStr.toString().trim(), skin, "skill-style");
+        manaLabel.setColor(Color.valueOf("82abcd"));
+        skillMenuContainer.add(manaLabel).align(Align.right).padBottom(12).row();
+
+        Array<Skill> normalSkills = new Array<>();
+        Skill ultimateSkill = null;
+        for (Skill skill : activeActor.getSkills()) {
+            if ("Ultimate".equals(skill.getSkillType())) {
+                if (ultimateSkill == null) {
+                    ultimateSkill = skill;
+                }
+            } else {
+                normalSkills.add(skill);
+            }
         }
 
-        for (final Skill skill : iterableSkills) {
+        Array<Skill> skillsToShow = new Array<>();
+        skillsToShow.addAll(normalSkills);
+        if (ultimateSkill != null && activeActor.getEnergy() >= activeActor.getMaxEnergy()) {
+            skillsToShow.add(ultimateSkill);
+        }
+
+        for (int i = 0; i < skillsToShow.size; i++) {
+            final Skill skill = skillsToShow.get(i);
+            boolean hasEnoughMana = (skill.getManaCost() <= battleManager.getPartyMana());
+
             Group skillBtn = SkillMenuBuilder.createSkillButton(skill, skin, new SkillMenuBuilder.Listener() {
                 @Override
                 public void onSkillClicked(Skill clickedSkill, Group buttonGroup) {
+                    if (clickedSkill.getManaCost() > battleManager.getPartyMana()) {
+                        getCommandingActor().requestPopup("No Mana!", Color.valueOf("dc5151"));
+                        return;
+                    }
                     onSkillOk(clickedSkill, buttonGroup);
                 }
 
@@ -237,6 +360,10 @@ public class BattleScreen implements Screen {
                     return selectedSkillBtn == buttonGroup;
                 }
             });
+
+            if (!hasEnoughMana) {
+                skillBtn.getColor().a = 0.5f;
+            }
 
             skillMenuContainer
                 .add(skillBtn)
@@ -256,7 +383,7 @@ public class BattleScreen implements Screen {
 
         selectedSkillBtn = skillBtn;
 
-        Action action = battleManager.getActiveBattler().inputtingAction();
+        Action action = getCommandingActor().inputtingAction();
         action.setSkill(selectedSkill);
 
         // DO NOT hide the skill menu here. It must remain visible so the player can click another skill.
@@ -264,11 +391,11 @@ public class BattleScreen implements Screen {
     }
 
     private void onSelectAction() {
-        Action action = battleManager.getActiveBattler().inputtingAction();
+        Action action = getCommandingActor().inputtingAction();
         TargetScope scope = action.getSkill().getScope();
 
         if (!action.needsSelection()) {
-            action.setPrimaryTarget(battleManager.getActiveBattler());
+            action.setPrimaryTarget(getCommandingActor());
             // Since there is no target selection, hide the menu and submit
             skillMenuContainer.setVisible(false);
             submitCommand();
@@ -299,7 +426,7 @@ public class BattleScreen implements Screen {
 
         // 2. Pure UI Logic: Find where we are in the array
         pendingPrimaryIndex = enemyWidgets.indexOf(primaryWidget, true);
-        Skill selectedSkill = battleManager.getActiveBattler().inputtingAction().getSkill();
+        Skill selectedSkill = getCommandingActor().inputtingAction().getSkill();
 
         // 3. Get the "Hit Map" from Business Logic
         pendingIndices = TargetingLogic.getTargetIndices(pendingPrimaryIndex, enemyWidgets.size, selectedSkill.getScope());
@@ -328,7 +455,7 @@ public class BattleScreen implements Screen {
         isSelectingTarget = false;
 
         // 5. UI finally speaks to the Logic/Action
-        Action currentAction = battleManager.getActiveBattler().inputtingAction();
+        Action currentAction = getCommandingActor().inputtingAction();
 
         currentAction.setPrimaryTarget(selectedEnemy); // Direct speak
 
@@ -353,7 +480,7 @@ public class BattleScreen implements Screen {
 
         // Apply reticle to the active actor by default
         if (actorCards.size > 0) {
-            Battler active = battleManager.getActiveBattler();
+            Battler active = getCommandingActor();
             for (ActorCardUI card : actorCards) {
                 if (card.getBattler() == active) {
                     setHoveredAllyTarget(card);
@@ -369,7 +496,7 @@ public class BattleScreen implements Screen {
 
         // 2. Find index
         int primaryIndex = actorCards.indexOf(primaryCard, true);
-        Skill selectedSkill = battleManager.getActiveBattler().inputtingAction().getSkill();
+        Skill selectedSkill = getCommandingActor().inputtingAction().getSkill();
 
         // 3. Get Hit Map
         IntArray hitMap = TargetingLogic.getTargetIndices(primaryIndex, actorCards.size, selectedSkill.getScope());
@@ -384,11 +511,11 @@ public class BattleScreen implements Screen {
     public void onAllyOk(Battler selectedAlly) {
         isSelectingTarget = false;
 
-        Action currentAction = battleManager.getActiveBattler().inputtingAction();
+        Action currentAction = getCommandingActor().inputtingAction();
         currentAction.setPrimaryTarget(selectedAlly);
 
         for (ActorCardUI card : actorCards) {
-            card.setTouchable(Touchable.disabled);
+            card.setTouchable(Touchable.childrenOnly);
             card.setTargeted(false, false);
         }
 
@@ -411,14 +538,21 @@ public class BattleScreen implements Screen {
         }
 
         for (ActorCardUI card : actorCards) {
-            card.setTouchable(Touchable.disabled);
+            card.setTouchable(Touchable.childrenOnly);
             card.setTargeted(false, false);
         }
 
         worldLayer.clearActions();
         worldLayer.addAction(Actions.moveTo(0, 0, 0.3f, Interpolation.pow2Out));
-        battleManager.getActiveBattler().clearAction();
-        battleManager.getActiveBattler().inputtingAction();
+        
+        Battler commanding = getCommandingActor();
+        commanding.clearAction();
+        commanding.inputtingAction();
+
+        if (ultimateCaster != null) {
+            ultimateCaster = null;
+            isInputWindowActive = false; // Triggers startActorCommandSelection() on the next render frame
+        }
     }
 
     public void submitCommand() {
@@ -434,12 +568,20 @@ public class BattleScreen implements Screen {
             w.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f));
         }
 
-        Battler activeActor = battleManager.getActiveBattler();
-        Action finalAction = activeActor.inputtingAction();
+        Battler commanding = getCommandingActor();
+        Action finalAction = commanding.inputtingAction();
 
-        battleManager.submitAction(finalAction);
+        boolean isUltimate = (ultimateCaster != null) || 
+            (finalAction.getSkill() != null && "Ultimate".equals(finalAction.getSkill().getSkillType()));
 
-        activeActor.clearAction();
+        if (isUltimate) {
+            battleManager.submitUltimateAction(finalAction);
+            ultimateCaster = null;
+        } else {
+            battleManager.submitAction(finalAction);
+        }
+
+        commanding.clearAction();
         isInputWindowActive = false;
     }
 
@@ -452,11 +594,28 @@ public class BattleScreen implements Screen {
 
         battleManager.update(delta);
 
+        if (battleManager.getCurrentState() == BattleManager.TurnState.BATTLE_END) {
+            com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
+            return;
+        }
+
         if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
             && battleManager.getActiveBattler().isPlayerControlled()) {
 
             if (!isInputWindowActive) {
                 startActorCommandSelection();
+            }
+
+            // Keyboard shortcuts for Ultimates (keys 1-4)
+            ArrayList<Actor> party = battleManager.getGameParty();
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1) && party.size() > 0) {
+                triggerUltimate(party.get(0));
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2) && party.size() > 1) {
+                triggerUltimate(party.get(1));
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3) && party.size() > 2) {
+                triggerUltimate(party.get(2));
+            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4) && party.size() > 3) {
+                triggerUltimate(party.get(3));
             }
         } else if (battleManager.getCurrentState() == BattleManager.TurnState.EXECUTE_ACTION) {
             Action selectedAction = battleManager.getSelectedAction();

@@ -55,7 +55,8 @@ public class ObjectFactory {
                     return new Lever(name, bounds.getX(), bounds.getY(), target);
 
                 case "Chest":
-                    return new Chest(name, bounds.getX(), bounds.getY());
+                    int currencyAmount = getIntProperty(rectObj.getProperties(), "currency_amount", 0);
+                    return new Chest(name, bounds.getX(), bounds.getY(), currencyAmount);
 
                 case "BreakableWall":
                     return new BreakableWall(name, bounds.getX(), bounds.getY());
@@ -78,6 +79,9 @@ public class ObjectFactory {
                     int characterIndex = getIntProperty(rectObj.getProperties(), "character_index", 0);
 
                     float baseSpeed = getFloatProperty(rectObj.getProperties(), "base_speed", 50f);
+
+                    boolean isStepping = getBooleanProperty(rectObj.getProperties(), "is_stepping", false);
+                    boolean fixedDirection = getBooleanProperty(rectObj.getProperties(), "fixed_direction", false);
 
                     // Autonomous Movement Properties
                     String rawMoveType = rectObj.getProperties().get("autonomous_move_type", String.class);
@@ -137,7 +141,9 @@ public class ObjectFactory {
                         .baseSpeed(baseSpeed)
                         .moveRouteType(moveRouteType)
                         .moveRoute(moveRoute)
-                        .stepDelay(moveDelay);
+                        .stepDelay(moveDelay)
+                        .steppingAnimation(isStepping)
+                        .fixedDirection(fixedDirection);
 
                 case "EnemyMapEvent":
                     // Parse EnemyMapEvent properties
@@ -159,6 +165,9 @@ public class ObjectFactory {
                     int enemyCharacterIndex = getIntProperty(rectObj.getProperties(), "character_index", 0);
 
                     float enemyBaseSpeed = getFloatProperty(rectObj.getProperties(), "base_speed", 50f);
+
+                    boolean isEnemyStepping = getBooleanProperty(rectObj.getProperties(), "is_stepping", false);
+                    boolean enemyFixedDirection = getBooleanProperty(rectObj.getProperties(), "fixed_direction", false);
 
                     // Autonomous Movement Properties
                     String enemyRawMoveType = rectObj.getProperties().get("autonomous_move_type", String.class);
@@ -217,7 +226,9 @@ public class ObjectFactory {
                         .baseSpeed(enemyBaseSpeed)
                         .moveRouteType(enemyMoveRouteType)
                         .moveRoute(enemyMoveRoute)
-                        .stepDelay(enemyMoveDelay);
+                        .stepDelay(enemyMoveDelay)
+                        .steppingAnimation(isEnemyStepping)
+                        .fixedDirection(enemyFixedDirection);
                     return enemyEvent;
 
                 default:

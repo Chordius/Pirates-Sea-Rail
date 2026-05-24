@@ -78,6 +78,11 @@ public class Player implements PhysicsObjects {
     // --- GHOST TRAIL ---
     private Array<Ghost> ghosts = new Array<>();
 
+    // --- CUTSCENE MOVEMENT ---
+    private Vector2 cutsceneTargetPosition = new Vector2();
+    private boolean isCutsceneMoving = false;
+    private float cutsceneMoveSpeed = 70f;
+
     public void takeHazardDamage(int amount) {
         // TODO: Make Party Take Hazard DMG
     }
@@ -195,17 +200,32 @@ public class Player implements PhysicsObjects {
             if (strikeTimer <= 0) isStriking = false;
         }
 
-        if (!dead && !isBusy) {
-            currentState.update(this, delta);
-            if (currentState instanceof NormalState) {
-                currentState.handleInput(this);
+        if (!dead) {
+            if (isBusy && isCutsceneMoving) {
+                // Smoothly interpolate player position to target during cutscene
+                float dx = cutsceneTargetPosition.x - position.x;
+                float dy = cutsceneTargetPosition.y - position.y;
+                float distance = (float) Math.sqrt(dx * dx + dy * dy);
+                if (distance < cutsceneMoveSpeed * delta) {
+                    position.set(cutsceneTargetPosition);
+                    isCutsceneMoving = false;
+                } else {
+                    position.x += (dx / distance) * cutsceneMoveSpeed * delta;
+                    position.y += (dy / distance) * cutsceneMoveSpeed * delta;
+                }
+                updateCollider();
+            } else if (!isBusy) {
+                currentState.update(this, delta);
+                if (currentState instanceof NormalState) {
+                    currentState.handleInput(this);
+                }
+                position.mulAdd(velocity, delta);
+                handleWalkingSound();
+                updateGhosts(delta);
             }
-            position.mulAdd(velocity, delta);
-            handleWalkingSound();
-            updateGhosts(delta);
         }
 
-        if (dead || isBusy) {
+        if (dead || (isBusy && !isCutsceneMoving)) {
             stopWalkingSound();
             velocity.set(0,0); // Force stop sliding when an event starts
         }
@@ -287,9 +307,50 @@ public class Player implements PhysicsObjects {
     public Direction getCurrentDirection() { return currentDirection; }
     public void setCurrentDirection(Direction dir) { this.currentDirection = dir; }
     public boolean isDead() { return dead; }
-    public boolean isMoving() { return velocity.len() > 10f; }
+    public boolean isMoving() { return (velocity.len() > 10f) || isCutsceneMoving; }
     public boolean isTransparent() { return transparent; }
     public void setTransparent(boolean transparent) { this.transparent = transparent; }
+
+    public boolean isCutsceneMoving() { return isCutsceneMoving; }
+
+    public void setBaseSpeed(float speed) {
+        this.cutsceneMoveSpeed = speed;
+        this.maxSpeed = speed * 3f;
+    }
+
+    public void moveGrid(int direction, float tileSize) {
+        changeState(new NormalState());
+        this.cutsceneTargetPosition.set(position.x, position.y);
+        switch (direction) {
+            case 0:
+                this.currentDirection = Direction.DOWN;
+                this.cutsceneTargetPosition.y -= tileSize;
+                break;
+            case 1:
+                this.currentDirection = Direction.LEFT;
+                this.cutsceneTargetPosition.x -= tileSize;
+                break;
+            case 2:
+                this.currentDirection = Direction.RIGHT;
+                this.cutsceneTargetPosition.x += tileSize;
+                break;
+            case 3:
+                this.currentDirection = Direction.UP;
+                this.cutsceneTargetPosition.y += tileSize;
+                break;
+        }
+        this.isCutsceneMoving = true;
+    }
+
+    public void turn(int direction) {
+        changeState(new NormalState());
+        switch (direction) {
+            case 0: this.currentDirection = Direction.DOWN; break;
+            case 1: this.currentDirection = Direction.LEFT; break;
+            case 2: this.currentDirection = Direction.RIGHT; break;
+            case 3: this.currentDirection = Direction.UP; break;
+        }
+    }
 
     // --- ANIMATION ---
     private void initializeAnimations() {
@@ -347,7 +408,7 @@ public class Player implements PhysicsObjects {
 
         if (isMoving()) {
             // Check which state is active to determine which animation sheet to pull from
-            if (currentState instanceof DashingState) {
+            if (currentState instanceof DashingState && !isCutsceneMoving) {
                 currentFrame = runAnimations.get(currentDirection).getKeyFrame(stateTime, true);
             } else {
                 currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);

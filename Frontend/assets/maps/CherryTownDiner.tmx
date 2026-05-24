@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="53" height="23" tilewidth="48" tileheight="48" infinite="0" nextlayerid="8" nextobjectid="19">
+ <properties>
+  <property name="battlebg" value="diner"/>
+ </properties>
+ <tileset firstgid="1" source="../TSMap/collision.tsx"/>
+ <group id="5" name="UNDER PLAYER">
+  <imagelayer id="4" name="Map">
+   <image source="../TSMap/Cherry Town Diner.png" width="1584" height="1104"/>
+  </imagelayer>
+  <layer id="1" name="Collision" width="53" height="23" visible="0">
+   <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,0,0,0,0,0,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,1,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,0,1,1,0,0,1,1,1,1,0,0,0,1,1,1,1,0,0,1,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+  </layer>
+ </group>
+ <group id="6" name="ABOVE PLAYER"/>
+ <objectgroup id="2" name="Objects">
+  <object id="1" name="NPC_Guard_1" type="MapEvent" x="768" y="672" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="2"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_032.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value="DINER_GUARD_VISIBILITY"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="2" name="NPC_1" type="MapEvent" x="288" y="432" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="0"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="RIGHT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="true"/>
+    <property name="script_id" value="DinerPatron1"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_010.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="3" name="NPC_2" type="MapEvent" x="432" y="432" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="5"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="LEFT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value="DinerPatron2"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_010.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="5" name="NPC_4" type="MapEvent" x="912" y="576" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="0"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="RIGHT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value="DinerPatron3"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_020.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="6" name="NPC_5" type="MapEvent" x="1056" y="576" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="7"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="LEFT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="true"/>
+    <property name="script_id" value="DinerPatron5"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_019.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="7" name="Porter" type="MapEvent" x="1104" y="432" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="0"/>
+    <property name="fixed_direction" type="bool" value="true"/>
+    <property name="initial_direction" value="RIGHT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value="PorterTalk"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_009.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="8" name="NPC_3" type="MapEvent" x="432" y="720" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="3"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="LEFT"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value="DinerPatron4"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_021.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="11" name="NPC_Boy" type="MapEvent" x="720" y="432" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="1"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="true"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_022.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="14" name="NPC_Girl" type="MapEvent" x="768" y="336" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="5"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="DOWN"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_021.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="17" name="NPC_Guard_2" type="MapEvent" x="720" y="672" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="2"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_032.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value="DINER_GUARD_VISIBILITY"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="18" name="NPC_Guard_3" type="MapEvent" x="816" y="672" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="2"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_032.png"/>
+    <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value="DINER_GUARD_VISIBILITY"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="3" name="Logic">
+  <object id="9" name="Exit" x="720" y="864" width="144" height="48"/>
+  <object id="13" name="Cutscene_Start" x="624" y="384" width="336" height="96"/>
+ </objectgroup>
+</map>

@@ -1,78 +1,77 @@
 package com.chronicorn.frontend.eventcommands;
 
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
+import com.chronicorn.frontend.screens.MapScreen;
 
 public class CmdScrollCamera implements EventCommand {
-    private OrthographicCamera camera;
-    private float targetX, targetY;
+    private float tileOffsetX = 0f, tileOffsetY = 0f;
     private float speed; // 0.0 to 1.0 (Lerp factor)
-    private boolean finished = false;
     private boolean resetToPlayer = false;
+    private boolean isWait = true;
+    private boolean started = false;
+    private MapScreen mapScreen;
 
-    public CmdScrollCamera(float x, float y, float speed) {
-        this.targetX = x;
-        this.targetY = y;
+    public CmdScrollCamera(float tileOffsetX, float tileOffsetY, float speed) {
+        this(tileOffsetX, tileOffsetY, speed, true);
+    }
+
+    public CmdScrollCamera(float tileOffsetX, float tileOffsetY, float speed, boolean isWait) {
+        this.tileOffsetX = tileOffsetX;
+        this.tileOffsetY = tileOffsetY;
         this.speed = speed;
+        this.isWait = isWait;
         this.resetToPlayer = false;
     }
 
     public CmdScrollCamera(boolean resetToPlayer, float speed) {
+        this(resetToPlayer, speed, true);
+    }
+
+    public CmdScrollCamera(boolean resetToPlayer, float speed, boolean isWait) {
         this.resetToPlayer = resetToPlayer;
         this.speed = speed;
+        this.isWait = isWait;
     }
 
     @Override
     public void start() {
-        if (LevelMapManager.getInstance().getMapScreen() != null) {
-            this.camera = LevelMapManager.getInstance().getMapScreen().getCamera();
-            
-            // Turn off automatic player-following camera updates during manual scroll
-            LevelMapManager.getInstance().getMapScreen().setCameraFollow(false);
+        this.mapScreen = LevelMapManager.getInstance().getMapScreen();
+        if (mapScreen == null) {
+            started = true;
+            return;
         }
 
-        if (resetToPlayer && LevelMapManager.getInstance().getPlayer() != null) {
-            this.targetX = LevelMapManager.getInstance().getPlayer().getPosition().x;
-            this.targetY = LevelMapManager.getInstance().getPlayer().getPosition().y;
+        float targetX, targetY;
+        if (resetToPlayer) {
+            if (LevelMapManager.getInstance().getPlayer() != null) {
+                targetX = LevelMapManager.getInstance().getPlayer().getPosition().x;
+                targetY = LevelMapManager.getInstance().getPlayer().getPosition().y;
+            } else {
+                targetX = mapScreen.getCamera().position.x;
+                targetY = mapScreen.getCamera().position.y;
+            }
+        } else {
+            targetX = mapScreen.getCamera().position.x + (tileOffsetX * 48f);
+            targetY = mapScreen.getCamera().position.y + (tileOffsetY * 48f);
         }
+
+        mapScreen.setCameraTarget(targetX, targetY, speed, resetToPlayer);
+        started = true;
     }
 
     @Override
     public void update(float delta) {
-        if (camera == null) {
-            finished = true;
-            return;
-        }
-
-        // Continually track the player position if resetting back to them
-        if (resetToPlayer && LevelMapManager.getInstance().getPlayer() != null) {
-            this.targetX = LevelMapManager.getInstance().getPlayer().getPosition().x;
-            this.targetY = LevelMapManager.getInstance().getPlayer().getPosition().y;
-        }
-
-        // Smooth Lerp
-        camera.position.x += (targetX - camera.position.x) * speed * delta * 60; // 60 for normalization
-        camera.position.y += (targetY - camera.position.y) * speed * delta * 60;
-        camera.update();
-
-        // Check if close enough to stop
-        if (Math.abs(camera.position.x - targetX) < 1f && Math.abs(camera.position.y - targetY) < 1f) {
-            camera.position.x = targetX;
-            camera.position.y = targetY;
-            camera.update();
-            finished = true;
-        }
+        // MapScreen updates the camera position in the background
     }
 
     @Override
     public boolean isFinished() {
-        if (finished) {
-            // Restore automatic follow if we've successfully returned to the player
-            if (resetToPlayer && LevelMapManager.getInstance().getMapScreen() != null) {
-                LevelMapManager.getInstance().getMapScreen().setCameraFollow(true);
-            }
-            return true;
+        if (!started) return false;
+        if (mapScreen == null) return true;
+
+        if (isWait) {
+            return !mapScreen.hasCameraTarget();
         }
-        return false;
+        return true;
     }
 }

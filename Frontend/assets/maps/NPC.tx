@@ -7,12 +7,16 @@
    <property name="autonomous_move_type" value="STATIC"/>
    <property name="base_speed" type="float" value="70"/>
    <property name="character_index" type="int" value="0"/>
+   <property name="fixed_direction" type="bool" value="false"/>
    <property name="initial_direction" value="DOWN"/>
    <property name="is_solid" type="bool" value="true"/>
    <property name="is_static" type="bool" value="false"/>
+   <property name="is_stepping" type="bool" value="false"/>
    <property name="script_id" value=""/>
    <property name="sprite_sheet" type="file" value="../characters/feschar_big_001.png"/>
    <property name="type" value="MapEvent"/>
+   <property name="visibility_flag" value=""/>
+   <property name="visibility_flag_is" type="bool" value="false"/>
   </properties>
  </object>
 </template>

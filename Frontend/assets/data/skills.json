@@ -7,6 +7,7 @@
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Basic Attack",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.2",
@@ -18,7 +19,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "sonic_slash": {
     "name": "Sonic Slash",
     "iconId": "icon_slash_wind",
@@ -27,6 +27,7 @@
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -42,7 +43,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "super_sonic_slash": {
     "name": "Super Sonic Slash",
     "iconId": "icon_slash_wind",
@@ -51,6 +51,7 @@
     "basePower": 70,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -67,7 +68,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "wind_cutter": {
     "name": "Wind Cutter",
     "iconId": "icon_slash_wind",
@@ -76,6 +76,7 @@
     "basePower": 70,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -89,7 +90,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "second_wind": {
     "name": "Second Wind",
     "iconId": "icon_slash_wind",
@@ -99,6 +99,7 @@
     "toughnessDMG": 20,
     "energyBonus": 15,
     "tag": "support",
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.2",
@@ -109,7 +110,6 @@
       "WAIT: 0.2"
     ]
   },
-
   "the_wind_way": {
     "name": "The Wind's Ways",
     "iconId": "icon_slash_wind",
@@ -118,6 +118,7 @@
     "basePower": 90,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Ultimate",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.2",
@@ -129,7 +130,6 @@
       "WAIT: 0.2"
     ]
   },
-
   "fire_punch": {
     "name": "Fire Punch",
     "iconId": "icon_slash_wind",
@@ -138,6 +138,7 @@
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -151,7 +152,6 @@
       "WAIT: 0.2"
     ]
   },
-
   "splash": {
     "name": "Splash!",
     "iconId": "icon_slash_wind",
@@ -160,6 +160,7 @@
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -173,7 +174,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "first_aid": {
     "name": "First Aid",
     "iconId": "icon_slash_water",
@@ -183,6 +183,7 @@
     "toughnessDMG": 0,
     "energyBonus": 15,
     "tag": "support",
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "ANIMATION: water_buildup",
@@ -193,7 +194,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "deal_shoot": {
     "name": "Shoot!",
     "iconId": "icon_slash_wind",
@@ -202,6 +202,7 @@
     "basePower": 50,
     "toughnessDMG": 20,
     "energyBonus": 15,
+    "skill_type": "Skill",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -218,7 +219,6 @@
       "PERFORM FINISH"
     ]
   },
-
   "reaction_overload": {
     "name": "Overload",
     "scope": "BLAST",
@@ -230,7 +230,6 @@
       "WAIT FOR ANIMATION"
     ]
   },
-
   "reaction_smothered": {
     "name": "Smothered",
     "scope": "SINGLE",
@@ -242,7 +241,6 @@
       "WAIT FOR ANIMATION"
     ]
   },
-
   "reaction_electrocute": {
     "name": "Electrocute",
     "scope": "SINGLE",

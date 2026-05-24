@@ -32,6 +32,10 @@ public class CmdTransferPlayer implements EventCommand {
             LevelMapManager.getInstance().changeLevel(mapName, x, y);
         }
 
+        if (GameSession.getInstance().isSet("AUTOSAVE_ENABLED")) {
+            com.chronicorn.frontend.managers.SaveManager.getInstance().saveGame();
+        }
+
         // 3. Mark as done instantly
         isDone = true;
     }

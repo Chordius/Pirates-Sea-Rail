@@ -21,7 +21,9 @@ public class Skill {
     private int energyBonus;
     private Elements element;
     private String tag;
+    private String skillType;
     private String description;
+    private int manaCost;
 
     private Array<String> actionSequence;
     private SkillLogic mechanics;
@@ -41,7 +43,14 @@ public class Skill {
         this.toughnessDMG = data.getInt("toughnessDMG", 20);
         this.energyBonus = data.getInt("energyBonus", 0);
         this.tag = data.getString("tag", "damage");
+        this.skillType = data.getString("skill_type", "");
         this.description = data.getString("description", "Lorem Ipsum");
+
+        int defaultManaCost = 0;
+        if ("Skill".equals(this.skillType)) {
+            defaultManaCost = 1;
+        }
+        this.manaCost = data.getInt("manaCost", defaultManaCost);
 
         // Load the action sequence array directly from JSON
         this.actionSequence = new Array<>();
@@ -77,6 +86,10 @@ public class Skill {
     }
 
     public String getDescription() { return description; }
+
+    public int getManaCost() { return manaCost; }
+
+    public String getSkillType() { return skillType; }
 
     public Array<String> getActionSequence() {
         if (actionSequence == null) {

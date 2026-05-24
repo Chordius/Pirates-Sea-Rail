@@ -1,0 +1,1 @@
+{"currentMapName":"CherryTownDiner","playerX":16,"playerY":17,"playerDirection":"UP","playerHp":35,"flags":["AUTOSAVE_ENABLED","DINER_SCENE","L0_INTRO_DONE"],"variables":{"ROOM_COUNTDOWN":{"class":"java.lang.Integer","value":6}},"inventoryConsumables":{},"ownedEquipments":[],"ownedCharacters":{},"activePartyIds":[null,null,null,null]}

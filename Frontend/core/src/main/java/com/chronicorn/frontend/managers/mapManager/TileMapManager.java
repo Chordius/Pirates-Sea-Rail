@@ -199,17 +199,42 @@ public class TileMapManager {
             InteractiveObject gameObj = ObjectFactory.createObject(mapObj);
 
             if (gameObj != null) {
+                String visibilityFlag = mapObj.getProperties().get("visibility_flag", String.class);
+                if (visibilityFlag == null) {
+                    visibilityFlag = mapObj.getProperties().get("visibilityFlag", String.class);
+                }
+                gameObj.setVisibilityFlag(visibilityFlag);
+
+                boolean visibilityFlagIs = true;
+                if (mapObj.getProperties().containsKey("visibility_flag_is")) {
+                    visibilityFlagIs = getBooleanProperty(mapObj.getProperties(), "visibility_flag_is", true);
+                } else if (mapObj.getProperties().containsKey("visibilityFlagIs")) {
+                    visibilityFlagIs = getBooleanProperty(mapObj.getProperties(), "visibilityFlagIs", true);
+                }
+                gameObj.setVisibilityFlagIs(visibilityFlagIs);
+
                 interactiveObjects.add(gameObj);
             }
         }
+    }
+
+    private boolean getBooleanProperty(MapProperties properties, String key, boolean defaultValue) {
+        Object value = properties.get(key);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return Boolean.parseBoolean(value.toString());
     }
 
     public void applySolidObjectPhysics(float delta, PhysicsObjects player) {
         Array<Rectangle> tempCollisionList = new Array<>();
 
         for (InteractiveObject obj : interactiveObjects) {
-            // We only care about collision physics IF the object is solid
-            if (obj.isSolid() && Intersector.overlaps(player.getBounds(), obj.getBounds())) {
+            // We only care about collision physics IF the object is solid and its condition is met
+            if (obj.isSolid() && obj.isConditionMet() && Intersector.overlaps(player.getBounds(), obj.getBounds())) {
 
                 // Isolate this specific object's bounds and push the player out
                 tempCollisionList.clear();

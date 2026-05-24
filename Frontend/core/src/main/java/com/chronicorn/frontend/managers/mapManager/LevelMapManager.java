@@ -23,6 +23,9 @@ import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.ScriptRegistry;
 import com.chronicorn.frontend.screens.MapScreen;
 import com.chronicorn.frontend.scripts.MapScript;
+import com.badlogic.gdx.math.Vector2;
+import com.chronicorn.frontend.managers.animationManager.AnimationManager;
+import com.chronicorn.frontend.managers.animationManager.VFXActor;
 
 public class LevelMapManager {
     private static final LevelMapManager instance = new LevelMapManager();
@@ -41,6 +44,7 @@ public class LevelMapManager {
     private String currentMapName;
     private String lastTriggerName = null;
     private final Array<BalloonEffect> activeBalloons = new Array<>();
+    private final Array<VFXActor> activeVfx = new Array<>();
 
     private final float WORLD_WIDTH = Gdx.graphics.getWidth();
     private final float WORLD_HEIGHT = Gdx.graphics.getHeight();
@@ -57,6 +61,7 @@ public class LevelMapManager {
         if (map != null) map.dispose();
         if (mapRenderer != null) mapRenderer.dispose();
         activeBalloons.clear();
+        activeVfx.clear();
 
         TmxMapLoader loader = new TmxMapLoader();
         map = loader.load("maps/" + level + ".tmx");
@@ -176,6 +181,8 @@ public class LevelMapManager {
         if (interactables == null) return;
 
         for (InteractiveObject obj : interactables) {
+            if (!obj.isConditionMet()) continue;
+
             // 1. TOUCH TRIGGER (Floor plates, cutscene zones)
             if (!obj.isSolid() && playerBounds.overlaps(obj.getBounds())) {
                 obj.interact(player, events);
@@ -329,8 +336,36 @@ public class LevelMapManager {
         }
     }
 
+    public VFXActor showVFX(PhysicsObjects target, String vfxId) {
+        if (target != null) {
+            float targetWidth = 48f;
+            float targetHeight = 64f;
+            if (target instanceof InteractiveObject) {
+                targetWidth = ((InteractiveObject) target).getWidth();
+                targetHeight = ((InteractiveObject) target).getHeight();
+            }
+            Vector2 pos = target.getPosition();
+            float centerX = pos.x + targetWidth / 2f;
+            float centerY = pos.y + targetHeight / 2f;
+
+            VFXActor actor = AnimationManager.createVFXActor(vfxId, centerX, centerY, null);
+            if (actor != null) {
+                activeVfx.add(actor);
+                return actor;
+            }
+        }
+        return null;
+    }
+
     public MapScript getCurrentScript() {
         return this.currentScript;
+    }
+
+    public float getMapHeight() {
+        if (mapManager != null) {
+            return mapManager.getMapHeight();
+        }
+        return 0f;
     }
 
     public boolean isAreaBlocked(float targetX, float targetY, float targetWidth, float targetHeight, InteractiveObject self) {
@@ -352,7 +387,7 @@ public class LevelMapManager {
             Array<InteractiveObject> interactables = mapManager.getInteractiveObjects();
             for (int i = 0; i < interactables.size; i++) {
                 InteractiveObject obj = interactables.get(i);
-                if (obj != self && obj.isSolid() && targetRect.overlaps(obj.getBounds())) {
+                if (obj != self && obj.isSolid() && obj.isConditionMet() && targetRect.overlaps(obj.getBounds())) {
                     return true;
                 }
             }
@@ -372,6 +407,7 @@ public class LevelMapManager {
             // MapEvent movement/animation must tick every frame, independent of EventManager command lifetime.
             for (int i = 0; i < interactables.size; i++) {
                 InteractiveObject obj = interactables.get(i);
+                if (!obj.isConditionMet()) continue;
                 if (obj instanceof MapEvent) {
                     ((MapEvent) obj).update(delta);
                 }
@@ -384,6 +420,15 @@ public class LevelMapManager {
             balloon.update(delta);
             if (balloon.isFinished()) {
                 activeBalloons.removeIndex(i);
+            }
+        }
+
+        // Update active VFX
+        for (int i = activeVfx.size - 1; i >= 0; i--) {
+            VFXActor actor = activeVfx.get(i);
+            actor.act(delta);
+            if (actor.isFinished()) {
+                activeVfx.removeIndex(i);
             }
         }
     }
@@ -423,6 +468,11 @@ public class LevelMapManager {
         // Render balloon animations
         for (BalloonEffect balloon : activeBalloons) {
             balloon.render(batch);
+        }
+
+        // Render active VFX
+        for (int i = 0; i < activeVfx.size; i++) {
+            activeVfx.get(i).draw(batch, 1.0f);
         }
     }
 }

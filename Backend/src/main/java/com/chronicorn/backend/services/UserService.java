@@ -131,6 +131,15 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public UserAuthResponseDTO grantPremiumCurrency(UUID userId, int amount) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setPremiumCurrency(user.getPremiumCurrency() + amount);
+        user = userRepo.save(user);
+        return new UserAuthResponseDTO(user.getUserId(), user.getGlobalUserId(), user.getUsername(), user.getPremiumCurrency());
+    }
+
     public Optional<User> getUserById(UUID userId) {
         return userRepo.findById(userId);
     }

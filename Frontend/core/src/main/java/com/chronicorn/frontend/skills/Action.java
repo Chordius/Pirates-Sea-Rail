@@ -21,6 +21,10 @@ public class Action {
         return targets;
     }
 
+    public Battler getUser() {
+        return user;
+    }
+
     public Action(Battler user) {
         this.user = user;
         this.targets = new Array<>();

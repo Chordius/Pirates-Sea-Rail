@@ -63,6 +63,10 @@ public class NetworkManager {
         sendPostRequest("/payment/buy-currency", request, String.class, callback);
     }
 
+    public static void grantCurrency(String userId, int amount, String key, NetworkCallback<UserAuthResponse> callback) {
+        sendPostRequest("/users/" + userId + "/grant-currency?amount=" + amount + "&key=" + key, null, UserAuthResponse.class, callback);
+    }
+
     public static void grantCharacter(String userId, String charId, NetworkCallback<GachaResult> callback) {
         sendPostRequest("/gacha/grant/" + userId + "/" + charId, null, GachaResult.class, callback);
     }

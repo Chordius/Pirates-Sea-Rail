@@ -3,20 +3,23 @@ package com.chronicorn.frontend.objects;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.chronicorn.frontend.Main;
 import com.chronicorn.frontend.Player;
-import com.chronicorn.frontend.eventcommands.CmdShowText;
 import com.chronicorn.frontend.eventcommands.CmdWait;
 import com.chronicorn.frontend.eventcommands.CmdWindowFlex;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
+import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
+import com.chronicorn.frontend.managers.networkManager.NetworkCallback;
+import com.chronicorn.frontend.managers.networkManager.NetworkManager;
+import com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse;
+import com.chronicorn.frontend.scripts.MapScript;
+import com.chronicorn.frontend.utils.SecurityUtils;
 
 public class Chest extends InteractiveObject {
     private boolean isOpen = false;
-
-    // Hardcoded skill
-    private final String SKILL_REWARD = "SKILL_DASH";
-    private final String MESSAGE = "You obtained the Dash Skill!";
+    private int currencyAmount = 0;
 
     private static Texture chestTexture;
     private static TextureRegion closedRegion;
@@ -31,9 +34,9 @@ public class Chest extends InteractiveObject {
         }
     }
 
-    // Constructor kembali sederhana (tanpa parameter flag/message)
-    public Chest(String name, float x, float y) {
+    public Chest(String name, float x, float y, int currencyAmount) {
         super(name, x, y, 48, 48);
+        this.currencyAmount = currencyAmount;
         isSolid = true;
 
         if (chestTexture == null) loadAssets();
@@ -69,36 +72,45 @@ public class Chest extends InteractiveObject {
         // 2. Simpan bahwa chest ini sudah dibuka
         GameSession.getInstance().set(this.name + "_OPENED");
 
-        // 3. Dapet Dash
-        if (!GameSession.getInstance().isSet(SKILL_REWARD)) {
-            GameSession.getInstance().set(SKILL_REWARD);
-            System.out.println("Skill Obtained: " + SKILL_REWARD);
+        // 3. Trigger map script if available to override or add behavior
+        MapScript currentScript = LevelMapManager.getInstance().getCurrentScript();
+        if (currentScript != null) {
+            currentScript.onTrigger(this.name, events);
         }
 
-        // 4. Event Dialog
-        events.queue(new CmdWait(0.2f));
-        events.queue(new CmdWindowFlex()
-            .setText(MESSAGE)
-            .setBounds(
-                Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
-                Gdx.graphics.getHeight() * 3 / 4,
-                Gdx.graphics.getWidth() * 2 / 3,
-                36 + 18
-            )
-            .setDuration(1f)
-            .setBlocking(false)
-        );
-        events.queue(new CmdWait(1f));
-        events.queue(new CmdWindowFlex()
-            .setText("Press J to Dash!")
-            .setBounds(
-                Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
-                Gdx.graphics.getHeight() * 3 / 4,
-                Gdx.graphics.getWidth() * 2 / 3,
-                36 + 18
-            )
-            .setDuration(1f)
-            .setBlocking(false)
-        );
+        // 4. Default behavior: Grant currency from Tiled properties
+        if (currencyAmount > 0) {
+            if (Main.currentLocalId != null) {
+                String key = SecurityUtils.generateVerificationKey(Main.currentLocalId, currencyAmount);
+                NetworkManager.grantCurrency(Main.currentLocalId, currencyAmount, key, new NetworkCallback<UserAuthResponse>() {
+                    @Override
+                    public void onSuccess(UserAuthResponse response) {
+                        System.out.println("Chest currency reward granted: " + currencyAmount);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        System.err.println("Failed to grant chest currency: " + error);
+                    }
+                });
+
+                // Show dynamic dialog message
+                events.queue(new CmdWait(0.2f));
+                events.queue(new CmdWindowFlex()
+                    .setText("You obtained " + currencyAmount + " Premium Currency!")
+                    .setBounds(
+                        Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
+                        Gdx.graphics.getHeight() * 3 / 4,
+                        Gdx.graphics.getWidth() * 2 / 3,
+                        36 + 18
+                    )
+                    .setDuration(2f)
+                    .setBlocking(true)
+                );
+                events.queue(new CmdWait(0.5f));
+            } else {
+                System.err.println("Cannot grant chest currency: player is not logged in.");
+            }
+        }
     }
 }

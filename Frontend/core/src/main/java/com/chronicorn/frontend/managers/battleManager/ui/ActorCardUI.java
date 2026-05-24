@@ -23,6 +23,7 @@ public class ActorCardUI extends Group implements BattlerObserver {
     public interface Listener {
         void onAllyClicked(Battler clickedAlly);
         void onAllyHovered(ActorCardUI card);
+        void onUltimateClicked(Actor actor);
     }
     private Listener listener;
     private boolean isPrimaryTarget = false;
@@ -194,8 +195,20 @@ public class ActorCardUI extends Group implements BattlerObserver {
         reticleGroup.addActor(reticle);
         this.addActor(reticleGroup);
 
+        // Add click listener to ultGroup for Ultimate casting
+        ultGroup.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                if (battler instanceof Actor && battler.getEnergy() >= battler.getMaxEnergy()) {
+                    if (listener != null) {
+                        listener.onUltimateClicked((Actor) battler);
+                    }
+                }
+            }
+        });
+
         // Touchable Listener
-        this.setTouchable(Touchable.disabled);
+        this.setTouchable(Touchable.childrenOnly);
         this.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {

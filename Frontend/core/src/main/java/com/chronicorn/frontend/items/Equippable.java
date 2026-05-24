@@ -32,6 +32,11 @@ public class Equippable extends Item {
     public StatType getRandomStat() { return randomStat; }
     public float getRandomPercentBonus() { return randomPercentBonus; }
 
+    public void setFixedStat(StatType fixedStat) { this.fixedStat = fixedStat; }
+    public void setFixedValue(float fixedValue) { this.fixedValue = fixedValue; }
+    public void setRandomStat(StatType randomStat) { this.randomStat = randomStat; }
+    public void setRandomPercentBonus(float randomPercentBonus) { this.randomPercentBonus = randomPercentBonus; }
+
     @Override
     public boolean useOn(Actor target) {
         return target.equip(this);

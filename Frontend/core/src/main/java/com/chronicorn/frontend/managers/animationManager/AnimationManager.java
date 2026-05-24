@@ -23,6 +23,19 @@ import java.util.HashSet;
 public class AnimationManager {
     // --- STATIC CACHE (Global Memory) ---
     private static final HashMap<String, Animation<TextureRegion>> vfxCache = new HashMap<>();
+    private static JsonValue staticVfxDatabase;
+
+    public static JsonValue getVfxDatabase() {
+        if (staticVfxDatabase == null) {
+            try {
+                staticVfxDatabase = new JsonReader().parse(Gdx.files.internal("data/vfx_data.json"));
+            } catch (Exception e) {
+                Gdx.app.error("AnimationManager", "Could not load vfx_data.json", e);
+                staticVfxDatabase = new JsonValue(JsonValue.ValueType.object);
+            }
+        }
+        return staticVfxDatabase;
+    }
 
     // --- INSTANCE VARIABLES (UI Pointers) ---
     private Group enemyLayer;
@@ -38,12 +51,7 @@ public class AnimationManager {
         this.enemyWidgets = enemyWidgets;
         this.actorCards = actorCards;
 
-        try {
-            vfxDatabase = new JsonReader().parse(Gdx.files.internal("data/vfx_data.json"));
-        } catch (Exception e) {
-            Gdx.app.error("AnimationManager", "Could not load vfx_data.json", e);
-            vfxDatabase = new JsonValue(JsonValue.ValueType.object); // Empty fallback
-        }
+        this.vfxDatabase = getVfxDatabase();
     }
 
     // Static loader
@@ -120,6 +128,60 @@ public class AnimationManager {
     }
 
     // --- VISUAL EXECUTION METHODS ---
+ 
+    public static VFXActor createVFXActor(String vfxId, float targetX, float targetY, Runnable onAnimationDone) {
+        JsonValue database = getVfxDatabase();
+        JsonValue vfxData = database.get(vfxId);
+
+        if (vfxData != null) {
+            // Get base image (defaults to the vfxId if "vfx" property isn't explicitly stated)
+            String baseImage = vfxData.getString("vfx", vfxId);
+            int columns = vfxData.getInt("column", 5);
+            int rows = vfxData.getInt("row", 1);
+            int startFrame = vfxData.getInt("startFrame", 0);
+            int endFrame = vfxData.getInt("endFrame", (columns * rows) - 1);
+            float frameDuration = vfxData.getFloat("duration", 0.05f);
+
+            Animation<TextureRegion> vfx = getVFX(baseImage, columns, rows, startFrame, endFrame, frameDuration);
+
+            VFXActor vfxActor = new VFXActor(vfx, null); // Callback goes to sequence
+            vfxActor.setPosition(targetX, targetY);
+
+            com.badlogic.gdx.scenes.scene2d.actions.SequenceAction sequence = Actions.sequence();
+
+            JsonValue choreography = vfxData.get("choreography");
+            if (choreography != null) {
+                for (JsonValue cmd : choreography) {
+                    com.badlogic.gdx.scenes.scene2d.Action parsedAction = DynamicActionParser.parse(cmd.asString());
+                    if (parsedAction != null) {
+                        sequence.addAction(parsedAction);
+                    }
+                }
+            }
+
+            // 1. Unlock the queue
+            sequence.addAction(Actions.run(new Runnable() {
+                @Override
+                public void run() {
+                    if (onAnimationDone != null) {
+                        onAnimationDone.run();
+                    }
+                }
+            }));
+
+            // 2. Explicitly delete the VFXActor from the screen
+            sequence.addAction(Actions.removeActor());
+
+            vfxActor.addAction(sequence);
+            return vfxActor;
+        } else {
+            // -- FALLBACK: No JSON entry exists. Play a standard 1:1 animation --
+            Animation<TextureRegion> vfx = getVFX(vfxId, 5, 1, 0, 4, 0.05f);
+            VFXActor vfxActor = new VFXActor(vfx, onAnimationDone != null ? onAnimationDone : () -> {});
+            vfxActor.setPosition(targetX, targetY);
+            return vfxActor;
+        }
+    }
 
     public void playVFX(String vfxId, Action selectedAction, Runnable onAnimationDone) {
         if (selectedAction == null || selectedAction.getPrimaryTarget() == null) {
@@ -162,65 +224,13 @@ public class AnimationManager {
             targetLayer = uiVfxLayer;
         }
 
-        // 2. Query the JSON Database using the string ID (e.g., "omnislash")
-        JsonValue vfxData = vfxDatabase.get(vfxId);
+        if (targetLayer == null) {
+            if (onAnimationDone != null) onAnimationDone.run();
+            return;
+        }
 
-        if (vfxData != null) {
-            // -- JSON DATA FOUND: Execute Dynamic Choreography --
-
-            // Get base image (defaults to the vfxId if "vfx" property isn't explicitly stated)
-            String baseImage = vfxData.getString("vfx", vfxId);
-            int columns = vfxData.getInt("column", 5);
-            int rows = vfxData.getInt("row", 1);
-            int startFrame = vfxData.getInt("startFrame", 0);
-            int endFrame = vfxData.getInt("endFrame", (columns * rows) - 1);
-            float frameDuration = vfxData.getFloat("duration", 0.05f);
-
-            Animation<TextureRegion> vfx = getVFX(baseImage, columns, rows, startFrame, endFrame, frameDuration);
-
-            VFXActor vfxActor = new VFXActor(vfx, null); // Callback goes to sequence
-            vfxActor.setPosition(targetX, targetY);
-
-            com.badlogic.gdx.scenes.scene2d.actions.SequenceAction sequence = Actions.sequence();
-
-            JsonValue choreography = vfxData.get("choreography");
-            if (choreography != null) {
-                for (JsonValue cmd : choreography) {
-                    com.badlogic.gdx.scenes.scene2d.Action parsedAction = DynamicActionParser.parse(cmd.asString());
-                    if (parsedAction != null) {
-                        sequence.addAction(parsedAction);
-                    }
-                }
-            }
-
-            // 1. Unlock the queue
-            sequence.addAction(Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    if (onAnimationDone != null) {
-                        onAnimationDone.run();
-                    }
-                }
-            }));
-
-            // 2. Explicitly delete the VFXActor from the screen
-            sequence.addAction(Actions.removeActor());
-
-            vfxActor.addAction(sequence);
-            if (targetLayer == null) {
-                if (onAnimationDone != null) onAnimationDone.run();
-                return;
-            }
-            targetLayer.addActor(vfxActor);
-        } else {
-            // -- FALLBACK: No JSON entry exists. Play a standard 1:1 animation --
-            Animation<TextureRegion> vfx = getVFX(vfxId, 5, 1, 0, 4, 0.05f);
-            VFXActor vfxActor = new VFXActor(vfx, onAnimationDone);
-            vfxActor.setPosition(targetX, targetY);
-            if (targetLayer == null) {
-                if (onAnimationDone != null) onAnimationDone.run();
-                return;
-            }
+        VFXActor vfxActor = createVFXActor(vfxId, targetX, targetY, onAnimationDone);
+        if (vfxActor != null) {
             targetLayer.addActor(vfxActor);
         }
     }

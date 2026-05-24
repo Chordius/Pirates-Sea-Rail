@@ -90,4 +90,8 @@ public class PlayerParty {
     public Map<String, Actor> getOwnedCharacters() {
         return ownedCharacters;
     }
+
+    public String[] getActivePartyIdsArray() {
+        return activePartyIds;
+    }
 }

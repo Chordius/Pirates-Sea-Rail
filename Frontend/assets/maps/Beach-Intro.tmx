@@ -143,24 +143,26 @@
   </layer>
  </group>
  <objectgroup id="6" name="Logic">
-  <object id="1" name="Spawn" x="768" y="1200">
+  <object id="1" name="Spawn" x="841.5" y="1179.5">
    <point/>
   </object>
  </objectgroup>
  <objectgroup id="8" name="Objects">
-  <object id="3" name="NPC_Boy" type="MapEvent" x="768" y="1200" width="48" height="48">
+  <object id="3" name="NPC_Girl" type="MapEvent" x="768" y="1200" width="48" height="48">
    <properties>
     <property name="autonomous_move_delay" type="int" value="1"/>
     <property name="autonomous_move_route" value=""/>
     <property name="autonomous_move_type" value="STATIC"/>
     <property name="base_speed" type="float" value="70"/>
-    <property name="character_index" type="int" value="0"/>
+    <property name="character_index" type="int" value="5"/>
     <property name="initial_direction" value="UP"/>
     <property name="is_solid" type="bool" value="true"/>
     <property name="is_static" type="bool" value="false"/>
     <property name="script_id" value=""/>
-    <property name="sprite_sheet" type="file" value="../characters/feschar_big_022.png"/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_021.png"/>
     <property name="type" value="MapEvent"/>
+    <property name="visibility_flag" value="L0_INTRO_DONE"/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
    </properties>
   </object>
   <object id="4" name="NPC_Player" type="MapEvent" x="768" y="1104" width="48" height="48">
