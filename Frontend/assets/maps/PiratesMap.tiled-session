@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "CherryTownDiner.tmx",
+    "activeFile": "Jail-1B.tmx",
     "automapping.whileDrawing": true,
     "expandedProjectPaths": [
     ],
@@ -15,8 +15,8 @@
                 3
             ],
             "expandedObjectLayers": [
-                6,
-                8
+                8,
+                6
             ],
             "scale": 0.75,
             "selectedLayer": 7,
@@ -24,6 +24,12 @@
                 "x": 960,
                 "y": 959.3333333333334
             }
+        },
+        "C:/../Downloads/Tiled/Tiled_SampleProject_November041122/maps/Tilesets/TileAuto_Ground_04_Road&Hole.json": {
+            "scaleInDock": 1
+        },
+        "C:/../Downloads/Tiled/Tiled_SampleProject_November041122/maps/Tilesets/Tileset_Regular_01_Floors.json": {
+            "scaleInDock": 1
         },
         "C:/Users/Jesaya/Documents/Game/Resource/Tiled/Tiled_SampleProject_November041122/maps/Tilesets/TileAuto_Ground_05_Rugs.json": {
             "scaleInDock": 1,
@@ -75,6 +81,9 @@
             "scaleInDock": 1
         },
         "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/Dungeon.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/Round and Round we go.tsx": {
             "scaleInDock": 1
         },
         "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/TSMap/RoundandRoundwego.tsx": {
@@ -200,13 +209,13 @@
                 3
             ],
             "expandedObjectLayers": [
-                5,
-                8
+                8,
+                5
             ],
             "scale": 0.33,
             "selectedLayer": 8,
             "viewCenter": {
-                "x": 1887.8787878787878,
+                "x": 2093.939393939394,
                 "y": 1581.8181818181815
             }
         },
@@ -218,11 +227,11 @@
                 2,
                 3
             ],
-            "scale": 1.5,
+            "scale": 0.75,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 776,
-                "y": 740.6666666666666
+                "x": 693.3333333333333,
+                "y": 731.9999999999999
             }
         },
         "CherryTownInn.tmx": {
@@ -237,8 +246,8 @@
             "scale": 1,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 901,
-                "y": 721
+                "x": 969,
+                "y": 595
             }
         },
         "CherryTownInnRoom.tmx": {
@@ -246,13 +255,13 @@
                 2
             ],
             "expandedObjectLayers": [
-                6,
-                7
+                7,
+                6
             ],
             "scale": 1.5,
             "selectedLayer": 6,
             "viewCenter": {
-                "x": 350,
+                "x": 395.33333333333337,
                 "y": 401.99999999999994
             }
         },
@@ -265,11 +274,11 @@
                 6,
                 5
             ],
-            "scale": 1.5,
-            "selectedLayer": 6,
+            "scale": 2,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 814.6666666666666,
-                "y": 566
+                "x": 967,
+                "y": 483.5
             }
         },
         "Jail-2B.tmx": {
@@ -308,7 +317,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 648,
-                "y": 551.3333333333333
+                "y": 550.6666666666667
             }
         },
         "Level1.tmx": {
@@ -331,16 +340,27 @@
                 13
             ],
             "expandedObjectLayers": [
-                7,
                 11,
+                7,
                 6
             ],
-            "scale": 0.75,
-            "selectedLayer": 9,
+            "scale": 1.5,
+            "selectedLayer": 8,
             "viewCenter": {
-                "x": 850.6666666666666,
-                "y": 3675.333333333333
+                "x": 909.3333333333333,
+                "y": 889.3333333333333
             }
+        },
+        "Level2.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 758.6666666666667,
+                "y": 2932
+            }
+        },
+        "Level2.tmx#24_fes_Dungeon_C_MV": {
+            "scaleInDock": 1
         },
         "test.tmx": {
             "expandedGroupLayers": [
@@ -353,7 +373,7 @@
             "selectedLayer": 4,
             "viewCenter": {
                 "x": 482,
-                "y": 479
+                "y": 478
             }
         }
     },
@@ -378,20 +398,20 @@
         "CherryTownDiner.tmx"
     ],
     "project": "PiratesMap.tiled-project",
-    "property.type": "string",
+    "property.type": "int",
     "recentFiles": [
+        "Level2-48.tmx",
+        "Level2.tmx",
         "Beach-Intro.tmx",
         "test.tmx",
-        "Jail-1B.tmx",
-        "Jail-2B.tmx",
-        "Jail-3B.tmx",
-        "Jail-4B.tmx",
-        "CherryTown.tmx",
-        "CherryTownInn.tmx",
-        "CherryTownInnRoom.tmx",
         "CherryTownDiner.tmx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_inside_BCDE_02.tsx",
-        "C:/Users/Jesaya/Documents/OOP/Final Project/Finpro-OOP-kelompok-5/Frontend/assets/tilesets/new tilesets/fes_Inside_C_MV.tsx"
+        "CherryTownInnRoom.tmx",
+        "CherryTownInn.tmx",
+        "CherryTown.tmx",
+        "Jail-4B.tmx",
+        "Jail-3B.tmx",
+        "Jail-2B.tmx",
+        "Jail-1B.tmx"
     ],
     "textEdit.monospace": true,
     "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",

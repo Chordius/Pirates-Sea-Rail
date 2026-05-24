@@ -54,6 +54,29 @@ public class Actor extends Battler {
         this.id = string;
     }
 
+    private int exp = 0;
+
+    public int getExp() {
+        return exp;
+    }
+
+    public void setExp(int exp) {
+        this.exp = exp;
+    }
+
+    public int getExpNeededForNextLevel() {
+        return level * level * level * 2;
+    }
+
+    public void gainExp(int amount) {
+        this.exp += amount;
+        while (this.exp >= getExpNeededForNextLevel()) {
+            this.exp -= getExpNeededForNextLevel();
+            this.level++;
+            calculateParams(this.level);
+        }
+    }
+
     public void changeLevel(int level) {
         this.level = level;
         calculateParams(this.level);

@@ -96,7 +96,7 @@ public class TitleScreen implements Screen {
                             }
                         });
                     } else {
-                        openLoginWindow();
+                        openLoginWindow(true);
                     }
                 }
             });
@@ -118,7 +118,7 @@ public class TitleScreen implements Screen {
                     com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen(true)); // isNewGame = true
                 } else {
                     // Start fresh interactive login
-                    openLoginWindow();
+                    openLoginWindow(false);
                 }
             }
         });
@@ -150,12 +150,12 @@ public class TitleScreen implements Screen {
     }
 
     // --- METHOD BARU: BUKA LOGIN ---
-    private void openLoginWindow() {
+    private void openLoginWindow(boolean isContinue) {
         // Sembunyikan menu utama agar tidak tumpang tindih
         mainTable.setVisible(false);
 
         // Buat Window Login
-        WindowLogin loginWindow = new WindowLogin();
+        WindowLogin loginWindow = new WindowLogin(isContinue);
         loginWindow.open();
 
         // Letakkan di tengah layar

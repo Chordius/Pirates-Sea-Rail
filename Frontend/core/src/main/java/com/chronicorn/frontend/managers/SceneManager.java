@@ -27,6 +27,10 @@ public class SceneManager {
         this.game = game;
     }
 
+    public Screen getCurrentScreen() {
+        return game != null ? game.getScreen() : null;
+    }
+
     public void changeScreen(Screen screen) {
         while (!screenStack.isEmpty()) {
             screenStack.pop().dispose();

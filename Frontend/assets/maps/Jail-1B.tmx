@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="47" height="23" tilewidth="48" tileheight="48" infinite="0" nextlayerid="8" nextobjectid="9">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="47" height="23" tilewidth="48" tileheight="48" infinite="0" nextlayerid="8" nextobjectid="11">
  <tileset firstgid="1" source="../TSMap/collision.tsx"/>
  <tileset firstgid="5" source="../tilesets/new tilesets/fes_Dungeon_B_MV.tsx"/>
  <group id="2" name="UNDER PLAYER">
@@ -111,6 +111,14 @@
     <property name="script_id" value=""/>
     <property name="sprite_sheet" type="file" value="../characters/feschar_big_032.png"/>
     <property name="type" value="MapEvent"/>
+   </properties>
+  </object>
+  <object id="10" name="Chest_Cell_1" x="1056" y="432" width="48" height="48">
+   <properties>
+    <property name="currency_amount" type="int" value="30"/>
+    <property name="item_count" type="int" value="1"/>
+    <property name="item_id" value="ITEM_POTION"/>
+    <property name="type" value="Chest"/>
    </properties>
   </object>
  </objectgroup>

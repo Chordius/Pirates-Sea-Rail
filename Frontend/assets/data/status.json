@@ -35,7 +35,7 @@
   },
   "second_wind": {
     "name": "Second Wind",
-    "iconId": "icon_second_wind_status",
+    "iconId": "icon_second_wind",
     "turns": 3
   },
   "dominique_marker": {

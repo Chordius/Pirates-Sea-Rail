@@ -221,7 +221,7 @@ public class EquipMenuTable extends Table {
             return;
         }
 
-        int columns = 3; // Shifted from 2 to 3 to optimize spacing layout since names are removed
+        int columns = 4;
         int currentCol = 0;
 
         for (final Equippable equip : inventory.getOwnedEquipments()) {

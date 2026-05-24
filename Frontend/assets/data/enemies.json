@@ -8,23 +8,52 @@
     "speed": 18,
     "level": 10,
     "maxWeakness": 20,
-    "innateElements": ["earth", "fire"],
-    "skills": ["basic_attack"]
+    "innateElements": [
+      "earth",
+      "fire"
+    ],
+    "skills": [
+      "basic_attack"
+    ],
+    "baseExp": 120,
+    "drops": [
+      {
+        "itemId": "ITEM_POTION",
+        "chance": 0.3
+      },
+      {
+        "itemId": "W001",
+        "chance": 0.1
+      }
+    ]
   },
-
   "soldier": {
     "name": "Soldier",
-    "maxHp": 200,
-    "attack": 80,
-    "defense": 75,
+    "maxHp": 70,
+    "attack": 65,
+    "defense": 65,
     "magic": 65,
     "speed": 20,
     "level": 5,
     "maxWeakness": 70,
-    "innateElements": ["earth"],
-    "skills": ["basic_attack"]
+    "innateElements": [
+      "earth"
+    ],
+    "skills": [
+      "basic_attack"
+    ],
+    "baseExp": 80,
+    "drops": [
+      {
+        "itemId": "ITEM_POTION",
+        "chance": 0.4
+      },
+      {
+        "itemId": "W003",
+        "chance": 0.15
+      }
+    ]
   },
-
   "goblin": {
     "name": "Goblin",
     "maxHp": 35,
@@ -34,10 +63,25 @@
     "speed": 18,
     "level": 1,
     "maxWeakness": 50,
-    "innateElements": ["earth", "fire"],
-    "skills": ["basic_attack"]
+    "innateElements": [
+      "earth",
+      "fire"
+    ],
+    "skills": [
+      "basic_attack"
+    ],
+    "baseExp": 40,
+    "drops": [
+      {
+        "itemId": "ITEM_POTION",
+        "chance": 0.2
+      },
+      {
+        "itemId": "ITEM_ELIXIR",
+        "chance": 0.1
+      }
+    ]
   },
-
   "golem": {
     "name": "Golem",
     "maxHp": 35,
@@ -47,10 +91,25 @@
     "speed": 18,
     "level": 1,
     "maxWeakness": 50,
-    "innateElements": ["earth", "fire"],
-    "skills": ["basic_attack"]
+    "innateElements": [
+      "earth",
+      "fire"
+    ],
+    "skills": [
+      "basic_attack"
+    ],
+    "baseExp": 50,
+    "drops": [
+      {
+        "itemId": "ITEM_POTION",
+        "chance": 0.3
+      },
+      {
+        "itemId": "W002",
+        "chance": 0.1
+      }
+    ]
   },
-
   "lord": {
     "name": "Lord",
     "maxHp": 35,
@@ -60,7 +119,23 @@
     "speed": 18,
     "level": 1,
     "maxWeakness": 50,
-    "innateElements": ["earth", "fire"],
-    "skills": ["basic_attack"]
+    "innateElements": [
+      "earth",
+      "fire"
+    ],
+    "skills": [
+      "basic_attack"
+    ],
+    "baseExp": 60,
+    "drops": [
+      {
+        "itemId": "ITEM_ELIXIR",
+        "chance": 0.3
+      },
+      {
+        "itemId": "W004",
+        "chance": 0.05
+      }
+    ]
   }
 }

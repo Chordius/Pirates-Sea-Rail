@@ -106,6 +106,7 @@ public class SaveManager {
                     ActorSaveData actorSave = new ActorSaveData();
                     actorSave.charId = charId;
                     actorSave.level = actor.getLevel();
+                    actorSave.exp = actor.getExp();
                     actorSave.hp = actor.getHp();
                     actorSave.equippedItemIndices = new Array<>();
 
@@ -336,6 +337,7 @@ public class SaveManager {
                     Actor actor = com.chronicorn.frontend.battlers.ActorFactory.createActor(charId);
                     actor.setId(charId);
                     actor.changeLevel(actorData.level);
+                    actor.setExp(actorData.exp);
                     actor.heal(actorData.hp - actor.getHp(), null); // set saved HP
 
                     // Restore equipments
@@ -364,6 +366,81 @@ public class SaveManager {
             }
 
             System.out.println("SaveManager: Loaded save data successfully.");
+            if (loadCallback != null) {
+                loadCallback.run();
+            }
+        } catch (Exception e) {
+            Gdx.app.error("SaveManager", "Error applying loaded save data: " + e.getMessage(), e);
+        }
+    }
+
+    public void loadGameLocationAndFlagsOnly(final Runnable loadCallback) {
+        try {
+            FileHandle file = Gdx.files.local(SAVE_FILE_NAME);
+            if (!file.exists()) {
+                System.out.println("SaveManager: No save file found to load. Healing party as fallback.");
+                GameSession session = GameSession.getInstance();
+                if (session.getParty() != null && session.getParty().getOwnedCharacters() != null) {
+                    for (Actor actor : session.getParty().getOwnedCharacters().values()) {
+                        actor.heal(actor.getMaxHp() - actor.getHp(), null);
+                    }
+                }
+                if (loadCallback != null) {
+                    loadCallback.run();
+                }
+                return;
+            }
+
+            SaveData saveData = json.fromJson(SaveData.class, file.readString());
+            if (saveData == null) {
+                System.out.println("SaveManager: Save data is empty or invalid.");
+                return;
+            }
+
+            // Restore flags and variables
+            GameSession session = GameSession.getInstance();
+            if (session.getFlags() != null) {
+                session.getFlags().clear();
+            }
+            if (session.getVariables() != null) {
+                session.getVariables().clear();
+            }
+
+            if (saveData.flags != null) {
+                for (String flag : saveData.flags) {
+                    session.set(flag);
+                }
+            }
+            if (saveData.variables != null) {
+                for (ObjectMap.Entry<String, Object> entry : saveData.variables.entries()) {
+                    session.setVar(entry.key, entry.value);
+                }
+            }
+
+            // Restore map position & direction
+            if (saveData.currentMapName != null) {
+                LevelMapManager.getInstance().changeLevel(saveData.currentMapName, saveData.playerX, saveData.playerY);
+            }
+            Player player = LevelMapManager.getInstance().getPlayer();
+            if (player != null) {
+                if (saveData.playerDirection != null) {
+                    try {
+                        player.setCurrentDirection(
+                                com.chronicorn.frontend.contants.Direction.valueOf(saveData.playerDirection));
+                    } catch (Exception ignored) {
+                    }
+                }
+                player.hp = saveData.playerHp;
+            }
+
+            // Revive/heal party member actors
+            if (session.getParty() != null && session.getParty().getOwnedCharacters() != null) {
+                for (Actor actor : session.getParty().getOwnedCharacters().values()) {
+                    actor.heal(actor.getMaxHp() - actor.getHp(), null);
+                }
+            }
+
+            System.out.println("SaveManager: Loaded save data (location and flags only) successfully.");
             if (loadCallback != null) {
                 loadCallback.run();
             }
@@ -403,6 +480,7 @@ public class SaveManager {
     public static class ActorSaveData {
         public String charId;
         public int level;
+        public int exp;
         public int hp;
         public Array<Integer> equippedItemIndices;
     }

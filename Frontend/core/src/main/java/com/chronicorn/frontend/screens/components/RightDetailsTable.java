@@ -9,6 +9,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.managers.assetManager.ImageManager;
@@ -23,6 +28,7 @@ public class RightDetailsTable extends Table {
     }
 
     private EquipWeaponsListener equipListener;
+    private Table activeTooltip;
 
     public void setEquipListener(EquipWeaponsListener listener) {
         this.equipListener = listener;
@@ -201,6 +207,7 @@ public class RightDetailsTable extends Table {
     }
 
     public void updateDetails(Actor actor) {
+        hideSkillTooltip();
         if (actor == null) {
             this.setVisible(false);
             return;
@@ -241,21 +248,148 @@ public class RightDetailsTable extends Table {
         }
 
         for (int i = 0; i < 4; i++) {
-            Table skillBox = new Table();
+            final Table skillBox = new Table();
             skillBox.setBackground(ImageManager.skin.getDrawable(skillBgName));
 
             if (i < visibleSkills.size) {
-                Skill skill = visibleSkills.get(i);
+                final Skill skill = visibleSkills.get(i);
                 String iconName = skill.getIconId();
                 Image iconImg = new Image(ImageManager.skin.getDrawable(iconName));
                 iconImg.setScaling(Scaling.fit);
-                skillBox.add(iconImg).size(48, 48).center();
+                skillBox.add(iconImg).size(48, 48).center().padLeft(-4);
+
+                skillBox.setTouchable(Touchable.enabled);
+                skillBox.addListener(new ClickListener() {
+                    @Override
+                    public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                        super.enter(event, x, y, pointer, fromActor);
+                        if (pointer == -1) {
+                            showSkillTooltip(skill, skillBox);
+                        }
+                    }
+
+                    @Override
+                    public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+                        super.exit(event, x, y, pointer, toActor);
+                        if (pointer == -1) {
+                            hideSkillTooltip();
+                        }
+                    }
+                });
             }
             skillsTable.add(skillBox).size(72, 72).padLeft(28);
         }
     }
 
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (!visible) {
+            hideSkillTooltip();
+        }
+    }
+
+    @Override
+    public boolean remove() {
+        hideSkillTooltip();
+        return super.remove();
+    }
+
+    private void showSkillTooltip(Skill skill, Table skillBox) {
+        hideSkillTooltip();
+
+        Stage stage = getStage();
+        if (stage == null) return;
+
+        Table tooltipTable = new Table();
+        tooltipTable.setBackground(ImageManager.skin.newDrawable("white-pixel", new Color(0.08f, 0.08f, 0.08f, 0.95f)));
+        tooltipTable.pad(15);
+        tooltipTable.defaults().align(Align.left).space(6);
+
+        // Skill Name
+        Label nameLbl = new Label(skill.getName(), ImageManager.skin, "menu2");
+        nameLbl.setColor(Color.GOLD);
+        tooltipTable.add(nameLbl).left().row();
+
+        // Separator line
+        Table separator = new Table();
+        separator.setBackground(ImageManager.skin.newDrawable("white-pixel", Color.valueOf("aa9573")));
+        tooltipTable.add(separator).height(2).fillX().padTop(2).padBottom(4).row();
+
+        // Details grid
+        Table grid = new Table();
+        grid.defaults().align(Align.left).padRight(20);
+
+        Label typeLbl = new Label("Type: " + skill.getSkillType(), ImageManager.skin, "menu");
+        typeLbl.setFontScale(0.85f);
+        typeLbl.setColor(Color.LIGHT_GRAY);
+        grid.add(typeLbl);
+
+        Label scopeLbl = new Label("Scope: " + skill.getScope().name(), ImageManager.skin, "menu");
+        scopeLbl.setFontScale(0.85f);
+        scopeLbl.setColor(Color.LIGHT_GRAY);
+        grid.add(scopeLbl).row();
+
+        Label powerLbl = new Label("Base Power: " + skill.getBasePower(), ImageManager.skin, "menu");
+        powerLbl.setFontScale(0.85f);
+        powerLbl.setColor(Color.LIGHT_GRAY);
+        grid.add(powerLbl);
+
+        Label toughnessLbl = new Label("Toughness DMG: " + skill.getToughnessDMG(), ImageManager.skin, "menu");
+        toughnessLbl.setFontScale(0.85f);
+        toughnessLbl.setColor(Color.LIGHT_GRAY);
+        grid.add(toughnessLbl).row();
+
+        Label energyLbl = new Label("Energy Bonus: " + skill.getEnergyBonus(), ImageManager.skin, "menu");
+        energyLbl.setFontScale(0.85f);
+        energyLbl.setColor(Color.LIGHT_GRAY);
+        grid.add(energyLbl).colspan(2).row();
+
+        tooltipTable.add(grid).fillX().padBottom(5).row();
+
+        // Description
+        Label descLbl = new Label(skill.getDescription(), ImageManager.skin, "menu");
+        descLbl.setFontScale(0.85f);
+        descLbl.setWrap(true);
+        descLbl.setColor(Color.WHITE);
+        tooltipTable.add(descLbl).width(280).row();
+
+        tooltipTable.pack();
+
+        // Calculate stage coordinates of skillBox
+        Vector2 boxPos = new Vector2();
+        skillBox.localToStageCoordinates(boxPos);
+
+        float tooltipWidth = tooltipTable.getWidth();
+        float tooltipHeight = tooltipTable.getHeight();
+
+        // Align tooltip to the left of the skill box with a 15px gap, and flush with the top edge
+        float targetX = boxPos.x - tooltipWidth - 15;
+        float targetY = boxPos.y + 72 - tooltipHeight;
+
+        // Keep it safely on screen
+        targetX = Math.max(10, targetX);
+        targetY = Math.max(10, Math.min(Gdx.graphics.getHeight() - tooltipHeight - 10, targetY));
+
+        tooltipTable.setPosition(targetX, targetY);
+
+        // Slide/fade in animation
+        tooltipTable.getColor().a = 0f;
+        tooltipTable.addAction(Actions.fadeIn(0.15f));
+
+        stage.addActor(tooltipTable);
+        activeTooltip = tooltipTable;
+    }
+
+    private void hideSkillTooltip() {
+        if (activeTooltip != null) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
+    }
+
     public void playEntranceAnimation() {
+        hideSkillTooltip();
         // 1. Wipe the master queue
         this.clearActions();
 

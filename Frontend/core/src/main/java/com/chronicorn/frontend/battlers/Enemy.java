@@ -10,12 +10,32 @@ import com.chronicorn.frontend.skills.Action;
 import com.chronicorn.frontend.skills.Skill;
 
 public class Enemy extends Battler {
+    public static class EnemyDrop {
+        public String itemId;
+        public float chance;
+
+        public EnemyDrop(String itemId, float chance) {
+            this.itemId = itemId;
+            this.chance = chance;
+        }
+    }
+
     private String id;
     protected int weaknessbar;
     protected int maxWeakness;
     protected Array<Elements> innateElements;
     protected boolean signature;
     protected ElementMark mark;
+    private int baseExp = 50;
+    private Array<EnemyDrop> drops = new Array<>();
+
+    public int getBaseExp() {
+        return baseExp;
+    }
+
+    public Array<EnemyDrop> getDrops() {
+        return drops;
+    }
 
     public Enemy(
         String name,
@@ -35,6 +55,7 @@ public class Enemy extends Battler {
         this.signature = true;
         this.innateElements = new Array<>();
         this.mark = null;
+        this.baseExp = 50;
     }
 
     public Enemy(String id, JsonValue data) {
@@ -55,6 +76,7 @@ public class Enemy extends Battler {
         this.signature = true;
         this.innateElements = new Array<>();
         this.mark = null;
+        this.baseExp = data.getInt("baseExp", 50);
 
         // Parse innate elements
         JsonValue elementsArray = data.get("innateElements");
@@ -69,6 +91,16 @@ public class Enemy extends Battler {
         if (skillsArray != null) {
             for (JsonValue val : skillsArray) {
                 this.learnSkill(val.asString());
+            }
+        }
+
+        // Parse drops
+        JsonValue dropsArray = data.get("drops");
+        if (dropsArray != null) {
+            for (JsonValue val : dropsArray) {
+                String itemId = val.getString("itemId");
+                float chance = val.getFloat("chance", 0f);
+                this.drops.add(new EnemyDrop(itemId, chance));
             }
         }
     }

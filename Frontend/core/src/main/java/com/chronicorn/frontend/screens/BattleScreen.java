@@ -69,17 +69,29 @@ public class BattleScreen implements Screen {
     // Boolean
     private boolean isInputWindowActive = false;
     private boolean isSelectingTarget = false;
+    private boolean isVictoryWindowShowing = false;
+    private boolean isDefeatWindowShowing = false;
     private AnimationManager animationManager;
     private Action executingAction;
     private Array<String> enemyIds;
     private Actor ultimateCaster = null;
+    private String eventName;
 
     public BattleScreen() {
-        this(new Array<>(new String[]{"pirate", "pirate", "pirate", "pirate"}));
+        this(new Array<>(new String[] { "pirate", "pirate", "pirate", "pirate" }), false, null);
     }
 
     public BattleScreen(Array<String> enemyIds) {
+        this(enemyIds, false, null);
+    }
+
+    public BattleScreen(Array<String> enemyIds, boolean playerAdvantage) {
+        this(enemyIds, playerAdvantage, null);
+    }
+
+    public BattleScreen(Array<String> enemyIds, boolean playerAdvantage, String eventName) {
         this.enemyIds = enemyIds;
+        this.eventName = eventName;
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
@@ -97,16 +109,17 @@ public class BattleScreen implements Screen {
 
         skin = ImageManager.skin;
 
-        initializeBattle();
+        initializeBattle(playerAdvantage);
         buildUI();
     }
 
-    private void initializeBattle() {
+    private void initializeBattle(boolean playerAdvantage) {
         ArrayList<Battler> allBattlers = new ArrayList<>();
         enemies = new Array<>();
 
         // Load active party from GameSession, or fall back to default party if empty
-        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().getParty().getActivePartyActors();
+        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance()
+                .getParty().getActivePartyActors();
         if (activeParty == null || activeParty.isEmpty()) {
             allBattlers.add(new Sailor());
             allBattlers.add(new Porter());
@@ -114,12 +127,6 @@ public class BattleScreen implements Screen {
             allBattlers.add(new Deal());
         } else {
             allBattlers.addAll(activeParty);
-        }
-
-        for (Battler b : allBattlers) {
-            if (b instanceof Actor) {
-                ((Actor) b).changeLevel(10);
-            }
         }
 
         // Instantiate enemies dynamically via EnemyFactory using the passed IDs
@@ -138,6 +145,17 @@ public class BattleScreen implements Screen {
             Enemy fallback = new Pirate();
             allBattlers.add(fallback);
             enemies.add(fallback);
+        }
+
+        // Apply player advantage by reducing the weakness bar by 99%
+        if (playerAdvantage) {
+            for (Battler b : enemies) {
+                if (b instanceof Enemy) {
+                    Enemy enemy = (Enemy) b;
+                    int reduction = (int) (enemy.getMaxWeakness() * 0.99f);
+                    enemy.reduceWeaknessBar(reduction);
+                }
+            }
         }
 
         battleManager = new BattleManager(allBattlers);
@@ -165,9 +183,9 @@ public class BattleScreen implements Screen {
 
         // BACKGROUND LAYER (Added first so it renders at the very back)
         Image background = new BackgroundBuilder()
-            .setTexture("battleback")
-            .setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
-            .build(skin);
+                .setTexture("battleback")
+                .setSize(VIEWPORT_WIDTH, VIEWPORT_HEIGHT)
+                .build(skin);
         worldLayer.addActor(background);
 
         Image inspiration = new Image(skin.getDrawable("inspired"));
@@ -205,7 +223,7 @@ public class BattleScreen implements Screen {
                     @Override
                     public void onUltimateClicked(Actor actor) {
                         if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
-                            && battleManager.getActiveBattler().isPlayerControlled()) {
+                                && battleManager.getActiveBattler().isPlayerControlled()) {
                             triggerUltimate(actor);
                         }
                     }
@@ -220,18 +238,19 @@ public class BattleScreen implements Screen {
         stage.addActor(playerVFXLayer);
 
         animationManager = new AnimationManager(enemyLayer, playerVFXLayer, enemyWidgets, actorCards);
-        sequenceProcessor = new ActionSequenceProcessor(battleManager, animationManager, new ActionSequenceProcessor.SequenceEventListener() {
-            @Override
-            public void onCameraZoom(float targetScale, float duration) {
-                zoomWorld(targetScale, duration);
-            }
+        sequenceProcessor = new ActionSequenceProcessor(battleManager, animationManager,
+                new ActionSequenceProcessor.SequenceEventListener() {
+                    @Override
+                    public void onCameraZoom(float targetScale, float duration) {
+                        zoomWorld(targetScale, duration);
+                    }
 
-            @Override
-            public void onCameraReset() {
-                // Default back to 1.0x scale over a standard 0.3 seconds
-                resetWorldZoom();
-            }
-        });
+                    @Override
+                    public void onCameraReset() {
+                        // Default back to 1.0x scale over a standard 0.3 seconds
+                        resetWorldZoom();
+                    }
+                });
 
         // 2. Skill Menu Container
         skillMenuContainer = new Table();
@@ -369,11 +388,11 @@ public class BattleScreen implements Screen {
             }
 
             skillMenuContainer
-                .add(skillBtn)
-                .width(SkillMenuBuilder.getButtonWidth())
-                .height(SkillMenuBuilder.getButtonHeight())
-                .padBottom(0)
-                .row();
+                    .add(skillBtn)
+                    .width(SkillMenuBuilder.getButtonWidth())
+                    .height(SkillMenuBuilder.getButtonHeight())
+                    .padBottom(0)
+                    .row();
         }
         skillMenuContainer.setVisible(true);
     }
@@ -389,7 +408,8 @@ public class BattleScreen implements Screen {
         Action action = getCommandingActor().inputtingAction();
         action.setSkill(selectedSkill);
 
-        // DO NOT hide the skill menu here. It must remain visible so the player can click another skill.
+        // DO NOT hide the skill menu here. It must remain visible so the player can
+        // click another skill.
         onSelectAction();
     }
 
@@ -425,14 +445,16 @@ public class BattleScreen implements Screen {
 
     public void setHoveredTarget(EnemyWidget primaryWidget) {
         // 1. Clear UI visuals
-        for (EnemyWidget w : enemyWidgets) w.setTargeted(false);
+        for (EnemyWidget w : enemyWidgets)
+            w.setTargeted(false);
 
         // 2. Pure UI Logic: Find where we are in the array
         pendingPrimaryIndex = enemyWidgets.indexOf(primaryWidget, true);
         Skill selectedSkill = getCommandingActor().inputtingAction().getSkill();
 
         // 3. Get the "Hit Map" from Business Logic
-        pendingIndices = TargetingLogic.getTargetIndices(pendingPrimaryIndex, enemyWidgets.size, selectedSkill.getScope());
+        pendingIndices = TargetingLogic.getTargetIndices(pendingPrimaryIndex, enemyWidgets.size,
+                selectedSkill.getScope());
 
         for (int i = 0; i < enemyWidgets.size; i++) {
             EnemyWidget widget = enemyWidgets.get(i);
@@ -445,7 +467,8 @@ public class BattleScreen implements Screen {
         float screenCenterX = VIEWPORT_WIDTH / 2f;
         float widgetCenterX = primaryWidget.getX() + (primaryWidget.getWidth() / 2f);
 
-        // Calculate how far off-center the enemy is, and multiply by a factor (e.g., 0.2f)
+        // Calculate how far off-center the enemy is, and multiply by a factor (e.g.,
+        // 0.2f)
         // to prevent panning completely off the screen.
         float offset = (screenCenterX - widgetCenterX) * 0.1f;
 
@@ -495,7 +518,8 @@ public class BattleScreen implements Screen {
 
     public void setHoveredAllyTarget(ActorCardUI primaryCard) {
         // 1. Clear visuals
-        for (ActorCardUI card : actorCards) card.setTargeted(false, false);
+        for (ActorCardUI card : actorCards)
+            card.setTargeted(false, false);
 
         // 2. Find index
         int primaryIndex = actorCards.indexOf(primaryCard, true);
@@ -547,7 +571,7 @@ public class BattleScreen implements Screen {
 
         worldLayer.clearActions();
         worldLayer.addAction(Actions.moveTo(0, 0, 0.3f, Interpolation.pow2Out));
-        
+
         Battler commanding = getCommandingActor();
         commanding.clearAction();
         commanding.inputtingAction();
@@ -574,8 +598,8 @@ public class BattleScreen implements Screen {
         Battler commanding = getCommandingActor();
         Action finalAction = commanding.inputtingAction();
 
-        boolean isUltimate = (ultimateCaster != null) || 
-            (finalAction.getSkill() != null && "Ultimate".equals(finalAction.getSkill().getSkillType()));
+        boolean isUltimate = (ultimateCaster != null) ||
+                (finalAction.getSkill() != null && "Ultimate".equals(finalAction.getSkill().getSkillType()));
 
         if (isUltimate) {
             battleManager.submitUltimateAction(finalAction);
@@ -597,13 +621,45 @@ public class BattleScreen implements Screen {
 
         battleManager.update(delta);
 
+        if (isVictoryWindowShowing || isDefeatWindowShowing) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+                    || Gdx.input.justTouched()) {
+                if (isDefeatWindowShowing) {
+                    com.chronicorn.frontend.managers.SaveManager.getInstance()
+                            .loadGameLocationAndFlagsOnly(new Runnable() {
+                                @Override
+                                public void run() {
+                                    com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
+                                }
+                            });
+                } else {
+                    com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
+                }
+                return;
+            }
+        }
+
         if (battleManager.getCurrentState() == BattleManager.TurnState.BATTLE_END) {
-            com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
+            if (!isVictoryWindowShowing && !isDefeatWindowShowing) {
+                // Determine if players won or lost
+                boolean playersAlive = false;
+                for (Actor actor : battleManager.getGameParty()) {
+                    if (actor.isAlive()) {
+                        playersAlive = true;
+                        break;
+                    }
+                }
+                if (playersAlive) {
+                    showVictoryWindow();
+                } else {
+                    showDefeatWindow();
+                }
+            }
             return;
         }
 
         if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
-            && battleManager.getActiveBattler().isPlayerControlled()) {
+                && battleManager.getActiveBattler().isPlayerControlled()) {
 
             if (!isInputWindowActive) {
                 startActorCommandSelection();
@@ -648,7 +704,8 @@ public class BattleScreen implements Screen {
             final Battler enemy = enemies.get(i);
 
             if (enemy.isAlive()) {
-                EnemyWidget currentWidget = getEnemyWidget((Enemy) enemy, 0, 0);;
+                EnemyWidget currentWidget = getEnemyWidget((Enemy) enemy, 0, 0);
+                ;
                 currentWidget.setTouchable(Touchable.disabled);
 
                 // Add the widget to the tracking array
@@ -702,16 +759,14 @@ public class BattleScreen implements Screen {
         // 3. Vanish Animation (Shrink and Fade Out)
         deadWidget.clearActions();
         deadWidget.addAction(Actions.sequence(
-            Actions.parallel(
-                Actions.fadeOut(0.5f)
-            ),
-            Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    deadWidget.remove(); // Removes it from the Stage layer
-                }
-            })
-        ));
+                Actions.parallel(
+                        Actions.fadeOut(0.5f)),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        deadWidget.remove(); // Removes it from the Stage layer
+                    }
+                })));
 
         updateEnemyLayout(true, 0.4f);
     }
@@ -735,9 +790,8 @@ public class BattleScreen implements Screen {
         for (EnemyWidget widget : enemyWidgets) {
             if (animate) {
                 widget.addAction(Actions.sequence(
-                    Actions.delay(delay),
-                    Actions.moveTo(currentX, fixedY, 0.4f, Interpolation.pow2Out)
-                ));
+                        Actions.delay(delay),
+                        Actions.moveTo(currentX, fixedY, 0.4f, Interpolation.pow2Out)));
             } else {
                 widget.setPosition(currentX, fixedY);
             }
@@ -750,7 +804,8 @@ public class BattleScreen implements Screen {
     public void zoomWorld(float targetScale, float duration) {
         if (worldLayer != null) {
             worldLayer.addAction(Actions.scaleTo(targetScale, targetScale, duration, Interpolation.pow2Out));
-            worldLayer.addAction(Actions.moveBy(0, (int) (VIEWPORT_HEIGHT * ((1 - targetScale) * 2 / 3)), duration, Interpolation.pow2Out));
+            worldLayer.addAction(Actions.moveBy(0, (int) (VIEWPORT_HEIGHT * ((1 - targetScale) * 2 / 3)), duration,
+                    Interpolation.pow2Out));
         }
     }
 
@@ -761,19 +816,24 @@ public class BattleScreen implements Screen {
     }
 
     @Override
-    public void show() {}
+    public void show() {
+    }
 
     @Override
-    public void resize(int width, int height) {}
+    public void resize(int width, int height) {
+    }
 
     @Override
-    public void pause() {}
+    public void pause() {
+    }
 
     @Override
-    public void resume() {}
+    public void resume() {
+    }
 
     @Override
-    public void hide() {}
+    public void hide() {
+    }
 
     @Override
     public void dispose() {
@@ -792,5 +852,128 @@ public class BattleScreen implements Screen {
         AnimationManager.dispose();
         stage.dispose();
         // Assuming ImageManager.dispose() handles skin disposal globally
+    }
+
+    private void showVictoryWindow() {
+        isVictoryWindowShowing = true;
+
+        if (eventName != null && !eventName.isEmpty()) {
+            com.chronicorn.frontend.objects.InteractiveObject obj = LevelMapManager.getInstance()
+                    .getObjectByName(eventName);
+            if (obj instanceof com.chronicorn.frontend.objects.EnemyMapEvent) {
+                ((com.chronicorn.frontend.objects.EnemyMapEvent) obj).setDefeated(true);
+            }
+        }
+
+        // Calculate rewards
+        double averagePartyLevel = 0;
+        int activeCount = 0;
+        for (Actor actor : battleManager.getGameParty()) {
+            averagePartyLevel += actor.getLevel();
+            activeCount++;
+        }
+        if (activeCount > 0) {
+            averagePartyLevel /= activeCount;
+        } else {
+            averagePartyLevel = 1.0;
+        }
+
+        // Calculate total EXP and drops from all defeated enemies
+        int totalExp = 0;
+        Array<String> droppedItemNames = new Array<>();
+        for (Enemy enemy : battleManager.getInitialEnemies()) {
+            int enemyLevel = enemy.getLevel();
+            int baseExp = enemy.getBaseExp();
+            double term1 = (double) (baseExp * enemyLevel) / 14.0;
+            double term2 = (double) (2 * enemyLevel + 10) / (enemyLevel + averagePartyLevel + 10);
+            int expVal = (int) Math.round(term1 * Math.pow(term2, 2.5));
+            totalExp += expVal;
+
+            // Drops
+            for (Enemy.EnemyDrop drop : enemy.getDrops()) {
+                if (Math.random() < drop.chance) {
+                    com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().getInventory()
+                            .addItem(drop.itemId, 1);
+                    com.chronicorn.frontend.items.Item itemObj = com.chronicorn.frontend.items.ItemDatabase
+                            .getItem(drop.itemId);
+                    if (itemObj != null) {
+                        droppedItemNames.add(itemObj.getName());
+                    }
+                }
+            }
+        }
+
+        // Apply EXP and collect level-up messages
+        ArrayList<String> levelUpMessages = new ArrayList<>();
+        for (Actor actor : battleManager.getGameParty()) {
+            int oldLevel = actor.getLevel();
+            actor.gainExp(totalExp);
+            if (actor.getLevel() > oldLevel) {
+                levelUpMessages.add(actor.getName() + " leveled up to Level " + actor.getLevel() + "!");
+            }
+        }
+
+        // Build the UI overlay
+        Table overlay = new Table();
+        overlay.setFillParent(true);
+        overlay.setBackground(ImageManager.skin.newDrawable("white-pixel", new Color(0, 0, 0, 0.75f)));
+        overlay.center();
+
+        Label title = new Label("VICTORY", ImageManager.skin, "menu3");
+        title.setColor(Color.GOLD);
+        overlay.add(title).padBottom(20).row();
+
+        Label expLabel = new Label("Party gained " + totalExp + " EXP!", ImageManager.skin, "menu2");
+        expLabel.setColor(Color.WHITE);
+        overlay.add(expLabel).padBottom(15).row();
+
+        if (droppedItemNames.size > 0) {
+            StringBuilder sb = new StringBuilder("Found items: ");
+            for (int i = 0; i < droppedItemNames.size; i++) {
+                sb.append(droppedItemNames.get(i));
+                if (i < droppedItemNames.size - 1)
+                    sb.append(", ");
+            }
+            Label dropsLabel = new Label(sb.toString(), ImageManager.skin, "default");
+            dropsLabel.setColor(Color.LIGHT_GRAY);
+            overlay.add(dropsLabel).padBottom(15).row();
+        }
+
+        for (String msg : levelUpMessages) {
+            Label lvlLabel = new Label(msg, ImageManager.skin, "default");
+            lvlLabel.setColor(Color.GREEN);
+            overlay.add(lvlLabel).padBottom(10).row();
+        }
+
+        Label prompt = new Label("Press Space or Click to continue...", ImageManager.skin, "default");
+        prompt.setColor(Color.GRAY);
+        overlay.add(prompt).padTop(30).row();
+
+        stage.addActor(overlay);
+        stage.setKeyboardFocus(overlay);
+    }
+
+    private void showDefeatWindow() {
+        isDefeatWindowShowing = true;
+
+        Table overlay = new Table();
+        overlay.setFillParent(true);
+        overlay.setBackground(ImageManager.skin.newDrawable("white-pixel", new Color(0, 0, 0, 0.85f)));
+        overlay.center();
+
+        Label title = new Label("DEFEAT", ImageManager.skin, "menu3");
+        title.setColor(Color.RED);
+        overlay.add(title).padBottom(20).row();
+
+        Label desc = new Label("Your party was defeated in combat.", ImageManager.skin, "default");
+        desc.setColor(Color.WHITE);
+        overlay.add(desc).padBottom(30).row();
+
+        Label prompt = new Label("Press Space or Click to return...", ImageManager.skin, "default");
+        prompt.setColor(Color.GRAY);
+        overlay.add(prompt).row();
+
+        stage.addActor(overlay);
+        stage.setKeyboardFocus(overlay);
     }
 }

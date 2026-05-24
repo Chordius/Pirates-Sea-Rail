@@ -2,9 +2,11 @@ package com.chronicorn.frontend.managers.networkManager;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Net;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.net.HttpRequestBuilder;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonWriter;
+import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.networkManager.dto.*;
 
 public class NetworkManager {
@@ -18,8 +20,20 @@ public class NetworkManager {
         return instance;
     }
 
-    // Local host
-    private static final String BASE_URL = "http://localhost:8080/api";
+    private static int getOfflinePremiumCurrency() {
+        if (Gdx.app == null) return 1600;
+        Preferences prefs = Gdx.app.getPreferences("OfflineUserData");
+        return prefs.getInteger("premiumCurrency", 1600);
+    }
+
+    private static void setOfflinePremiumCurrency(int amount) {
+        if (Gdx.app != null) {
+            Preferences prefs = Gdx.app.getPreferences("OfflineUserData");
+            prefs.putInteger("premiumCurrency", amount);
+            prefs.flush();
+        }
+    }
+
     private static final Json json = new Json();
 
     static {
@@ -34,45 +48,151 @@ public class NetworkManager {
     // ==========================================
 
     public static void register(String email, String password, String username, NetworkCallback<UserAuthResponse> callback) {
+        if (NetworkConfigure.isOffline()) {
+            UserAuthResponse response = new UserAuthResponse();
+            response.localUserId = "offline_user";
+            response.username = username != null ? username : "Offline Sailor";
+            response.premiumCurrency = getOfflinePremiumCurrency();
+            Gdx.app.postRunnable(() -> callback.onSuccess(response));
+            return;
+        }
         UserAuthRequest request = new UserAuthRequest(email, password, username);
         sendPostRequest("/users/register", request, UserAuthResponse.class, callback);
     }
 
     public static void login(String email, String password, NetworkCallback<UserAuthResponse> callback) {
-        // Assuming you made a simple LibGDX class for UserAuthRequest
+        if (NetworkConfigure.isOffline()) {
+            UserAuthResponse response = new UserAuthResponse();
+            response.localUserId = "offline_user";
+            response.username = "Offline Sailor";
+            response.premiumCurrency = getOfflinePremiumCurrency();
+            Gdx.app.postRunnable(() -> callback.onSuccess(response));
+            return;
+        }
         UserAuthRequest request = new UserAuthRequest(email, password, null);
         sendPostRequest("/users/login", request, UserAuthResponse.class, callback);
     }
 
     public static void verifyParty(String userId, String[] partyCharIds, NetworkCallback<Boolean> callback) {
+        if (NetworkConfigure.isOffline()) {
+            Gdx.app.postRunnable(() -> callback.onSuccess(true));
+            return;
+        }
         PartyRequest request = new PartyRequest(userId, partyCharIds);
         sendPostRequest("/gacha/verify", request, Boolean.class, callback);
     }
 
     public static void pullGacha(String userId, String bannerId, NetworkCallback<GachaResult> callback) {
-        // Notice payload is null here because the UUID is passed in the URL path
+        if (NetworkConfigure.isOffline()) {
+            int currency = getOfflinePremiumCurrency();
+            if (currency < 160) {
+                Gdx.app.postRunnable(() -> callback.onError("Insufficient premium currency"));
+                return;
+            }
+            setOfflinePremiumCurrency(currency - 160);
+
+            String[] pool = {"C001", "C002", "C003", "C004", "W001", "W002", "W003", "W004"};
+            String rolled = pool[(int)(Math.random() * pool.length)];
+
+            GachaResult res = new GachaResult();
+            res.pulledCharId = rolled;
+            boolean isNew = true;
+            try {
+                if (GameSession.getInstance().getParty() != null) {
+                    isNew = !GameSession.getInstance().getParty().getOwnedCharacters().containsKey(rolled);
+                }
+            } catch (Exception ignored) {}
+            res.isNew = isNew;
+
+            Gdx.app.postRunnable(() -> callback.onSuccess(res));
+            return;
+        }
         sendPostRequest("/gacha/pull/" + userId + "?bannerId=" + bannerId, null, GachaResult.class, callback);
     }
 
     public static void pull10Gacha(String userId, String bannerId, NetworkCallback<GachaResult[]> callback) {
+        if (NetworkConfigure.isOffline()) {
+            int currency = getOfflinePremiumCurrency();
+            if (currency < 1600) {
+                Gdx.app.postRunnable(() -> callback.onError("Insufficient premium currency"));
+                return;
+            }
+            setOfflinePremiumCurrency(currency - 1600);
+
+            GachaResult[] results = new GachaResult[10];
+            String[] pool = {"C001", "C002", "C003", "C004", "W001", "W002", "W003", "W004"};
+            for (int i = 0; i < 10; i++) {
+                String rolled = pool[(int)(Math.random() * pool.length)];
+                GachaResult res = new GachaResult();
+                res.pulledCharId = rolled;
+                boolean isNew = true;
+                try {
+                    if (GameSession.getInstance().getParty() != null) {
+                        isNew = !GameSession.getInstance().getParty().getOwnedCharacters().containsKey(rolled);
+                    }
+                } catch (Exception ignored) {}
+                res.isNew = isNew;
+                results[i] = res;
+            }
+
+            Gdx.app.postRunnable(() -> callback.onSuccess(results));
+            return;
+        }
         sendPostRequest("/gacha/pull10/" + userId + "?bannerId=" + bannerId, null, GachaResult[].class, callback);
     }
 
     public static void buyCurrency(String localUserId, double cost, int currencyAmount, NetworkCallback<String> callback) {
+        if (NetworkConfigure.isOffline()) {
+            int currency = getOfflinePremiumCurrency();
+            setOfflinePremiumCurrency(currency + currencyAmount);
+            Gdx.app.postRunnable(() -> callback.onSuccess("Purchase Successful (Offline)"));
+            return;
+        }
         PurchaseRequest request = new PurchaseRequest(localUserId, cost, currencyAmount);
         sendPostRequest("/payment/buy-currency", request, String.class, callback);
     }
 
     public static void grantCurrency(String userId, int amount, String key, NetworkCallback<UserAuthResponse> callback) {
+        if (NetworkConfigure.isOffline()) {
+            int currency = getOfflinePremiumCurrency();
+            setOfflinePremiumCurrency(currency + amount);
+            UserAuthResponse response = new UserAuthResponse();
+            response.localUserId = "offline_user";
+            response.username = "Offline Sailor";
+            response.premiumCurrency = getOfflinePremiumCurrency();
+            Gdx.app.postRunnable(() -> callback.onSuccess(response));
+            return;
+        }
         sendPostRequest("/users/" + userId + "/grant-currency?amount=" + amount + "&key=" + key, null, UserAuthResponse.class, callback);
     }
 
     public static void grantCharacter(String userId, String charId, NetworkCallback<GachaResult> callback) {
+        if (NetworkConfigure.isOffline()) {
+            GachaResult result = new GachaResult();
+            result.pulledCharId = charId;
+            boolean isNew = true;
+            try {
+                if (GameSession.getInstance().getParty() != null) {
+                    isNew = !GameSession.getInstance().getParty().getOwnedCharacters().containsKey(charId);
+                }
+            } catch (Exception ignored) {}
+            result.isNew = isNew;
+            Gdx.app.postRunnable(() -> callback.onSuccess(result));
+            return;
+        }
         sendPostRequest("/gacha/grant/" + userId + "/" + charId, null, GachaResult.class, callback);
     }
 
-    public static void getUserInfo(String localUserId, NetworkCallback<com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse> callback) {
-        sendGetRequest("/users/" + localUserId, com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse.class, callback);
+    public static void getUserInfo(String localUserId, NetworkCallback<UserAuthResponse> callback) {
+        if (NetworkConfigure.isOffline()) {
+            UserAuthResponse response = new UserAuthResponse();
+            response.localUserId = "offline_user";
+            response.username = "Offline Sailor";
+            response.premiumCurrency = getOfflinePremiumCurrency();
+            Gdx.app.postRunnable(() -> callback.onSuccess(response));
+            return;
+        }
+        sendGetRequest("/users/" + localUserId, UserAuthResponse.class, callback);
     }
 
     // HELPER METHOD
@@ -80,7 +200,7 @@ public class NetworkManager {
         HttpRequestBuilder requestBuilder = new HttpRequestBuilder();
         Net.HttpRequest httpRequest = requestBuilder.newRequest()
             .method(Net.HttpMethods.POST)
-            .url(BASE_URL + endpoint)
+            .url(NetworkConfigure.getBaseUrl() + endpoint)
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .content(payload != null ? json.toJson(payload) : "")
@@ -125,7 +245,7 @@ public class NetworkManager {
         HttpRequestBuilder requestBuilder = new HttpRequestBuilder();
         Net.HttpRequest httpRequest = requestBuilder.newRequest()
             .method(Net.HttpMethods.GET)
-            .url(BASE_URL + endpoint)
+            .url(NetworkConfigure.getBaseUrl() + endpoint)
             .header("Accept", "application/json")
             .build();
 

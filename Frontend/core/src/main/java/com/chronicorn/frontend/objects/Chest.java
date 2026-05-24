@@ -7,6 +7,9 @@ import com.chronicorn.frontend.Main;
 import com.chronicorn.frontend.Player;
 import com.chronicorn.frontend.eventcommands.CmdWait;
 import com.chronicorn.frontend.eventcommands.CmdWindowFlex;
+import com.chronicorn.frontend.eventcommands.CmdAddItem;
+import com.chronicorn.frontend.items.Item;
+import com.chronicorn.frontend.items.ItemDatabase;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
@@ -20,6 +23,8 @@ import com.chronicorn.frontend.utils.SecurityUtils;
 public class Chest extends InteractiveObject {
     private boolean isOpen = false;
     private int currencyAmount = 0;
+    private String itemId;
+    private int itemCount;
 
     private static Texture chestTexture;
     private static TextureRegion closedRegion;
@@ -35,11 +40,18 @@ public class Chest extends InteractiveObject {
     }
 
     public Chest(String name, float x, float y, int currencyAmount) {
+        this(name, x, y, currencyAmount, null, 0);
+    }
+
+    public Chest(String name, float x, float y, int currencyAmount, String itemId, int itemCount) {
         super(name, x, y, 48, 48);
         this.currencyAmount = currencyAmount;
+        this.itemId = itemId;
+        this.itemCount = itemCount;
         isSolid = true;
 
-        if (chestTexture == null) loadAssets();
+        if (chestTexture == null)
+            loadAssets();
 
         // Cek apakah peti ini sudah pernah dibuka (load dari save data)
         if (GameSession.getInstance().isSet(name + "_OPENED")) {
@@ -62,7 +74,8 @@ public class Chest extends InteractiveObject {
 
     @Override
     public void interact(Player p, EventManager events) {
-        if (isOpen) return;
+        if (isOpen)
+            return;
 
         // 1. Ubah status jadi terbuka
         isOpen = true;
@@ -82,34 +95,55 @@ public class Chest extends InteractiveObject {
         if (currencyAmount > 0) {
             if (Main.currentLocalId != null) {
                 String key = SecurityUtils.generateVerificationKey(Main.currentLocalId, currencyAmount);
-                NetworkManager.grantCurrency(Main.currentLocalId, currencyAmount, key, new NetworkCallback<UserAuthResponse>() {
-                    @Override
-                    public void onSuccess(UserAuthResponse response) {
-                        System.out.println("Chest currency reward granted: " + currencyAmount);
-                    }
+                NetworkManager.grantCurrency(Main.currentLocalId, currencyAmount, key,
+                        new NetworkCallback<UserAuthResponse>() {
+                            @Override
+                            public void onSuccess(UserAuthResponse response) {
+                                System.out.println("Chest currency reward granted: " + currencyAmount);
+                            }
 
-                    @Override
-                    public void onError(String error) {
-                        System.err.println("Failed to grant chest currency: " + error);
-                    }
-                });
+                            @Override
+                            public void onError(String error) {
+                                System.err.println("Failed to grant chest currency: " + error);
+                            }
+                        });
 
                 // Show dynamic dialog message
                 events.queue(new CmdWait(0.2f));
                 events.queue(new CmdWindowFlex()
-                    .setText("You obtained " + currencyAmount + " Premium Currency!")
-                    .setBounds(
-                        Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
-                        Gdx.graphics.getHeight() * 3 / 4,
-                        Gdx.graphics.getWidth() * 2 / 3,
-                        36 + 18
-                    )
-                    .setDuration(2f)
-                    .setBlocking(true)
-                );
+                        .setText("You obtained " + currencyAmount + " Doubloon!")
+                        .setBounds(
+                                Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
+                                Gdx.graphics.getHeight() * 3 / 4,
+                                Gdx.graphics.getWidth() * 2 / 3,
+                                36 + 18)
+                        .setDuration(2f)
+                        .setBlocking(true));
                 events.queue(new CmdWait(0.5f));
             } else {
                 System.err.println("Cannot grant chest currency: player is not logged in.");
+            }
+        }
+
+        // 5. Default behavior: Grant item from Tiled properties
+        if (itemId != null && !itemId.trim().isEmpty() && itemCount > 0) {
+            Item item = ItemDatabase.getItem(itemId);
+            if (item != null) {
+                events.queue(new CmdAddItem(itemId, itemCount));
+
+                events.queue(new CmdWait(0.2f));
+                events.queue(new CmdWindowFlex()
+                        .setText("You obtained " + itemCount + " " + item.getName() + "!")
+                        .setBounds(
+                                Gdx.graphics.getWidth() / 2 - Gdx.graphics.getWidth() * 1 / 3,
+                                Gdx.graphics.getHeight() * 3 / 4,
+                                Gdx.graphics.getWidth() * 2 / 3,
+                                36 + 18)
+                        .setDuration(2f)
+                        .setBlocking(true));
+                events.queue(new CmdWait(0.5f));
+            } else {
+                System.err.println("Chest specifies unknown item_id: " + itemId);
             }
         }
     }

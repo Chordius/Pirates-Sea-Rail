@@ -233,6 +233,18 @@
       "parallel(moveBy(0, 30, 0.28, pow2Out), sequence(delay(0.18), fadeOut(0.1)))"
     ]
   },
+  "flameforce_shatter_burst": {
+    "vfx": "HitSpecial2",
+    "column": 5,
+    "row": 2,
+    "startFrame": 0,
+    "endFrame": 6,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(2.0, 2.0)",
+      "parallel(sequence(moveBy(-250, 40), delay(0.0), scaleTo(2.5, 2.5, 0.1), fadeOut(0.18)), sequence(moveBy(180, -80), delay(0.04), scaleTo(1.8, 1.8, 0.1), fadeOut(0.14)), sequence(moveBy(-50, -120), delay(0.08), scaleTo(2.2, 2.2, 0.1), fadeOut(0.16)), sequence(moveBy(300, 90), delay(0.12), scaleTo(2.0, 2.0, 0.1), fadeOut(0.12)), sequence(moveBy(-120, -20), delay(0.16), scaleTo(2.6, 2.6, 0.1), fadeOut(0.15)), sequence(moveBy(80, 150), delay(0.20), scaleTo(1.5, 1.5, 0.1), fadeOut(0.10)))"
+    ]
+  },
   "water_buildup": {
     "vfx": "Water1",
     "column": 5,
@@ -258,6 +270,31 @@
       "parallel(moveBy(0, -10, 0.3, pow2Out), sequence(delay(0.25), fadeOut(0.11)))"
     ]
   },
+  "heal_bubble_float": {
+    "vfx": "Water3",
+    "column": 5,
+    "row": 3,
+    "startFrame": 0,
+    "endFrame": 3,
+    "duration": 0.12,
+    "choreography": [
+      "scaleTo(0.5, 0.5)",
+      "alpha(0)",
+      "parallel(fadeIn(0.1), moveBy(0, 40, 0.48, sineOut), scaleTo(1.4, 1.4, 0.48, pow2Out))"
+    ]
+  },
+  "heal_bubble_pop": {
+    "vfx": "Water3",
+    "column": 5,
+    "row": 3,
+    "startFrame": 4,
+    "endFrame": 14,
+    "duration": 0.05,
+    "choreography": [
+      "scaleTo(1.5, 1.5)",
+      "parallel(scaleTo(1.8, 1.8, 0.55, pow2Out), sequence(delay(0.4), fadeOut(0.15)))"
+    ]
+  },
   "stick_pierce": {
     "vfx": "Stick",
     "column": 5,
@@ -270,6 +307,65 @@
       "scaleTo(0.5, 0.5)",
       "parallel(fadeIn(0.1), scaleTo(2.0, 2.0, 0.15, exp10Out))",
       "delay(0.13)"
+    ]
+  },
+  "waterfall_cascade": {
+    "vfx": "Water4",
+    "column": 5,
+    "row": 1,
+    "startFrame": 0,
+    "endFrame": 3,
+    "duration": 0.08,
+    "choreography": [
+      "scaleTo(1.5, 0.2)",
+      "alpha(0)",
+      "moveBy(0, 120)",
+      "parallel(fadeIn(0.04), scaleTo(2.2, 2.0, 0.12, pow2Out), moveBy(0, -120, 0.12, exp10In))",
+      "delay(0.12)",
+      "fadeOut(0.08)"
+    ]
+  },
+  "oath_magic_circle": {
+    "vfx": "Cure1",
+    "column": 5,
+    "row": 6,
+    "startFrame": 17,
+    "endFrame": 27,
+    "duration": 0.06,
+    "choreography": [
+      "scaleTo(0.1, 0.1)",
+      "alpha(0)",
+      "parallel(fadeIn(0.06), scaleTo(2.5, 1.2, 0.15, pow2Out))",
+      "delay(0.36)",
+      "fadeOut(0.15)"
+    ]
+  },
+  "oath_rising_orb": {
+    "vfx": "Cure1",
+    "column": 5,
+    "row": 6,
+    "startFrame": 0,
+    "endFrame": 16,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(1.5, 1.5)",
+      "alpha(0.9)",
+      "parallel(moveBy(0, 320, 0.68, exp10In), sequence(delay(0.48), fadeOut(0.2)))"
+    ]
+  },
+  "oathbearer_maelstrom": {
+    "vfx": "PE_WaterMagic4",
+    "column": 5,
+    "row": 5,
+    "startFrame": 1,
+    "endFrame": 19,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(0.5, 0.2)",
+      "alpha(0)",
+      "parallel(fadeIn(0.08), scaleTo(4.5, 1.8, 0.24, pow2Out))",
+      "delay(0.36)",
+      "parallel(rotateBy(45, 0.16, sineIn), fadeOut(0.16))"
     ]
   },
   "stick_photon": {
@@ -320,6 +416,114 @@
       "scaleTo(2.5, 2.5)",
       "parallel(fadeIn(0.1), scaleTo(1, 1, 0.15, exp10Out))",
       "delay(0.2)"
+    ]
+  },
+  "sniper_eye_glint": {
+    "vfx": "Gun2",
+    "column": 5,
+    "row": 5,
+    "startFrame": 2,
+    "endFrame": 6,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(0.2, 0.2)",
+      "parallel(scaleTo(2.2, 0.8, 0.08, exp10Out), fadeIn(0.04))",
+      "delay(0.04)",
+      "parallel(scaleTo(0.1, 0.0, 0.08, pow2In), fadeOut(0.08))"
+    ]
+  },
+  "purple_marker_aura": {
+    "vfx": "Gun2",
+    "column": 5,
+    "row": 5,
+    "startFrame": 0,
+    "endFrame": 1,
+    "duration": 0.15,
+    "choreography": [
+      "scaleTo(1.5, 1.5)",
+      "alpha(0)",
+      "parallel(fadeIn(0.1), rotateBy(90, 0.3, linear))",
+      "delay(0.1)",
+      "fadeOut(0.1)"
+    ]
+  },
+  "void_shatter_burst": {
+    "vfx": "Gun2",
+    "column": 5,
+    "row": 5,
+    "startFrame": 8,
+    "endFrame": 13,
+    "duration": 0.05,
+    "choreography": [
+      "scaleTo(1.6, 1.6)",
+      "parallel(scaleTo(2.4, 2.4, 0.25, pow2Out), fadeOut(0.25))"
+    ]
+  },
+  "remarkable_arrow": {
+    "vfx": "ArrowSpecial",
+    "column": 5,
+    "row": 3,
+    "startFrame": 0,
+    "endFrame": 0,
+    "duration": 0.25,
+    "choreography": [
+      "scaleTo(1.5, 1.5)",
+      "alpha(0)",
+      "moveBy(0, 180)",
+      "parallel(fadeIn(0.04), moveBy(0, -180, 0.2, exp10In))",
+      "fadeOut(0.05)"
+    ]
+  },
+  "remarkable_lightning_shatter": {
+    "vfx": "PE_ThunderMagic3",
+    "column": 5,
+    "row": 4,
+    "startFrame": 2,
+    "endFrame": 9,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(2.0, 2.0)",
+      "parallel(scaleTo(2.4, 2.4, 0.32, pow2Out), sequence(delay(0.2), fadeOut(0.12)))"
+    ]
+  },
+  "oneshot_plasma_charge": {
+    "vfx": "Thunder5",
+    "column": 5,
+    "row": 5,
+    "startFrame": 16,
+    "endFrame": 20,
+    "duration": 0.05,
+    "choreography": [
+      "scaleTo(1.0, 1.0)",
+      "parallel(scaleTo(2.5, 2.5, 0.2, exp10Out), rotateBy(180, 0.25))",
+      "fadeOut(0.05)"
+    ]
+  },
+  "oneshot_laser_bolt": {
+    "vfx": "Holy2",
+    "column": 5,
+    "row": 6,
+    "startFrame": 23,
+    "endFrame": 24,
+    "duration": 0.06,
+    "choreography": [
+      "scaleTo(1.5, 3.5)",
+      "alpha(0)",
+      "moveBy(0, 300)",
+      "parallel(fadeIn(0.04), moveBy(0, -300, 0.12, exp10In))",
+      "fadeOut(0.04)"
+    ]
+  },
+  "oneshot_lightning_pillar": {
+    "vfx": "Thunder5",
+    "column": 5,
+    "row": 5,
+    "startFrame": 1,
+    "endFrame": 5,
+    "duration": 0.04,
+    "choreography": [
+      "scaleTo(3.0, 4.0)",
+      "parallel(scaleTo(3.5, 4.0, 0.16, pow2Out), fadeOut(0.2))"
     ]
   },
   "second_wind": {

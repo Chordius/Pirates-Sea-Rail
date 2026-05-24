@@ -28,6 +28,7 @@
     "toughnessDMG": 20,
     "energyBonus": 15,
     "skill_type": "Basic Attack",
+    "description": "Deals 50 Base Power Wind DMG to a single enemy.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -77,6 +78,7 @@
     "toughnessDMG": 20,
     "energyBonus": 15,
     "skill_type": "Skill",
+    "description": "Deals 70 Base Power Wind DMG to a group of enemies. If this skill manages to lower an enemy's Weakness Bar, inflicts Wind Scar, reducing target Resistance by 14%.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -92,7 +94,7 @@
   },
   "second_wind": {
     "name": "Second Wind",
-    "iconId": "icon_second_wind",
+    "iconId": "icon_second_wind_skill",
     "scope": "ALLY",
     "element": "WIND",
     "basePower": 0,
@@ -100,6 +102,7 @@
     "energyBonus": 15,
     "tag": "support",
     "skill_type": "Skill",
+    "description": "Grants an ally the Second Wind state for 3 turns. In this state, the ally gains +25% MAG equal to Sailor's own MAG stat. When the ally lowers an enemy's Weakness Bar, the Sailor will perform a follow-up attack (Super Sonic Slash) to the same target, adopting the ally's element for the attack, dealing 70 Base Power.",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.2",
@@ -119,6 +122,7 @@
     "toughnessDMG": 20,
     "energyBonus": 15,
     "skill_type": "Ultimate",
+    "description": "Deals 90 Base Power Wind DMG to a group of enemies. This skill will lower enemies' Weakness Bar without fail, leaving the target at a minimum of 1 Toughness Bar.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -143,6 +147,7 @@
     "toughnessDMG": 20,
     "energyBonus": 15,
     "skill_type": "Basic Attack",
+    "description": "Deals 50 Base Power Fire DMG to a single enemy.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
@@ -165,6 +170,7 @@
     "toughnessDMG": 40,
     "energyBonus": 20,
     "skill_type": "Skill",
+    "description": "Deals 70 Base Power Fire DMG to an enemy, and 45 Base Power to enemies adjacent to it. Enemies hit by this move will gain a Speed Down debuff.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.15: 0.15",
@@ -193,6 +199,7 @@
     "toughnessDMG": 50,
     "energyBonus": 30,
     "skill_type": "Skill",
+    "description": "Deals 65 Base Power Fire DMG to all enemies. If this skill breaks an enemy's Weakness Bar, inflicts Hawk's Eye state, increasing reaction DMG taken by +20%.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.15: 0.2",
@@ -219,12 +226,19 @@
     "toughnessDMG": 90,
     "energyBonus": 5,
     "skill_type": "Ultimate",
+    "description": "Deals 120 Base Power Fire DMG to all enemies. This skill always CRITS on enemies with a Speed Down debuff and applies a Burn Mark.",
     "sequence": [
       "PERFORM START",
-      "CAMERA ZOOM: 1.2: 0.3",
+      "CAMERA ZOOM: 1.25: 0.2",
       "ANIMATION: ultimate_charge_fire",
       "WAIT: 0.4",
-      "ANIMATION: flameforce_talon_shatter",
+
+      "ANIMATION: flameforce_shatter_burst",
+      "WAIT: 0.08",
+      "ANIMATION: flameforce_shatter_burst",
+      "WAIT: 0.08",
+      "ANIMATION: flameforce_shatter_burst",
+
       "WAIT: 0.1",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
@@ -268,9 +282,14 @@
     "description": "Restores ally's HP by 20% of Reyna's Health plus 200 HP and applies Pristine Health, lasting for 5 turns. Pristine Health provides +30% Incoming Healing to the user. Upon the user falling below 33% HP, dying, or this status decaying, Reyna immediately heals the user equal to 40% of her Health.",
     "sequence": [
       "PERFORM START",
-      "ANIMATION: water_buildup",
-      "WAIT: 0.3",
-      "ANIMATION: water_burst",
+      "WAIT: 0.1",
+
+      "ANIMATION: heal_bubble_float",
+      "WAIT: 0.48",
+
+      "ANIMATION: heal_bubble_pop",
+      "WAIT: 0.2",
+
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -279,7 +298,7 @@
   "heed_this_call": {
     "name": "Heed this Call!",
     "iconId": "icon_heed_this_call",
-    "scope": "ALL",
+    "scope": "BLAST",
     "element": "WATER",
     "basePower": 60,
     "toughnessDMG": 20,
@@ -288,9 +307,12 @@
     "description": "Deals 60 Base Power Magical Water DMG to a group of enemies and heals the party back by 20% of the total DMG done by this skill.",
     "sequence": [
       "PERFORM START",
-      "CAMERA ZOOM: 1.12: 0.2",
-      "ANIMATION: water_cyclone",
-      "WAIT: 0.2",
+      "CAMERA ZOOM: 1.12: 0.15",
+      "WAIT: 0.05",
+
+      "ANIMATION: waterfall_cascade",
+      "WAIT: 0.12",
+
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "CAMERA RESET",
@@ -309,9 +331,13 @@
     "description": "Gains Oathbearer State, lasting for 3 turns. During this State, at the end of every turn, Reyna will deal 25 Base Power Water DMG to all enemies and heal all allies by 25% of her Max HP.",
     "sequence": [
       "PERFORM START",
-      "CAMERA ZOOM: 1.2: 0.3",
-      "ANIMATION: radiant_water_glow",
-      "WAIT: 0.4",
+      "CAMERA ZOOM: 1.22: 0.25",
+      "WAIT: 0.15",
+
+      "ANIMATION: oath_magic_circle",
+      "ANIMATION: oath_rising_orb",
+      "WAIT: 0.55",
+
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "CAMERA RESET",
@@ -330,8 +356,11 @@
     "description": "Deals 25 Base Power Water DMG to all enemies.",
     "sequence": [
       "PERFORM START",
-      "ANIMATION: water_burst",
-      "WAIT: 0.15",
+      "WAIT: 0.1",
+
+      "ANIMATION: oathbearer_maelstrom",
+      "WAIT: 0.24",
+
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -375,11 +404,16 @@
     "description": "Deals 75 Base Power Lightning DMG to a single enemy scaling off MAG. This skill does not consume nor produce Skill Points.",
     "sequence": [
       "PERFORM START",
-      "CAMERA ZOOM: 1.12: 0.1",
-      "ANIMATION: bow_charge_lightning",
+      "CAMERA ZOOM: 1.15: 0.15",
       "WAIT: 0.2",
+
+      "ANIMATION: remarkable_arrow",
+      "WAIT: 0.2",
+
+      "ANIMATION: remarkable_lightning_shatter",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
+
       "CAMERA RESET",
       "PERFORM FINISH"
     ]
@@ -396,10 +430,20 @@
     "description": "Deals 70 Base Power Lightning DMG to a single enemy, applying Marker. Markers can only be applied to one enemy at a time in battle. A Marker stack increases as the enemy Weakness Bar decreases, up to a maximum of 100 from a full bar. Each stack increases Elemental Reaction DMG by 1%. Marker stacks reset when applied to another target or when a reaction occurs.",
     "sequence": [
       "PERFORM START",
-      "ANIMATION: triple_shot",
-      "WAIT: 0.15",
+      "CAMERA ZOOM: 1.12: 0.2",
+
+      "ANIMATION: purple_marker_aura",
+      "WAIT: 0.3",
+
+      "ANIMATION: stick_pierce",
+      "WAIT: 0.1",
+      "ANIMATION: void_shatter_burst",
+      "ANIMATION: hit_thunder",
+
+      "WAIT: 0.05",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
+      "CAMERA RESET",
       "PERFORM FINISH"
     ]
   },
@@ -415,8 +459,11 @@
     "description": "Enters Ace Mode state for 5 turns. Dominique will gain Remarkable Shot! as an Enhanced Basic ATK and all attacks deal 1.5x Toughness.",
     "sequence": [
       "PERFORM START",
-      "ANIMATION: electrical_aura",
-      "WAIT: 0.3",
+      "WAIT: 0.1",
+
+      "ANIMATION: sniper_eye_glint",
+      "WAIT: 0.2",
+
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -434,11 +481,18 @@
     "description": "Deals 120 Base Power Lightning DMG to a single enemy, applying Marker. Provides additional Marker stacks equal to 30% of the DMG dealt up to a maximum of 100. These bonus markers can overflow the previous cap of 100.",
     "sequence": [
       "PERFORM START",
-      "CAMERA ZOOM: 1.25: 0.2",
-      "ANIMATION: ultimate_snipe_charge",
-      "WAIT: 0.5",
+      "CAMERA ZOOM: 1.30: 0.2",
+
+      "ANIMATION: oneshot_plasma_charge",
+      "WAIT: 0.35",
+
+      "ANIMATION: oneshot_laser_bolt",
+      "WAIT: 0.12",
+
+      "ANIMATION: oneshot_lightning_pillar",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
+
       "CAMERA RESET",
       "PERFORM FINISH"
     ]

@@ -2,7 +2,7 @@ package com.chronicorn.frontend.managers.eventManagers;
 
 import com.badlogic.gdx.utils.Array;
 import com.chronicorn.frontend.eventcommands.EventCommand;
-import com.chronicorn.frontend.windows.WindowFlex;
+import com.chronicorn.frontend.windows.GabWindow;
 import com.chronicorn.frontend.windows.WindowMessage;
 
 public class EventManager {
@@ -10,14 +10,14 @@ public class EventManager {
     private EventCommand currentCommand;
     private boolean isProcessing;
     private WindowMessage messageWindow;
-    private WindowFlex flexWindow;
+    private GabWindow flexWindow;
 
     public EventManager() {
         this.commandQueue = new Array<>();
         this.isProcessing = false;
     }
 
-    public void setUI(WindowMessage window, WindowFlex flex) {
+    public void setUI(WindowMessage window, GabWindow flex) {
         this.messageWindow = window;
         this.flexWindow = flex;
     }

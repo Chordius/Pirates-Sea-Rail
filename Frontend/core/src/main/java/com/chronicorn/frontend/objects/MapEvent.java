@@ -27,7 +27,7 @@ public class MapEvent extends InteractiveObject {
     private float stateTime = 0f;
     private int currentDirection = 0;
 
-    private Vector2 targetPosition;
+    protected Vector2 targetPosition;
     private float moveSpeed = 100f; // Floating point speed
     public boolean isMoving = false;
     private int characterIndex;
@@ -129,6 +129,10 @@ public class MapEvent extends InteractiveObject {
 
     public boolean isSteppingAnimation() {
         return steppingAnimation;
+    }
+
+    public int getCurrentDirection() {
+        return currentDirection;
     }
 
     public void setSteppingAnimation(boolean steppingAnimation) {

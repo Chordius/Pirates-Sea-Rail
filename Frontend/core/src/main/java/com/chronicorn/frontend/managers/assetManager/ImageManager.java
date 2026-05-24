@@ -634,6 +634,18 @@ public class ImageManager {
         Texture gradientTex = loadTextureManaged("menu/gradient.png");
         skin.add("gradient-bg", new TextureRegionDrawable(new TextureRegion(gradientTex)), Drawable.class);
 
+        // --- Paper Ninepatch Background ---
+        Texture paperTex = loadTextureManaged("menu/paper-ninepatch-bg.png");
+        paperTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        NinePatch paperPatch = new NinePatch(paperTex, 30, 30, 30, 30);
+        skin.add("paper-ninepatch-bg", new NinePatchDrawable(paperPatch), Drawable.class);
+
+        // --- Label Dark Brown ---
+        Texture labelDarkBrownTex = loadTextureManaged("menu/Label-DarkBrown.png");
+        labelDarkBrownTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        NinePatch labelDarkBrownPatch = new NinePatch(labelDarkBrownTex, 40, 40, 0, 0);
+        skin.add("label-darkbrown-bg", new NinePatchDrawable(labelDarkBrownPatch), Drawable.class);
+
         // --- Roster HP Bar (FIXED: Applies the 0.5f modifier and filtering) ---
         Texture texBg = loadTextureManaged("battlehud/BattleHPBar-Empty-True.png", true);
         texBg.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Linear);

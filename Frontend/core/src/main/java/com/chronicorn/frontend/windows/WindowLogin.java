@@ -23,10 +23,16 @@ public class WindowLogin extends WindowBase {
     private TextField usernameField;
     private TextField passwordField;
     private Label statusLabel;
+    private boolean isContinue = false;
 
     public WindowLogin() {
+        this(false);
+    }
+
+    public WindowLogin(boolean isContinue) {
         // Adjusted size to better fit the compact, label-less design
         super("", 0, 0, 400, 450);
+        this.isContinue = isContinue;
         this.center();
     }
 
@@ -124,8 +130,18 @@ public class WindowLogin extends WindowBase {
                 prefs.putString("localUserId", result.localUserId);
                 prefs.flush();
                 
-                GameSession.getInstance().resetSession();
-                SceneManager.getInstance().pushScreen(new MapScreen());
+                if (isContinue && com.chronicorn.frontend.managers.SaveManager.getInstance().hasSaveFile()) {
+                    final MapScreen mapScreen = new MapScreen(false); // isNewGame = false
+                    com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
+                        @Override
+                        public void run() {
+                            SceneManager.getInstance().pushScreen(mapScreen);
+                        }
+                    });
+                } else {
+                    GameSession.getInstance().resetSession();
+                    SceneManager.getInstance().pushScreen(new MapScreen(true));
+                }
             }
 
             @Override

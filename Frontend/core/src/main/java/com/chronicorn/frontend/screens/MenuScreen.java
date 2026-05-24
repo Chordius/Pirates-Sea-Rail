@@ -17,6 +17,14 @@ import com.chronicorn.frontend.battlers.Actor;
 import com.chronicorn.frontend.managers.SceneManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.screens.components.*;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Align;
+import com.chronicorn.frontend.battlers.ActorFactory;
+import com.chronicorn.frontend.managers.assetManager.ImageManager;
 
 public class MenuScreen implements Screen {
     private Stage stage;
@@ -30,9 +38,17 @@ public class MenuScreen implements Screen {
     private Table partySelectionTable;
     private Table rightDetailsTable;
     private Table gachaTable;
+    private Table settingsTable;
     private Table contentContainer;
     private Table equipMenuTable;
+    private Table itemsTable;
     private Actor currentSelectedActor;
+    
+    // Gacha aftermath overlay fields
+    private Table gachaResultsOverlay;
+    private java.util.List<Table> gachaResultsCards;
+    private boolean gachaResultsAnimationDone;
+    private Label gachaResultsPromptLabel;
 
     public MenuScreen(Image bgImage, Player player) {
         this.backgroundImage = bgImage;
@@ -48,7 +64,7 @@ public class MenuScreen implements Screen {
     }
 
     private void buildUI() {
-        Stack rootStack = new Stack();
+        rootStack = new Stack();
 
         Table contentLayer = new Table();
         contentLayer.top().left();
@@ -260,8 +276,25 @@ public class MenuScreen implements Screen {
 
             // Fire the slam-in animations safely!
             ((GachaTable) gachaTable).playEntranceAnimation();
-        } else if (tabName.equals("Inventory")) {
-            // E.g., contentContainer.add(new InventoryTable()).fill().expand();
+        } else if (tabName.equals("Settings")) {
+            if (settingsTable == null) {
+                settingsTable = new SettingsTable();
+            }
+            if (!contentContainer.getChildren().contains(settingsTable, true)) {
+                contentContainer.add(settingsTable).fill().expand();
+            }
+            ((SettingsTable) settingsTable).playEntranceAnimation();
+        } else if (tabName.equals("Items")) {
+            if (itemsTable == null) {
+                itemsTable = new ItemsTable();
+            }
+            if (!contentContainer.getChildren().contains(itemsTable, true)) {
+                contentContainer.add(itemsTable).fill().expand();
+            }
+            ((ItemsTable) itemsTable).refreshGrid();
+            ((ItemsTable) itemsTable).refreshLeftRoster();
+            ((ItemsTable) itemsTable).refreshDetails();
+            ((ItemsTable) itemsTable).playEntranceAnimation();
         }
     }
 
@@ -276,12 +309,143 @@ public class MenuScreen implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
-            SceneManager.getInstance().goBack();
+            if (gachaResultsOverlay != null && gachaResultsOverlay.getParent() != null) {
+                handleGachaOverlayInteraction();
+            } else {
+                SceneManager.getInstance().goBack();
+            }
             return;
         }
 
         stage.act(delta);
         stage.draw();
+    }
+
+    public void showGachaResults(String[] pulledIds) {
+        if (rootStack == null) return;
+
+        gachaResultsCards = new java.util.ArrayList<>();
+        gachaResultsAnimationDone = false;
+
+        gachaResultsOverlay = new Table();
+        gachaResultsOverlay.setFillParent(true);
+        gachaResultsOverlay.setTouchable(Touchable.enabled);
+        gachaResultsOverlay.setBackground(ImageManager.skin.newDrawable("white-pixel", new Color(0, 0, 0, 0.75f)));
+
+        Table gridContainer = new Table();
+        gridContainer.center();
+
+        int columns = pulledIds.length > 5 ? 5 : 1;
+        int currentCol = 0;
+
+        for (String id : pulledIds) {
+            Stack cardStack = new Stack();
+
+            String nameText;
+            Drawable iconDrawable;
+
+            if (id.startsWith("W")) {
+                com.chronicorn.frontend.items.Item item = com.chronicorn.frontend.items.ItemDatabase.getItem(id);
+                nameText = item != null ? item.getName() : id;
+                iconDrawable = item != null ? ImageManager.skin.getDrawable(item.getIcon()) : ImageManager.skin.getDrawable("white-pixel");
+            } else {
+                Actor actor = ActorFactory.createActor(id);
+                nameText = actor.getName();
+                iconDrawable = ImageManager.skin.getDrawable("face_" + actor.getName().toLowerCase());
+            }
+
+            Image faceImg = new Image(iconDrawable);
+            faceImg.setScaling(com.badlogic.gdx.utils.Scaling.fit);
+
+            Table faceBg = new Table();
+            faceBg.setBackground(ImageManager.skin.newDrawable("white-pixel", Color.valueOf("686259")));
+            faceBg.add(faceImg).expand().fill();
+
+            Table nameBanner = new Table();
+            nameBanner.bottom();
+
+            Table bannerBg = new Table();
+            bannerBg.setBackground(ImageManager.skin.newDrawable("dark-pixel", new Color(0, 0, 0, 0.8f)));
+            Label nameLabel = new Label(nameText, ImageManager.skin, "default");
+            nameLabel.setFontScale(0.8f);
+            nameLabel.setAlignment(Align.center);
+            bannerBg.add(nameLabel).pad(2, 5, 2, 5).expandX().fillX();
+
+            nameBanner.add(bannerBg).expandX().fillX();
+
+            cardStack.add(faceBg);
+            cardStack.add(nameBanner);
+
+            Table cardWrapper = new Table();
+            cardWrapper.add(cardStack).size(120, 160);
+            cardWrapper.setOrigin(Align.center);
+            cardWrapper.setTransform(true);
+            cardWrapper.getColor().a = 0f;
+
+            gridContainer.add(cardWrapper).pad(10);
+            gachaResultsCards.add(cardWrapper);
+
+            currentCol++;
+            if (currentCol >= columns) {
+                gridContainer.row();
+                currentCol = 0;
+            }
+        }
+
+        gachaResultsPromptLabel = new Label("Click to skip", ImageManager.skin, "default");
+        gachaResultsPromptLabel.setFontScale(0.9f);
+        gachaResultsPromptLabel.getColor().a = 0.5f;
+
+        gachaResultsOverlay.add(gridContainer).padBottom(40).row();
+        gachaResultsOverlay.add(gachaResultsPromptLabel).center();
+
+        float delayPerCard = 0.4f;
+        float fadeDuration = 0.25f;
+
+        for (int i = 0; i < gachaResultsCards.size(); i++) {
+            Table card = gachaResultsCards.get(i);
+            card.getColor().a = 0f;
+            card.addAction(Actions.sequence(
+                Actions.delay(i * delayPerCard),
+                Actions.fadeIn(fadeDuration)
+            ));
+        }
+
+        float totalAnimTime = gachaResultsCards.size() * delayPerCard + fadeDuration;
+        gachaResultsOverlay.addAction(Actions.sequence(
+            Actions.delay(totalAnimTime),
+            Actions.run(new Runnable() {
+                @Override
+                public void run() {
+                    gachaResultsAnimationDone = true;
+                    gachaResultsPromptLabel.setText("Click anywhere to close");
+                }
+            })
+        ));
+
+        gachaResultsOverlay.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                handleGachaOverlayInteraction();
+            }
+        });
+
+        rootStack.add(gachaResultsOverlay);
+    }
+
+    private void handleGachaOverlayInteraction() {
+        if (!gachaResultsAnimationDone) {
+            gachaResultsOverlay.clearActions();
+            for (Table card : gachaResultsCards) {
+                card.clearActions();
+                card.getColor().a = 1f;
+            }
+            gachaResultsAnimationDone = true;
+            gachaResultsPromptLabel.setText("Click anywhere to close");
+        } else {
+            gachaResultsOverlay.remove();
+            gachaResultsOverlay = null;
+        }
     }
 
     @Override

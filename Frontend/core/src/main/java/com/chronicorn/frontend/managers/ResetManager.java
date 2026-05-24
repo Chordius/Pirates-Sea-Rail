@@ -37,21 +37,23 @@ public class ResetManager {
         }
     }
 
-    public void gameOverReset(Player player) {
-        // Reset Logic Game
-        GameSession.getInstance().reset();
-
+    public void gameOverReset(final Player player) {
         // Reset Timer Speedrun karena game over
         resetGameTimer();
 
-        String currentMap = LevelMapManager.getInstance().getCurrentMapName();
         SoundManager.getInstance().stopAllAudio();
-        LevelMapManager.getInstance().changeLevel("Level1");
-        forceRespawnEnemies();
-        resetRoomTimer();
-        LevelMapManager.getInstance().spawnPlayer();
-        MapScreen currentMapScreen = LevelMapManager.getInstance().getMapScreen();
-        currentMapScreen.resetTrigger();
+
+        com.chronicorn.frontend.managers.SaveManager.getInstance().loadGameLocationAndFlagsOnly(new Runnable() {
+            @Override
+            public void run() {
+                forceRespawnEnemies();
+                resetRoomTimer();
+                MapScreen currentMapScreen = LevelMapManager.getInstance().getMapScreen();
+                if (currentMapScreen != null) {
+                    currentMapScreen.resetTrigger();
+                }
+            }
+        });
     }
 
     public void restartLevel(Player player) {

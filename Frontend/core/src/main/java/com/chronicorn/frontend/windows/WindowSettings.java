@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.SoundManager;
+import com.chronicorn.frontend.managers.networkManager.NetworkManager;
 import com.chronicorn.frontend.Player;
 
 public class WindowSettings extends WindowBase {

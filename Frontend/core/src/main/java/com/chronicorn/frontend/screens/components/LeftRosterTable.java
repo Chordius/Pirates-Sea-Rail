@@ -156,7 +156,7 @@ public class LeftRosterTable extends Table {
 
             Stack portraitStack = new Stack();
 
-            ProgressBar ultRing = new ProgressBar(0, actor.getMaxEnergy(), 1, false, ImageManager.skin, "ult-roster-bar-" + actor.getName().toLowerCase());
+            ProgressBar ultRing = new ProgressBar(0, actor.getMaxEnergy(), 1, true, ImageManager.skin, "ult-roster-bar-" + actor.getName().toLowerCase());
             ultRing.setValue(actor.getEnergy());
             ultRing.setAnimateDuration(0);
 

@@ -6,6 +6,8 @@ import com.chronicorn.frontend.screens.BattleScreen;
 
 public class CmdBattle implements EventCommand {
     private Array<String> enemyIds;
+    private boolean playerAdvantage = false;
+    private String eventName;
 
     /**
      * Creates a new battle transition command.
@@ -13,6 +15,28 @@ public class CmdBattle implements EventCommand {
      */
     public CmdBattle(Array<String> enemyIds) {
         this.enemyIds = enemyIds;
+    }
+
+    /**
+     * Creates a new battle transition command with advantage flag.
+     * @param enemyIds The list of enemy database IDs to face in battle.
+     * @param playerAdvantage True if player touches from side/behind.
+     */
+    public CmdBattle(Array<String> enemyIds, boolean playerAdvantage) {
+        this.enemyIds = enemyIds;
+        this.playerAdvantage = playerAdvantage;
+    }
+
+    /**
+     * Creates a new battle transition command with advantage flag and event name.
+     * @param enemyIds The list of enemy database IDs to face in battle.
+     * @param playerAdvantage True if player touches from side/behind.
+     * @param eventName Name of the MapEvent triggering the battle.
+     */
+    public CmdBattle(Array<String> enemyIds, boolean playerAdvantage, String eventName) {
+        this.enemyIds = enemyIds;
+        this.playerAdvantage = playerAdvantage;
+        this.eventName = eventName;
     }
 
     /**
@@ -25,7 +49,7 @@ public class CmdBattle implements EventCommand {
 
     @Override
     public void start() {
-        SceneManager.getInstance().pushScreen(new BattleScreen(enemyIds));
+        SceneManager.getInstance().pushScreen(new BattleScreen(enemyIds, playerAdvantage, eventName));
     }
 
     @Override

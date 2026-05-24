@@ -26,7 +26,7 @@ import com.chronicorn.frontend.playercommands.Dash;
 import com.chronicorn.frontend.playercommands.Move;
 import com.chronicorn.frontend.managers.*;
 import com.chronicorn.frontend.windows.GameHUD;
-import com.chronicorn.frontend.windows.WindowFlex;
+import com.chronicorn.frontend.windows.GabWindow;
 import com.chronicorn.frontend.windows.WindowMessage;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 
@@ -45,7 +45,7 @@ public class MapScreen implements Screen {
 
     // Map-Based Windows
     private WindowMessage textWindow;
-    private WindowFlex flexWindow;
+    private GabWindow flexWindow;
 
     // Player Essentials
     private Player player;
@@ -92,7 +92,7 @@ public class MapScreen implements Screen {
         // Setup Dialog Box
         stage = new Stage(new ScreenViewport());
         textWindow = new WindowMessage();
-        flexWindow = new WindowFlex();
+        flexWindow = new GabWindow();
 
         // Setup HUD
         // gameHUD = new GameHUD();

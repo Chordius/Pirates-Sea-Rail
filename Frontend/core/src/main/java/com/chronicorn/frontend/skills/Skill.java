@@ -85,6 +85,14 @@ public class Skill {
         return toughnessDMG;
     }
 
+    public int getBasePower() {
+        return basePower;
+    }
+
+    public int getEnergyBonus() {
+        return energyBonus;
+    }
+
     public String getDescription() { return description; }
 
     public int getManaCost() { return manaCost; }

@@ -25,6 +25,7 @@ public class BattleManager {
     private Array<Battler> turnQueue;
     private ArrayList<Actor> gameParty;
     private ArrayList<Enemy> gameTroop;
+    private ArrayList<Enemy> initialEnemies;
     private Queue<Action> followUpQueue;
     private TurnState currentState;
     private Battler activeBattler;
@@ -44,6 +45,7 @@ public class BattleManager {
         this.currentState = TurnState.TURN_START;
         this.gameParty = new ArrayList<>();
         this.gameTroop = new ArrayList<>();
+        this.initialEnemies = new ArrayList<>();
         this.followUpQueue = new Queue<>();
 
         followUpDelegate = new BattleDelegate() {
@@ -82,8 +84,13 @@ public class BattleManager {
             }
             if (a instanceof Enemy) {
                 gameTroop.add((Enemy) a);
+                initialEnemies.add((Enemy) a);
             }
         }
+    }
+
+    public ArrayList<Enemy> getInitialEnemies() {
+        return initialEnemies;
     }
 
     public void update(float delta) {

@@ -18,6 +18,7 @@ import com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.screens.GachaAnimationScreen;
+import com.chronicorn.frontend.screens.MenuScreen;
 
 public class GachaTable extends Table {
 
@@ -196,7 +197,7 @@ public class GachaTable extends Table {
         rewardRow.add(doubloonImage).size(24, 24).padRight(5);
         rewardRow.add(rewardVal);
 
-        Label rewardName = new Label("Premium Currency", ImageManager.skin, "default");
+        Label rewardName = new Label("Clue", ImageManager.skin, "default");
         rewardName.setColor(Color.LIGHT_GRAY);
         rewardBlock.add(rewardRow).row();
         rewardBlock.add(rewardName);
@@ -276,11 +277,13 @@ public class GachaTable extends Table {
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Triggered 1x Pull!");
                 if (Main.currentLocalId != null) {
+                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
                     String dbBannerId = currentBannerSelection + "_1";
                     NetworkManager.getInstance().pullGacha(Main.currentLocalId, dbBannerId,
                             new NetworkCallback<GachaResult>() {
                                 @Override
-                                public void onSuccess(GachaResult result) {
+                                public void onSuccess(final GachaResult result) {
                                     System.out.println(
                                             "Gacha Pulled: " + result.pulledCharId + " (New: " + result.isNew + ")");
                                     if (result.pulledCharId != null && result.pulledCharId.startsWith("W")) {
@@ -290,12 +293,30 @@ public class GachaTable extends Table {
                                         GameSession.getInstance().getParty().unlockCharacter(result.pulledCharId,
                                                 ActorFactory.createActor(result.pulledCharId));
                                     }
+
+                                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+                                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+
+                                    GachaAnimationScreen animScreen = new GachaAnimationScreen(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            SceneManager.getInstance().goBack();
+                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance().getCurrentScreen();
+                                            if (curr instanceof MenuScreen) {
+                                                ((MenuScreen) curr).showGachaResults(new String[]{result.pulledCharId});
+                                            }
+                                        }
+                                    });
+
+                                    SceneManager.getInstance().pushScreen(animScreen);
                                     refreshUserCurrency();
                                 }
 
                                 @Override
                                 public void onError(String errorMessage) {
                                     System.err.println("Gacha Pull Failed: " + errorMessage);
+                                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+                                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
                                 }
                             });
                 } else {
@@ -309,11 +330,13 @@ public class GachaTable extends Table {
             public void clicked(InputEvent event, float x, float y) {
                 System.out.println("Triggered 10x Pull!");
                 if (Main.currentLocalId != null) {
+                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
                     String dbBannerId = currentBannerSelection + "_1";
                     NetworkManager.getInstance().pull10Gacha(Main.currentLocalId, dbBannerId,
                             new NetworkCallback<GachaResult[]>() {
                                 @Override
-                                public void onSuccess(GachaResult[] results) {
+                                public void onSuccess(final GachaResult[] results) {
                                     for (GachaResult result : results) {
                                         System.out.println("Gacha Pulled: " + result.pulledCharId + " (New: "
                                                 + result.isNew + ")");
@@ -321,22 +344,34 @@ public class GachaTable extends Table {
                                                 ActorFactory.createActor(result.pulledCharId));
                                     }
 
-                                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.disabled);
+                                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+                                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+
+                                    final String[] pulledIds = new String[results.length];
+                                    for (int i = 0; i < results.length; i++) {
+                                        pulledIds[i] = results[i].pulledCharId;
+                                    }
 
                                     GachaAnimationScreen animScreen = new GachaAnimationScreen(new Runnable() {
                                         @Override
                                         public void run() {
-                                            System.out.println("Animation done! Time to show the new characters!");
+                                            SceneManager.getInstance().goBack();
+                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance().getCurrentScreen();
+                                            if (curr instanceof MenuScreen) {
+                                                ((MenuScreen) curr).showGachaResults(pulledIds);
+                                            }
                                         }
                                     });
 
-                                    SceneManager.getInstance().changeScreen(animScreen);
+                                    SceneManager.getInstance().pushScreen(animScreen);
                                     refreshUserCurrency();
                                 }
 
                                 @Override
                                 public void onError(String errorMessage) {
                                     System.err.println("Gacha Pull Failed: " + errorMessage);
+                                    pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
+                                    pull10Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);
                                 }
                             });
                 } else {
@@ -425,7 +460,8 @@ public class GachaTable extends Table {
             rightContentColumn.clearActions();
         }
 
-        // --- THE TARGETED FIX: Clear and reset the shifting banner image scale state ---
+        // --- THE TARGETED FIX: Clear and reset the shifting banner image scale state
+        // ---
         if (currentBannerImage != null) {
             currentBannerImage.clearActions();
             currentBannerImage.setScale(1f);
@@ -439,83 +475,75 @@ public class GachaTable extends Table {
         bottomBar.getColor().a = 0f;
 
         this.addAction(Actions.sequence(
-            Actions.delay(0.02f),
-            Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    GachaTable.this.invalidate();
-                    GachaTable.this.layout();
+                Actions.delay(0.02f),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        GachaTable.this.invalidate();
+                        GachaTable.this.layout();
 
-                    if (rightContentColumn != null) {
-                        rightContentColumn.invalidate();
-                        rightContentColumn.layout();
+                        if (rightContentColumn != null) {
+                            rightContentColumn.invalidate();
+                            rightContentColumn.layout();
+                        }
+                        if (leftRibbonColumn != null) {
+                            leftRibbonColumn.invalidate();
+                            leftRibbonColumn.layout();
+                        }
+                        if (bannerContainer != null) {
+                            bannerContainer.invalidate();
+                            bannerContainer.layout();
+                        }
+                        if (purchasePanel != null) {
+                            purchasePanel.invalidate();
+                            purchasePanel.layout();
+                        }
+                        if (bottomBar != null) {
+                            bottomBar.invalidate();
+                            bottomBar.layout();
+                        }
+
+                        bannerContainer.setPosition(0, 0);
+
+                        float ribX = leftRibbonColumn.getX();
+                        float ribY = leftRibbonColumn.getY();
+
+                        float banX = bannerContainer.getX();
+                        float banY = bannerContainer.getY();
+
+                        float purchaseX = purchasePanel.getX();
+                        float purchaseY = purchasePanel.getY();
+
+                        float botX = bottomBar.getX();
+                        float botY = bottomBar.getY();
+
+                        leftRibbonColumn.setPosition(ribX - 60f, ribY);
+                        bannerContainer.setPosition(banX, banY + 60f);
+                        purchasePanel.setPosition(purchaseX, purchaseY + 60f);
+                        bottomBar.setPosition(botX, botY - 60f);
+
+                        leftRibbonColumn.addAction(Actions.parallel(
+                                Actions.fadeIn(0.4f),
+                                Actions.moveTo(ribX, ribY, 0.45f, Interpolation.swingOut)));
+
+                        bannerContainer.addAction(Actions.sequence(
+                                Actions.delay(0.1f),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(banX, banY, 0.55f, Interpolation.swingOut))));
+
+                        purchasePanel.addAction(Actions.sequence(
+                                Actions.delay(0.1f),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(purchaseX, purchaseY, 0.55f, Interpolation.swingOut))));
+
+                        bottomBar.addAction(Actions.sequence(
+                                Actions.delay(0.2f),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.3f),
+                                        Actions.moveTo(botX, botY, 0.55f, Interpolation.swingOut))));
                     }
-                    if (leftRibbonColumn != null) {
-                        leftRibbonColumn.invalidate();
-                        leftRibbonColumn.layout();
-                    }
-                    if (bannerContainer != null) {
-                        bannerContainer.invalidate();
-                        bannerContainer.layout();
-                    }
-                    if (purchasePanel != null) {
-                        purchasePanel.invalidate();
-                        purchasePanel.layout();
-                    }
-                    if (bottomBar != null) {
-                        bottomBar.invalidate();
-                        bottomBar.layout();
-                    }
-
-                    bannerContainer.setPosition(0, 0);
-
-                    float ribX = leftRibbonColumn.getX();
-                    float ribY = leftRibbonColumn.getY();
-
-                    float banX = bannerContainer.getX();
-                    float banY = bannerContainer.getY();
-
-                    float purchaseX = purchasePanel.getX();
-                    float purchaseY = purchasePanel.getY();
-
-                    float botX = bottomBar.getX();
-                    float botY = bottomBar.getY();
-
-                    leftRibbonColumn.setPosition(ribX - 60f, ribY);
-                    bannerContainer.setPosition(banX, banY + 60f);
-                    purchasePanel.setPosition(purchaseX, purchaseY + 60f);
-                    bottomBar.setPosition(botX, botY - 60f);
-
-                    leftRibbonColumn.addAction(Actions.parallel(
-                        Actions.fadeIn(0.4f),
-                        Actions.moveTo(ribX, ribY, 0.45f, Interpolation.swingOut)
-                    ));
-
-                    bannerContainer.addAction(Actions.sequence(
-                        Actions.delay(0.1f),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(banX, banY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-
-                    purchasePanel.addAction(Actions.sequence(
-                        Actions.delay(0.1f),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(purchaseX, purchaseY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-
-                    bottomBar.addAction(Actions.sequence(
-                        Actions.delay(0.2f),
-                        Actions.parallel(
-                            Actions.fadeIn(0.3f),
-                            Actions.moveTo(botX, botY, 0.55f, Interpolation.swingOut)
-                        )
-                    ));
-                }
-            })
-        ));
+                })));
     }
 }

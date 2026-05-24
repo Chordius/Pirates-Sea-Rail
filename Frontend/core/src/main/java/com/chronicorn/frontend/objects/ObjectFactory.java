@@ -56,7 +56,9 @@ public class ObjectFactory {
 
                 case "Chest":
                     int currencyAmount = getIntProperty(rectObj.getProperties(), "currency_amount", 0);
-                    return new Chest(name, bounds.getX(), bounds.getY(), currencyAmount);
+                    String itemId = rectObj.getProperties().get("item_id", String.class);
+                    int itemCount = getIntProperty(rectObj.getProperties(), "item_count", 1);
+                    return new Chest(name, bounds.getX(), bounds.getY(), currencyAmount, itemId, itemCount);
 
                 case "BreakableWall":
                     return new BreakableWall(name, bounds.getX(), bounds.getY());

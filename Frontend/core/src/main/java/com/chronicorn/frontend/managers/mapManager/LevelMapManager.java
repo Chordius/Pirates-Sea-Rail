@@ -191,7 +191,12 @@ public class LevelMapManager {
 
             // 2. ACTION BUTTON TRIGGER (NPCs, Signs, Chests)
             else if (obj.isSolid() && isPlayerNear(playerBounds, obj.getBounds())) {
-                if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) {
+                if (obj instanceof EnemyMapEvent) {
+                    obj.interact(player, events);
+                    return; // Stop checking after triggering one event
+                } else if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)
+                        || Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ENTER)
+                        || Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.SPACE)) {
                     obj.interact(player, events);
                     return; // Stop checking after triggering one event
                 }
