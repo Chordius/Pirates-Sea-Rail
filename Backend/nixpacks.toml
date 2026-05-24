@@ -1,0 +1,6 @@
+# Force the cloud build engine to pre-install OpenJDK 17
+[providers]
+java = {}
+
+[variables]
+NIXPACKS_JDK_VERSION = "17"
