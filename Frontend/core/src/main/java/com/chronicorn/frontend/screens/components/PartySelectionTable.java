@@ -145,15 +145,14 @@ public class PartySelectionTable extends Table {
                     confirmButton.setColor(Color.SCARLET);
 
                     confirmButton.addAction(Actions.sequence(
-                        Actions.delay(1.5f),
-                        Actions.run(new Runnable() {
-                            @Override
-                            public void run() {
-                                confirmButton.setText("Confirm Party");
-                                confirmButton.setColor(Color.WHITE);
-                            }
-                        })
-                    ));
+                            Actions.delay(1.5f),
+                            Actions.run(new Runnable() {
+                                @Override
+                                public void run() {
+                                    confirmButton.setText("Confirm Party");
+                                    confirmButton.setColor(Color.WHITE);
+                                }
+                            })));
                     return;
                 }
 
@@ -165,11 +164,12 @@ public class PartySelectionTable extends Table {
                     }
                 }
 
-                if (listener != null) listener.onPartyConfirmed();
+                if (listener != null)
+                    listener.onPartyConfirmed();
             }
         });
 
-        layoutWrapper.add(confirmButton).size(200, 60).padBottom(20);
+        layoutWrapper.add(confirmButton).height(60).padBottom(20);
 
         this.add(layoutWrapper).expand().fill();
     }
@@ -251,14 +251,12 @@ public class PartySelectionTable extends Table {
             // 5. Fling the cards sequentially!
             child.clearActions();
             child.addAction(Actions.sequence(
-                Actions.delay(index * 0.03f),
-                Actions.parallel(
-                    Actions.fadeIn(0.15f),
-                    Actions.moveTo(targetX, targetY, 0.3f, Interpolation.swingOut),
-                    Actions.scaleTo(1f, 1f, 0.3f, Interpolation.pow3Out),
-                    Actions.rotateTo(0f, 0.3f, Interpolation.swingOut)
-                )
-            ));
+                    Actions.delay(index * 0.03f),
+                    Actions.parallel(
+                            Actions.fadeIn(0.15f),
+                            Actions.moveTo(targetX, targetY, 0.3f, Interpolation.swingOut),
+                            Actions.scaleTo(1f, 1f, 0.3f, Interpolation.pow3Out),
+                            Actions.rotateTo(0f, 0.3f, Interpolation.swingOut))));
             index++;
         }
 
@@ -266,8 +264,7 @@ public class PartySelectionTable extends Table {
         confirmButton.getColor().a = 0f;
         confirmButton.clearActions();
         confirmButton.addAction(Actions.sequence(
-            Actions.delay(index * 0.06f),
-            Actions.fadeIn(0.4f)
-        ));
+                Actions.delay(index * 0.06f),
+                Actions.fadeIn(0.4f)));
     }
 }

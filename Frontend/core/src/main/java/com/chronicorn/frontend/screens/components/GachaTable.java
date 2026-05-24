@@ -197,7 +197,7 @@ public class GachaTable extends Table {
         rewardRow.add(doubloonImage).size(24, 24).padRight(5);
         rewardRow.add(rewardVal);
 
-        Label rewardName = new Label("Clue", ImageManager.skin, "default");
+        Label rewardName = new Label("Doubloon", ImageManager.skin, "default");
         rewardName.setColor(Color.LIGHT_GRAY);
         rewardBlock.add(rewardRow).row();
         rewardBlock.add(rewardName);
@@ -301,9 +301,11 @@ public class GachaTable extends Table {
                                         @Override
                                         public void run() {
                                             SceneManager.getInstance().goBack();
-                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance().getCurrentScreen();
+                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance()
+                                                    .getCurrentScreen();
                                             if (curr instanceof MenuScreen) {
-                                                ((MenuScreen) curr).showGachaResults(new String[]{result.pulledCharId});
+                                                ((MenuScreen) curr)
+                                                        .showGachaResults(new String[] { result.pulledCharId });
                                             }
                                         }
                                     });
@@ -356,7 +358,8 @@ public class GachaTable extends Table {
                                         @Override
                                         public void run() {
                                             SceneManager.getInstance().goBack();
-                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance().getCurrentScreen();
+                                            com.badlogic.gdx.Screen curr = SceneManager.getInstance()
+                                                    .getCurrentScreen();
                                             if (curr instanceof MenuScreen) {
                                                 ((MenuScreen) curr).showGachaResults(pulledIds);
                                             }

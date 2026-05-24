@@ -20,11 +20,17 @@ import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.windows.WindowLogin; // <--- Import WindowLogin
 import com.chronicorn.frontend.windows.WindowSettings;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.ui.Stack;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 
 public class TitleScreen implements Screen {
     private Stage stage;
     private Table mainTable;
     private Texture titleLogoTexture;
+    private Texture userIndicatorTexture;
+    private Texture backgroundPanoramaTexture;
 
     // Variabel Navigasi Keyboard
     private int focusedIndex = 0;
@@ -34,10 +40,24 @@ public class TitleScreen implements Screen {
         stage = new Stage(new ScreenViewport());
 
         try {
-            titleLogoTexture = new Texture(Gdx.files.internal("title.png"));
+            backgroundPanoramaTexture = new Texture(Gdx.files.internal("menu/TitlePanorama.png"));
+            backgroundPanoramaTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        } catch (Exception e) {
+            Gdx.app.error("TitleScreen", "Background panorama image not found: menu/TitlePanorama.png");
+        }
+
+        try {
+            titleLogoTexture = new Texture(Gdx.files.internal("titleSeaRail.png"));
             titleLogoTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         } catch (Exception e) {
-            Gdx.app.error("TitleScreen", "Logo image not found: title.png");
+            Gdx.app.error("TitleScreen", "Title text image not found: titleSeaRail.png");
+        }
+
+        try {
+            userIndicatorTexture = new Texture(Gdx.files.internal("battlehud/userindicator.png"));
+            userIndicatorTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        } catch (Exception e) {
+            Gdx.app.error("TitleScreen", "User indicator image not found: battlehud/userindicator.png");
         }
 
         SoundManager.getInstance().playMusic("song_intro.mp3");
@@ -48,105 +68,149 @@ public class TitleScreen implements Screen {
     }
 
     private void setupUI() {
+        if (backgroundPanoramaTexture != null) {
+            Image backgroundImg = new Image(backgroundPanoramaTexture);
+            backgroundImg.setFillParent(true);
+            stage.addActor(backgroundImg);
+        }
+
         mainTable = new Table();
         mainTable.setFillParent(true);
         stage.addActor(mainTable);
 
-        // --- TITLE LOGO ---
+        // --- TITLE LOGO WITH SPINNING INDICATOR BEHIND IT ---
+        Stack titleStack = new Stack();
+
+        if (userIndicatorTexture != null) {
+            Image indicatorImg = new Image(userIndicatorTexture);
+            indicatorImg.setScaling(Scaling.fit);
+
+            Table indicatorTable = new Table();
+            // FIXED: Enabling transform calculations anchors rotations directly to this cell table center point
+            indicatorTable.setTransform(true);
+            indicatorTable.setOrigin(Align.center);
+
+            indicatorTable.add(indicatorImg).size(320, 320).center();
+            // FIXED: Run the looping rotation action on the matrix container table itself instead of the raw child image
+            indicatorTable.addAction(Actions.forever(Actions.rotateBy(360f, 10f)));
+
+            titleStack.add(indicatorTable);
+        }
+
         if (titleLogoTexture != null) {
             Image titleImage = new Image(titleLogoTexture);
             titleImage.setScaling(Scaling.fit);
-            mainTable.add(titleImage).width(700).height(200).padBottom(50).row();
+
+            Table titleTable = new Table();
+            titleTable.add(titleImage).width(700).height(200).center();
+            titleStack.add(titleTable);
         }
+
+        // FIXED: Increased padBottom from 50 to 90 to lower the buttons underneath by exactly 40px
+        mainTable.add(titleStack).padBottom(90).row();
 
         // --- BUTTONS ---
-        TextButton continueButton = null;
-        boolean hasSave = com.chronicorn.frontend.managers.SaveManager.getInstance().hasSaveFile();
-        if (hasSave) {
-            continueButton = createTitleButton("CONTINUE", 0);
-        }
+        boolean isLocal = com.chronicorn.frontend.managers.networkManager.NetworkConfigure.ACTIVE_ENV == com.chronicorn.frontend.managers.networkManager.NetworkConfigure.Environment.LOCAL
+            || com.chronicorn.frontend.managers.networkManager.NetworkConfigure.ACTIVE_ENV == com.chronicorn.frontend.managers.networkManager.NetworkConfigure.Environment.OFFLINE;
 
-        TextButton playButton = createTitleButton("START GAME", hasSave ? 1 : 0);
-        TextButton settingsButton = createTitleButton("SETTINGS", hasSave ? 2 : 1);
-        TextButton exitButton = createTitleButton("EXIT", hasSave ? 3 : 2);
-
-        if (hasSave) {
-            buttons = new TextButton[] { continueButton, playButton, settingsButton, exitButton };
-        } else {
-            buttons = new TextButton[] { playButton, settingsButton, exitButton };
-        }
-
-        // --- LOGIC KLIK ---
-        if (continueButton != null) {
-            continueButton.addListener(new ClickListener() {
+        if (isLocal) {
+            TextButton playButton = createTitleButton("START GAME", 0);
+            playButton.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    SoundManager.getInstance().playSound("gate.wav");
-
-                    com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
-                    String savedId = prefs.getString("localUserId", null);
-
-                    if (savedId != null && !savedId.isEmpty()) {
-                        com.chronicorn.frontend.Main.currentLocalId = savedId;
-                        final MapScreen mapScreen = new MapScreen(false); // isNewGame = false
-                        com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
-                            @Override
-                            public void run() {
-                                com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(mapScreen);
-                            }
-                        });
-                    } else {
-                        openLoginWindow(true);
-                    }
+                    handleStartGameNewGame();
                 }
             });
-        }
 
-        playButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SoundManager.getInstance().playSound("gate.wav");
-
-                // Check LibGDX Preferences for saved persistent login
-                com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
-                String savedId = prefs.getString("localUserId", null);
-
-                if (savedId != null && !savedId.isEmpty()) {
-                    // Auto-login successful
-                    com.chronicorn.frontend.Main.currentLocalId = savedId;
-                    com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().resetSession();
-                    com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen(true)); // isNewGame = true
-                } else {
-                    // Start fresh interactive login
-                    openLoginWindow(false);
+            TextButton resumeButton = createTitleButton("RESUME", 1);
+            resumeButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    handleResumeGame();
                 }
-            }
-        });
+            });
 
-        settingsButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                SoundManager.getInstance().playSound("lever.wav");
-                openSettings();
-            }
-        });
-
-        exitButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                Gdx.app.exit();
-            }
-        });
-
-        // Tambahkan tombol ke Table
-        if (continueButton != null) {
-            mainTable.add(continueButton).width(350).height(70).padBottom(20).row();
+            buttons = new TextButton[] { playButton, resumeButton };
+        } else {
+            TextButton playButton = createTitleButton("START GAME", 0);
+            playButton.addListener(new ClickListener() {
+                @Override
+                public void clicked(InputEvent event, float x, float y) {
+                    handleStartGameClick();
+                }
+            });
+            buttons = new TextButton[] { playButton };
         }
-        mainTable.add(playButton).width(350).height(70).padBottom(20).row();
-        mainTable.add(settingsButton).width(350).height(70).padBottom(20).row();
-        mainTable.add(exitButton).width(350).height(70).row();
+
+        mainTable.add(buttons[0]).width(350).height(70).padBottom(20).row();
+        if (isLocal) {
+            mainTable.add(buttons[1]).width(350).height(70).row();
+        }
 
         updateVisualFocus();
+    }
+
+    private void handleStartGameNewGame() {
+        SoundManager.getInstance().playSound("gate.wav");
+
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        String savedId = prefs.getString("localUserId", null);
+
+        if (savedId != null && !savedId.isEmpty()) {
+            com.chronicorn.frontend.Main.currentLocalId = savedId;
+            com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().resetSession();
+            com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen(true)); // isNewGame = true
+        } else {
+            openLoginWindow(false); // isContinue = false (starts new game)
+        }
+    }
+
+    private void handleResumeGame() {
+        SoundManager.getInstance().playSound("gate.wav");
+
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        String savedId = prefs.getString("localUserId", null);
+
+        if (savedId != null && !savedId.isEmpty()) {
+            com.chronicorn.frontend.Main.currentLocalId = savedId;
+            final MapScreen mapScreen = new MapScreen(false); // isNewGame = false
+            com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
+                @Override
+                public void run() {
+                    com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(mapScreen);
+                }
+            });
+        } else {
+            openLoginWindow(true); // isContinue = true (resumes game)
+        }
+    }
+
+    private void handleStartGameClick() {
+        SoundManager.getInstance().playSound("gate.wav");
+
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        String savedId = prefs.getString("localUserId", null);
+        boolean hasSave = com.chronicorn.frontend.managers.SaveManager.getInstance().hasSaveFile();
+
+        if (savedId != null && !savedId.isEmpty()) {
+            com.chronicorn.frontend.Main.currentLocalId = savedId;
+            if (hasSave) {
+                // Continue saved game
+                final MapScreen mapScreen = new MapScreen(false); // isNewGame = false
+                com.chronicorn.frontend.managers.SaveManager.getInstance().loadGame(new Runnable() {
+                    @Override
+                    public void run() {
+                        com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(mapScreen);
+                    }
+                });
+            } else {
+                // Start new game
+                com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().resetSession();
+                com.chronicorn.frontend.managers.SceneManager.getInstance().pushScreen(new MapScreen(true)); // isNewGame = true
+            }
+        } else {
+            openLoginWindow(hasSave);
+        }
     }
 
     // --- METHOD BARU: BUKA LOGIN ---
@@ -165,11 +229,6 @@ public class TitleScreen implements Screen {
 
         // Tambahkan ke stage
         stage.addActor(loginWindow);
-
-        // (Opsional) Jika ingin tombol Back di login window berfungsi:
-        // Anda perlu modifikasi WindowLogin untuk menerima Runnable callback seperti
-        // Settings,
-        // Tapi untuk sekarang restart game saja jika ingin batal login.
     }
 
     // --- METHOD: BUKA SETTINGS (Sudah ada tapi dirapikan) ---
@@ -194,10 +253,11 @@ public class TitleScreen implements Screen {
 
     // Helper untuk membuat tombol
     private TextButton createTitleButton(String text, final int index) {
-        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle(
-                ImageManager.skin.get(TextButton.TextButtonStyle.class));
+        TextButton.TextButtonStyle style = new TextButton.TextButtonStyle();
+        style.font = ImageManager.skin.get("menu3", Label.LabelStyle.class).font;
+        style.fontColor = Color.WHITE;
+
         TextButton button = new TextButton(text, style);
-        button.getLabel().setFontScale(1.5f);
 
         button.addListener(new InputListener() {
             @Override
@@ -249,15 +309,15 @@ public class TitleScreen implements Screen {
     }
 
     private void updateVisualFocus() {
-        Drawable selectionBox = ImageManager.skin.getDrawable("selection-box");
         for (int i = 0; i < buttons.length; i++) {
             if (i == focusedIndex) {
-                buttons[i].getStyle().up = selectionBox;
+                buttons[i].getLabel().setColor(Color.YELLOW);
                 buttons[i].clearActions();
                 buttons[i].addAction(Actions.forever(
-                        Actions.sequence(Actions.alpha(0.5f, 0.4f), Actions.alpha(1.0f, 0.4f))));
+                    Actions.sequence(Actions.alpha(0.5f, 0.4f), Actions.alpha(1.0f, 0.4f))));
             } else {
-                buttons[i].getStyle().up = null;
+                // FIXED: Replaces Color.WHITE with your custom fallback hexadecimal color value
+                buttons[i].getLabel().setColor(Color.valueOf("CFC7B3"));
                 buttons[i].clearActions();
                 buttons[i].getColor().a = 1f;
             }
@@ -287,6 +347,8 @@ public class TitleScreen implements Screen {
         stage.dispose();
         if (titleLogoTexture != null)
             titleLogoTexture.dispose();
+        if (userIndicatorTexture != null)
+            userIndicatorTexture.dispose();
     }
 
     @Override
