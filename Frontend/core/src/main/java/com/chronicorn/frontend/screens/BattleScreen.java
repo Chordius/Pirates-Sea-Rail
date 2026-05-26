@@ -18,6 +18,13 @@ import com.badlogic.gdx.utils.IntArray;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.chronicorn.frontend.battlers.Battler;
+import com.chronicorn.frontend.battlers.EnemyFactory;
+import com.chronicorn.frontend.items.Item;
+import com.chronicorn.frontend.items.ItemDatabase;
+import com.chronicorn.frontend.managers.SaveManager;
+import com.chronicorn.frontend.managers.SceneManager;
+import com.chronicorn.frontend.managers.eventManagers.EventManager;
+import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
 import com.chronicorn.frontend.battlers.Enemy;
 import com.chronicorn.frontend.battlers.Actor;
@@ -36,6 +43,8 @@ import com.chronicorn.frontend.managers.battleManager.ui.ActorCardUI;
 import com.chronicorn.frontend.managers.battleManager.BattleManager;
 import com.chronicorn.frontend.managers.battleManager.ui.EnemyWidget;
 import com.chronicorn.frontend.managers.battleManager.ui.SkillMenuBuilder;
+import com.chronicorn.frontend.objects.EnemyMapEvent;
+import com.chronicorn.frontend.objects.InteractiveObject;
 import com.chronicorn.frontend.skills.Action;
 import com.chronicorn.frontend.skills.Skill;
 import com.chronicorn.frontend.skills.SkillDatabase;
@@ -76,6 +85,14 @@ public class BattleScreen implements Screen {
     private Array<String> enemyIds;
     private Actor ultimateCaster = null;
     private String eventName;
+
+    // Transition Fade parameters
+    private float fadeAlpha = 1.0f; // Start fully black
+    private float fadeTarget = 0.0f;
+    private float fadeSpeed = 2.0f; // 0.5s default fade
+    private boolean isTransitioningOut = false;
+    private Runnable postFadeAction = null;
+    private com.badlogic.gdx.graphics.glutils.ShapeRenderer shapeRenderer;
 
     public BattleScreen() {
         this(new Array<>(new String[] { "pirate", "pirate", "pirate", "pirate" }), false, null);
@@ -118,7 +135,7 @@ public class BattleScreen implements Screen {
         enemies = new Array<>();
 
         // Load active party from GameSession, or fall back to default party if empty
-        java.util.List<Actor> activeParty = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance()
+        java.util.List<Actor> activeParty = GameSession.getInstance()
                 .getParty().getActivePartyActors();
         if (activeParty == null || activeParty.isEmpty()) {
             allBattlers.add(new Sailor());
@@ -132,7 +149,7 @@ public class BattleScreen implements Screen {
         // Instantiate enemies dynamically via EnemyFactory using the passed IDs
         if (enemyIds != null) {
             for (String id : enemyIds) {
-                Enemy enemy = com.chronicorn.frontend.battlers.EnemyFactory.createEnemy(id);
+                Enemy enemy = EnemyFactory.createEnemy(id);
                 if (enemy != null) {
                     allBattlers.add(enemy);
                     enemies.add(enemy);
@@ -327,20 +344,39 @@ public class BattleScreen implements Screen {
 
     private void showSkillMenu(Battler activeActor) {
         skillMenuContainer.clearChildren();
-
-        // Primitive Party Mana UI placed just above the SkillBuilder's skill buttons
-        StringBuilder manaStr = new StringBuilder("Mana: ");
         int currentMana = battleManager.getPartyMana();
-        for (int i = 0; i < 5; i++) {
+        int maxManaNodes = 5;
+
+        Table manaUiRow = new Table();
+        manaUiRow.right().bottom();
+
+        Image manaTextImage = new Image(ImageManager.skin.getDrawable("ManaText"));
+        float textWidth = manaTextImage.getDrawable().getMinWidth() * 0.5f;
+        float textHeight = manaTextImage.getDrawable().getMinHeight() * 0.5f;
+        manaUiRow.add(manaTextImage).width(textWidth).height(textHeight).align(Align.left).padRight(12);
+
+        for (int i = 0; i < maxManaNodes; i++) {
+            Image manaDiamondImage = new Image(ImageManager.skin.getDrawable("ManaPoints"));
+            float diamondWidth = manaDiamondImage.getDrawable().getMinWidth() * 0.5f;
+            float diamondHeight = manaDiamondImage.getDrawable().getMinHeight() * 0.5f;
+
             if (i < currentMana) {
-                manaStr.append("* ");
+                // FILLED STATE: Full visibility, vibrant color tint
+                manaDiamondImage.setColor(1f, 1f, 1f, 1f);
             } else {
-                manaStr.append(". ");
+                // EMPTY STATE: Dimmed/translucent backdrop to signify depleted currency
+                // Adjust the 0.25f parameter lower or higher depending on preferred dark backdrop contrast
+                manaDiamondImage.setColor(0.2f, 0.2f, 0.2f, 0.25f);
             }
+
+            // Add each diamond to the horizontal sequence with a small gap between them
+            float rightPad = (i == maxManaNodes - 1) ? 0f : 6f;
+            manaUiRow.add(manaDiamondImage).width(diamondWidth).height(diamondHeight).padRight(rightPad);
         }
-        Label manaLabel = new Label(manaStr.toString().trim(), skin, "skill-style");
-        manaLabel.setColor(Color.valueOf("82abcd"));
-        skillMenuContainer.add(manaLabel).align(Align.right).padBottom(12).row();
+
+
+        skillMenuContainer.add(manaUiRow).align(Align.right).padBottom(12).row();
+
 
         Array<Skill> normalSkills = new Array<>();
         Skill ultimateSkill = null;
@@ -614,28 +650,62 @@ public class BattleScreen implements Screen {
 
     // Helper & Renderers
 
+    private void startFadeOutAndGoBack(final Runnable onComplete) {
+        isTransitioningOut = true;
+        fadeTarget = 1.0f;
+        fadeSpeed = 2.0f; // 0.5s fade out
+        postFadeAction = onComplete;
+    }
+
     @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        // Update fade alpha
+        if (fadeAlpha != fadeTarget) {
+            if (fadeAlpha < fadeTarget) {
+                fadeAlpha = Math.min(fadeTarget, fadeAlpha + fadeSpeed * delta);
+            } else {
+                fadeAlpha = Math.max(fadeTarget, fadeAlpha - fadeSpeed * delta);
+            }
+            if (fadeAlpha == fadeTarget && isTransitioningOut) {
+                if (postFadeAction != null) {
+                    postFadeAction.run();
+                }
+            }
+        }
+
         battleManager.update(delta);
 
         if (isVictoryWindowShowing || isDefeatWindowShowing) {
-            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
-                    || Gdx.input.justTouched()) {
+            if (!isTransitioningOut && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+                    || Gdx.input.justTouched())) {
                 if (isDefeatWindowShowing) {
-                    com.chronicorn.frontend.managers.SaveManager.getInstance()
-                            .loadGameLocationAndFlagsOnly(new Runnable() {
-                                @Override
-                                public void run() {
-                                    com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
-                                }
-                            });
+                    startFadeOutAndGoBack(new Runnable() {
+                        @Override
+                        public void run() {
+                            EventManager em = LevelMapManager.getInstance().getEventManager();
+                            if (em != null) {
+                                em.clear();
+                            }
+                            SaveManager.getInstance()
+                                    .loadGameLocationAndFlagsOnly(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            SceneManager.getInstance().goBack();
+                                        }
+                                    });
+                        }
+                    });
                 } else {
-                    com.chronicorn.frontend.managers.SceneManager.getInstance().goBack();
+                    startFadeOutAndGoBack(new Runnable() {
+                        @Override
+                        public void run() {
+                            SceneManager.getInstance().goBack();
+                        }
+                    });
                 }
-                return;
             }
         }
 
@@ -655,40 +725,53 @@ public class BattleScreen implements Screen {
                     showDefeatWindow();
                 }
             }
-            return;
-        }
-
-        if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
-                && battleManager.getActiveBattler().isPlayerControlled()) {
-
-            if (!isInputWindowActive) {
-                startActorCommandSelection();
-            }
-
-            // Keyboard shortcuts for Ultimates (keys 1-4)
-            ArrayList<Actor> party = battleManager.getGameParty();
-            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1) && party.size() > 0) {
-                triggerUltimate(party.get(0));
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2) && party.size() > 1) {
-                triggerUltimate(party.get(1));
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3) && party.size() > 2) {
-                triggerUltimate(party.get(2));
-            } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4) && party.size() > 3) {
-                triggerUltimate(party.get(3));
-            }
-        } else if (battleManager.getCurrentState() == BattleManager.TurnState.EXECUTE_ACTION) {
-            Action selectedAction = battleManager.getSelectedAction();
-            if (selectedAction != null && selectedAction != executingAction) {
-                sequenceProcessor.startSequence(selectedAction.getSkill().getActionSequence());
-                executingAction = selectedAction;
-            }
-            sequenceProcessor.update(delta);
         } else {
-            executingAction = null;
+            if (battleManager.getCurrentState() == BattleManager.TurnState.INPUT
+                    && battleManager.getActiveBattler().isPlayerControlled()) {
+
+                if (!isInputWindowActive) {
+                    startActorCommandSelection();
+                }
+
+                // Keyboard shortcuts for Ultimates (keys 1-4)
+                ArrayList<Actor> party = battleManager.getGameParty();
+                if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1) && party.size() > 0) {
+                    triggerUltimate(party.get(0));
+                } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2) && party.size() > 1) {
+                    triggerUltimate(party.get(1));
+                } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3) && party.size() > 2) {
+                    triggerUltimate(party.get(2));
+                } else if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4) && party.size() > 3) {
+                    triggerUltimate(party.get(3));
+                }
+            } else if (battleManager.getCurrentState() == BattleManager.TurnState.EXECUTE_ACTION) {
+                Action selectedAction = battleManager.getSelectedAction();
+                if (selectedAction != null && selectedAction != executingAction) {
+                    sequenceProcessor.startSequence(selectedAction.getSkill().getActionSequence());
+                    executingAction = selectedAction;
+                }
+                sequenceProcessor.update(delta);
+            } else {
+                executingAction = null;
+            }
         }
 
         stage.act(delta);
         stage.draw();
+
+        if (fadeAlpha > 0) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+            if (shapeRenderer == null) {
+                shapeRenderer = new com.badlogic.gdx.graphics.glutils.ShapeRenderer();
+            }
+            shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+            shapeRenderer.begin(com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(0, 0, 0, fadeAlpha);
+            shapeRenderer.rect(0, 0, stage.getWidth(), stage.getHeight());
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL20.GL_BLEND);
+        }
     }
 
     private void renderEnemies() {
@@ -851,17 +934,19 @@ public class BattleScreen implements Screen {
 
         AnimationManager.dispose();
         stage.dispose();
-        // Assuming ImageManager.dispose() handles skin disposal globally
+        if (shapeRenderer != null) {
+            shapeRenderer.dispose();
+        }
     }
 
     private void showVictoryWindow() {
         isVictoryWindowShowing = true;
 
         if (eventName != null && !eventName.isEmpty()) {
-            com.chronicorn.frontend.objects.InteractiveObject obj = LevelMapManager.getInstance()
+            InteractiveObject obj = LevelMapManager.getInstance()
                     .getObjectByName(eventName);
-            if (obj instanceof com.chronicorn.frontend.objects.EnemyMapEvent) {
-                ((com.chronicorn.frontend.objects.EnemyMapEvent) obj).setDefeated(true);
+            if (obj instanceof EnemyMapEvent) {
+                ((EnemyMapEvent) obj).setDefeated(true);
             }
         }
 
@@ -892,9 +977,9 @@ public class BattleScreen implements Screen {
             // Drops
             for (Enemy.EnemyDrop drop : enemy.getDrops()) {
                 if (Math.random() < drop.chance) {
-                    com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance().getInventory()
+                    GameSession.getInstance().getInventory()
                             .addItem(drop.itemId, 1);
-                    com.chronicorn.frontend.items.Item itemObj = com.chronicorn.frontend.items.ItemDatabase
+                    Item itemObj = ItemDatabase
                             .getItem(drop.itemId);
                     if (itemObj != null) {
                         droppedItemNames.add(itemObj.getName());

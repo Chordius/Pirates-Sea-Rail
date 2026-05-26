@@ -29,7 +29,7 @@
   },
   "soldier": {
     "name": "Soldier",
-    "maxHp": 70,
+    "maxHp": 55,
     "attack": 65,
     "defense": 65,
     "magic": 65,

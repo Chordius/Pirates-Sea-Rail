@@ -43,6 +43,8 @@ public class ResetManager {
 
         SoundManager.getInstance().stopAllAudio();
 
+        clearEvents();
+
         com.chronicorn.frontend.managers.SaveManager.getInstance().loadGameLocationAndFlagsOnly(new Runnable() {
             @Override
             public void run() {

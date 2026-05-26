@@ -11,9 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.chronicorn.frontend.Player;
 import com.chronicorn.frontend.battlers.Actor;
+import com.chronicorn.frontend.items.Equippable;
+import com.chronicorn.frontend.items.Item;
+import com.chronicorn.frontend.items.ItemDatabase;
 import com.chronicorn.frontend.managers.SceneManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.screens.components.*;
@@ -43,7 +47,7 @@ public class MenuScreen implements Screen {
     private Table equipMenuTable;
     private Table itemsTable;
     private Actor currentSelectedActor;
-    
+
     // Gacha aftermath overlay fields
     private Table gachaResultsOverlay;
     private java.util.List<Table> gachaResultsCards;
@@ -132,7 +136,7 @@ public class MenuScreen implements Screen {
                             @Override
                             public void onConfirmClicked() {
                                 if (currentSelectedActor != null) {
-                                    com.chronicorn.frontend.items.Equippable[] selected = ((EquipMenuTable) equipMenuTable)
+                                    Equippable[] selected = ((EquipMenuTable) equipMenuTable)
                                             .getEquippedWeapons();
                                     currentSelectedActor.getEquipments().clear();
                                     if (selected[0] != null)
@@ -345,7 +349,7 @@ public class MenuScreen implements Screen {
             Drawable iconDrawable;
 
             if (id.startsWith("W")) {
-                com.chronicorn.frontend.items.Item item = com.chronicorn.frontend.items.ItemDatabase.getItem(id);
+                Item item = ItemDatabase.getItem(id);
                 nameText = item != null ? item.getName() : id;
                 iconDrawable = item != null ? ImageManager.skin.getDrawable(item.getIcon()) : ImageManager.skin.getDrawable("white-pixel");
             } else {
@@ -355,7 +359,7 @@ public class MenuScreen implements Screen {
             }
 
             Image faceImg = new Image(iconDrawable);
-            faceImg.setScaling(com.badlogic.gdx.utils.Scaling.fit);
+            faceImg.setScaling(Scaling.fit);
 
             Table faceBg = new Table();
             faceBg.setBackground(ImageManager.skin.newDrawable("white-pixel", Color.valueOf("686259")));

@@ -437,19 +437,16 @@ public class ImageManager {
         loadActorAsset(gameParty);
         loadEnemyAsset(gameTroop);
 
+        Texture ManaText = loadTextureManaged("battlehud/Mana.png", true);
+        ManaText.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("ManaText", new TextureRegionDrawable(new TextureRegion(ManaText)), Drawable.class);
+
+        Texture ManaPoints = loadTextureManaged("battlehud/ManaPoints.png", true);
+        ManaPoints.setFilter(Texture.TextureFilter.MipMapLinearLinear, Texture.TextureFilter.Linear);
+        skin.add("ManaPoints", new TextureRegionDrawable(new TextureRegion(ManaPoints)), Drawable.class);
+
         TextureAtlas skill_icons = loadAtlasManaged("battlehud/skill_icon.atlas");
         skin.addRegions(skill_icons);
-
-        // 3. Load skill icons
-        // for (Action skill : availableSkills) {
-        // String iconName = "icon_" + skill.getIconId();
-        // if (!skin.has(iconName, Drawable.class)) { // Prevent duplicate loading
-        // Texture iconTex = new Texture(Gdx.files.internal("ui/skills/" + iconName +
-        // ".png"));
-        // skin.add(iconName, new TextureRegionDrawable(new TextureRegion(iconTex)),
-        // Drawable.class);
-        // }
-        // }
     }
 
     public static void loadActorAsset(ArrayList<Actor> activeBattlers) {

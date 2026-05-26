@@ -40,6 +40,8 @@ public class MapScreen implements Screen {
     public float fadeAlpha = 0f;
     private float fadeTarget = 0f; // Where we want to go
     private float fadeSpeed = 0f; // How fast to get there
+    public com.badlogic.gdx.graphics.Color fadeColor = new com.badlogic.gdx.graphics.Color(0, 0, 0, 1);
+    public boolean autoFadeInOnShow = false;
     public Stage stage;
     private GameHUD gameHUD;
 
@@ -192,6 +194,14 @@ public class MapScreen implements Screen {
 
         LevelMapManager.getInstance().renderForeground(camera);
 
+        if (autoFadeInOnShow) {
+            fadeAlpha -= 2.0f * delta;
+            if (fadeAlpha <= 0f) {
+                fadeAlpha = 0f;
+                autoFadeInOnShow = false;
+            }
+        }
+
         if (fadeAlpha > 0) {
             changeScreenFade();
         }
@@ -231,7 +241,7 @@ public class MapScreen implements Screen {
 
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0, 0, 0, fadeAlpha);
+        shapeRenderer.setColor(fadeColor.r, fadeColor.g, fadeColor.b, fadeAlpha);
         shapeRenderer.rect(camera.position.x - camera.viewportWidth * camera.zoom / 2f,
                 camera.position.y - camera.viewportHeight * camera.zoom / 2f,
                 camera.viewportWidth * camera.zoom, camera.viewportHeight * camera.zoom);
@@ -266,6 +276,10 @@ public class MapScreen implements Screen {
     public void show() {
         if (inputMultiplexer != null) {
             Gdx.input.setInputProcessor(inputMultiplexer);
+        }
+        if (autoFadeInOnShow) {
+            fadeAlpha = 1.0f;
+            fadeColor.set(com.badlogic.gdx.graphics.Color.BLACK);
         }
     }
 
