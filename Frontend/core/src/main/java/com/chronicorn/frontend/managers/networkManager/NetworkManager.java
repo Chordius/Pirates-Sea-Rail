@@ -204,6 +204,7 @@ public class NetworkManager {
             .header("Content-Type", "application/json")
             .header("Accept", "application/json")
             .content(payload != null ? json.toJson(payload) : "")
+            .timeout(5000)
             .build();
 
         Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
@@ -247,6 +248,7 @@ public class NetworkManager {
             .method(Net.HttpMethods.GET)
             .url(NetworkConfigure.getBaseUrl() + endpoint)
             .header("Accept", "application/json")
+            .timeout(5000)
             .build();
 
         Gdx.net.sendHttpRequest(httpRequest, new Net.HttpResponseListener() {
