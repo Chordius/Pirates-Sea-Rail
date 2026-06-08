@@ -50,7 +50,7 @@ public class ItemsTable extends Table {
         rosterBgPanel.add(leftRosterContainer).fill().expand();
 
         Table backgroundLayer = new Table();
-        backgroundLayer.top().left().padTop(75);
+        backgroundLayer.top().left().padTop(40);
         backgroundLayer.add(rosterBgPanel).width(320).height(380).left();
 
         leftStack.add(backgroundLayer);
@@ -75,7 +75,8 @@ public class ItemsTable extends Table {
 
         rightPanel.add(scrollPane).width(560).height(450).top().left();
 
-        // FIXED 1: Replaced simple padLeft with symmetrical window boundaries to minimize right negative space
+        // FIXED 1: Replaced simple padLeft with symmetrical window boundaries to
+        // minimize right negative space
         rightPanel.add(detailsBgContainer).width(450).height(450).top().left().pad(0, 20, 0, 40);
 
         rightColumn.add(rightPanel).expand().fill().top().left();
@@ -115,7 +116,8 @@ public class ItemsTable extends Table {
                 final int quantity = entry.getValue();
 
                 final Item item = ItemDatabase.getItem(itemId);
-                if (item == null) continue;
+                if (item == null)
+                    continue;
 
                 Stack cardStack = new Stack();
 
@@ -193,7 +195,8 @@ public class ItemsTable extends Table {
         partyList.defaults().height(80).width(280).padBottom(10);
 
         for (final Actor actor : activeParty) {
-            if (actor == null) continue;
+            if (actor == null)
+                continue;
 
             ImageManager.loadMenuCharacterAsset(actor.getName());
 
@@ -224,10 +227,12 @@ public class ItemsTable extends Table {
 
             Label hpLbl = new Label("HP: " + actor.getHp() + "/" + actor.getMaxHp(), ImageManager.skin, "default");
             hpLbl.setFontScale(0.85f);
-            // FIXED 2: Change the text rendering color state of the health metric to clear white
+            // FIXED 2: Change the text rendering color state of the health metric to clear
+            // white
             hpLbl.setColor(Color.WHITE);
 
-            Label enLbl = new Label("EN: " + actor.getEnergy() + "/" + actor.getMaxEnergy(), ImageManager.skin, "default");
+            Label enLbl = new Label("EN: " + actor.getEnergy() + "/" + actor.getMaxEnergy(), ImageManager.skin,
+                    "default");
             enLbl.setFontScale(0.85f);
 
             info.add(nameLbl).left().row();
@@ -256,10 +261,10 @@ public class ItemsTable extends Table {
 
         leftRosterContainer.add(partyList).expandX().fillX().row();
 
-        // FIXED 3: Replaced the unoutlined "menu" style sheet marker with the outlined "menu3" style layout configuration
-        Label promptLabel = new Label(selectedItemId != null ? "Select target" : "Select an item to use", ImageManager.skin, "menu2");
+        Label promptLabel = new Label(selectedItemId != null ? "Select target" : "Select an item to use",
+                ImageManager.skin, "menu2");
         promptLabel.setColor(selectedItemId != null ? Color.GOLD : Color.LIGHT_GRAY);
-        leftRosterContainer.add(promptLabel).padTop(10).center();
+        leftRosterContainer.add(promptLabel).bottom();
     }
 
     public void refreshDetails() {
@@ -287,7 +292,8 @@ public class ItemsTable extends Table {
             return;
         }
 
-        detailsBgContainer.defaults().align(Align.left).space(12).padLeft(25);;
+        detailsBgContainer.defaults().align(Align.left).space(12).padLeft(25);
+        ;
 
         Label nameLbl = new Label(item.getName(), ImageManager.skin, "menu2");
         detailsBgContainer.add(nameLbl).width(240).row();
@@ -363,31 +369,31 @@ public class ItemsTable extends Table {
         rightColumn.getColor().a = 0f;
 
         this.addAction(Actions.sequence(
-            Actions.delay(0.05f),
-            Actions.run(new Runnable() {
-                @Override
-                public void run() {
-                    ItemsTable.this.invalidateHierarchy();
-                    ItemsTable.this.layout();
+                Actions.delay(0.05f),
+                Actions.run(new Runnable() {
+                    @Override
+                    public void run() {
+                        ItemsTable.this.invalidateHierarchy();
+                        ItemsTable.this.layout();
 
-                    float leftX = leftColumn.getX();
-                    float leftY = leftColumn.getY();
-                    float rightX = rightColumn.getX();
-                    float rightY = rightColumn.getY();
+                        float leftX = leftColumn.getX();
+                        float leftY = leftColumn.getY();
+                        float rightX = rightColumn.getX();
+                        float rightY = rightColumn.getY();
 
-                    leftColumn.setPosition(leftX - 100f, leftY);
-                    rightColumn.setPosition(rightX + 100f, rightY);
+                        leftColumn.setPosition(leftX - 100f, leftY);
+                        rightColumn.setPosition(rightX + 100f, rightY);
 
-                    leftColumn.addAction(Actions.parallel(
-                        Actions.fadeIn(0.4f),
-                        Actions.moveTo(leftX, leftY, 0.5f, Interpolation.swingOut)));
+                        leftColumn.addAction(Actions.parallel(
+                                Actions.fadeIn(0.4f),
+                                Actions.moveTo(leftX, leftY, 0.5f, Interpolation.swingOut)));
 
-                    rightColumn.addAction(Actions.sequence(
-                        Actions.delay(0.1f),
-                        Actions.parallel(
-                            Actions.fadeIn(0.4f),
-                            Actions.moveTo(rightX, rightY, 0.5f, Interpolation.swingOut))));
-                }
-            })));
+                        rightColumn.addAction(Actions.sequence(
+                                Actions.delay(0.1f),
+                                Actions.parallel(
+                                        Actions.fadeIn(0.4f),
+                                        Actions.moveTo(rightX, rightY, 0.5f, Interpolation.swingOut))));
+                    }
+                })));
     }
 }

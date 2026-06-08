@@ -49,6 +49,7 @@ public class Jail2BScript implements MapScript {
             events.queue(new CmdZoomCamera(1f, 0.1f));
         }
         events.queue(new CmdFlagSet("FIRST_TIME_JAIL2B", false));
+        events.queue(new CmdSaveGame());
     }
 
     @Override
