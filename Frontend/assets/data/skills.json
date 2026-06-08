@@ -175,14 +175,11 @@
       "PERFORM START",
       "CAMERA ZOOM: 1.15: 0.15",
       "WAIT: 0.1",
-
       "ANIMATION: fire_sweep",
       "WAIT: 0.32",
-
       "ANIMATION: fire_uppercut",
       "WAIT: 0.05",
       "ANIMATION: fire_burst_short",
-
       "WAIT: 0.05",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
@@ -204,15 +201,12 @@
       "PERFORM START",
       "CAMERA ZOOM: 1.15: 0.2",
       "WAIT: 0.2",
-
       "ANIMATION: falcon_fist",
       "ANIMATION: falcon_fist_aura",
       "WAIT: 0.35",
-
       "ANIMATION: falcon_fire_geyser",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
-
       "CAMERA RESET",
       "PERFORM FINISH"
     ]
@@ -230,15 +224,12 @@
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.25: 0.2",
-      "ANIMATION: ultimate_charge_fire",
       "WAIT: 0.4",
-
       "ANIMATION: flameforce_shatter_burst",
       "WAIT: 0.08",
       "ANIMATION: flameforce_shatter_burst",
       "WAIT: 0.08",
       "ANIMATION: flameforce_shatter_burst",
-
       "WAIT: 0.1",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
@@ -283,13 +274,10 @@
     "sequence": [
       "PERFORM START",
       "WAIT: 0.1",
-
       "ANIMATION: heal_bubble_float",
       "WAIT: 0.48",
-
       "ANIMATION: heal_bubble_pop",
       "WAIT: 0.2",
-
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -309,10 +297,8 @@
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.15",
       "WAIT: 0.05",
-
       "ANIMATION: waterfall_cascade",
       "WAIT: 0.12",
-
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "CAMERA RESET",
@@ -333,11 +319,9 @@
       "PERFORM START",
       "CAMERA ZOOM: 1.22: 0.25",
       "WAIT: 0.15",
-
       "ANIMATION: oath_magic_circle",
       "ANIMATION: oath_rising_orb",
       "WAIT: 0.55",
-
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "CAMERA RESET",
@@ -349,18 +333,16 @@
     "iconId": "icon_hippocratic_oath",
     "scope": "ALL",
     "element": "WATER",
-    "basePower": 25,
-    "toughnessDMG": 10,
+    "basePower": 45,
+    "toughnessDMG": 30,
     "energyBonus": 0,
     "skill_type": "Skill",
     "description": "Deals 25 Base Power Water DMG to all enemies.",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.1",
-
       "ANIMATION: oathbearer_maelstrom",
       "WAIT: 0.24",
-
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -406,14 +388,11 @@
       "PERFORM START",
       "CAMERA ZOOM: 1.15: 0.15",
       "WAIT: 0.2",
-
       "ANIMATION: remarkable_arrow",
       "WAIT: 0.2",
-
       "ANIMATION: remarkable_lightning_shatter",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
-
       "CAMERA RESET",
       "PERFORM FINISH"
     ]
@@ -431,15 +410,12 @@
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.2",
-
       "ANIMATION: purple_marker_aura",
       "WAIT: 0.3",
-
       "ANIMATION: stick_pierce",
       "WAIT: 0.1",
       "ANIMATION: void_shatter_burst",
       "ANIMATION: hit_thunder",
-
       "WAIT: 0.05",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
@@ -460,10 +436,8 @@
     "sequence": [
       "PERFORM START",
       "WAIT: 0.1",
-
       "ANIMATION: sniper_eye_glint",
       "WAIT: 0.2",
-
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
       "PERFORM FINISH"
@@ -482,22 +456,17 @@
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.30: 0.2",
-
       "ANIMATION: oneshot_plasma_charge",
       "WAIT: 0.35",
-
       "ANIMATION: oneshot_laser_bolt",
       "WAIT: 0.12",
-
       "ANIMATION: oneshot_lightning_pillar",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
-
       "CAMERA RESET",
       "PERFORM FINISH"
     ]
   },
-
   "reaction_overload": {
     "name": "Overload",
     "scope": "BLAST",
@@ -527,6 +496,50 @@
     "sequence": [
       "WAIT: 0.2",
       "ANIMATION: slash",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+  "reaction_damp": {
+    "name": "Damp",
+    "scope": "SINGLE",
+    "element": "WATER",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: water_burst",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+  "reaction_muddied": {
+    "name": "Muddied",
+    "scope": "SINGLE",
+    "element": "EARTH",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: slash",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+  "reaction_isolate": {
+    "name": "Isolate",
+    "scope": "SINGLE",
+    "element": "LIGHTNING",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: hit_thunder",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION"
+    ]
+  },
+  "reaction_burn": {
+    "name": "Burn",
+    "scope": "SINGLE",
+    "element": "FIRE",
+    "sequence": [
+      "WAIT: 0.2",
+      "ANIMATION: hit-fire",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION"
     ]

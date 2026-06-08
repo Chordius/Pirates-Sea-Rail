@@ -342,8 +342,13 @@ public class GachaTable extends Table {
                                     for (GachaResult result : results) {
                                         System.out.println("Gacha Pulled: " + result.pulledCharId + " (New: "
                                                 + result.isNew + ")");
-                                        GameSession.getInstance().getParty().unlockCharacter(result.pulledCharId,
-                                                ActorFactory.createActor(result.pulledCharId));
+                                        if (result.pulledCharId != null && result.pulledCharId.startsWith("W")) {
+                                            GameSession.getInstance().getInventory().addItem(result.pulledCharId, 1);
+                                            System.out.println("Added Weapon/Equippable to inventory instances.");
+                                        } else {
+                                            GameSession.getInstance().getParty().unlockCharacter(result.pulledCharId,
+                                                    ActorFactory.createActor(result.pulledCharId));
+                                        }
                                     }
 
                                     pull1Btn.setTouchable(com.badlogic.gdx.scenes.scene2d.Touchable.enabled);

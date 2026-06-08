@@ -54,12 +54,29 @@
   },
   "smothered": {
     "name": "Smothered",
-    "iconId": "icon_second_wind",
+    "iconId": "icon_smothered",
     "turns": 3
   },
   "electrocuted": {
     "name": "Electrocuted",
     "iconId": "icon_electrocuted",
     "turns": 3
+  },
+  "damp": {
+    "name": "Damp",
+    "iconId": "icon_damp",
+    "turns": 3
+  },
+  "muddied": {
+    "name": "Muddied",
+    "iconId": "icon_muddied",
+    "turns": 3
+  },
+  "isolate": {
+    "name": "Isolate",
+    "iconId": "icon_isolate",
+    "turns": 3,
+    "turnType": "turn",
+    "description": "Stunned and unable to take action."
   }
 }

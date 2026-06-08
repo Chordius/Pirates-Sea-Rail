@@ -1,21 +1,21 @@
 {
-  "pirate": {
-    "name": "Pirate",
+  "snake": {
+    "name": "Snake",
     "maxHp": 70,
     "attack": 65,
     "defense": 65,
     "magic": 65,
     "speed": 18,
-    "level": 10,
-    "maxWeakness": 20,
+    "level": 5,
+    "maxWeakness": 60,
     "innateElements": [
       "earth",
-      "fire"
+      "water"
     ],
     "skills": [
       "basic_attack"
     ],
-    "baseExp": 120,
+    "baseExp": 60,
     "drops": [
       {
         "itemId": "ITEM_POTION",
@@ -54,18 +54,18 @@
       }
     ]
   },
-  "goblin": {
-    "name": "Goblin",
+  "seamen": {
+    "name": "Seaman",
     "maxHp": 35,
-    "attack": 15,
-    "defense": 15,
+    "attack": 75,
+    "defense": 50,
     "magic": 15,
-    "speed": 18,
-    "level": 1,
+    "speed": 21,
+    "level": 5,
     "maxWeakness": 50,
     "innateElements": [
       "earth",
-      "fire"
+      "water"
     ],
     "skills": [
       "basic_attack"
