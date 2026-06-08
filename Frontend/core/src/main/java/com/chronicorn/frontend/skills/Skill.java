@@ -138,12 +138,14 @@ public class Skill {
                 int calculatedDamage = calcDMG(user, target);
 
                 // 3. ATTACKER'S CONFIRM HOOKS (e.g., Attack up buffs)
-                for (StatusEffect state : user.getActiveStates()) {
-                    calculatedDamage = state.getLogic().onConfirm(user, target, state,this, calculatedDamage);
+                for (int i = 0; i < user.getActiveStates().size; i++) {
+                    StatusEffect state = user.getActiveStates().get(i);
+                    calculatedDamage = state.getLogic().onConfirm(user, target, state, this, calculatedDamage);
                 }
 
                 // 4. DEFENDER'S REACT HOOKS (e.g., Damage reduction shields)
-                for (StatusEffect state : target.getActiveStates()) {
+                for (int i = 0; i < target.getActiveStates().size; i++) {
+                    StatusEffect state = target.getActiveStates().get(i);
                     calculatedDamage = state.getLogic().onReact(user, target, this, calculatedDamage);
                 }
 
@@ -160,10 +162,12 @@ public class Skill {
             // 3. Fire the specific Lambda logic for this skill
             mechanics.execute(user, target, baseArgument, this.element);
 
-            for (StatusEffect state : target.getActiveStates()) {
+            for (int i = 0; i < target.getActiveStates().size; i++) {
+                StatusEffect state = target.getActiveStates().get(i);
                 state.getLogic().onRespond(user, target, this, baseArgument);
             }
-            for (StatusEffect state : user.getActiveStates()) {
+            for (int i = 0; i < user.getActiveStates().size; i++) {
+                StatusEffect state = user.getActiveStates().get(i);
                 state.getLogic().onEstablish(user, target, state, this, baseArgument);
             }
         }

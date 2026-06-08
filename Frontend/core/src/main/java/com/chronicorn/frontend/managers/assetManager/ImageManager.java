@@ -246,7 +246,7 @@ public class ImageManager {
         FreeTypeFontGenerator generatorStyled = new FreeTypeFontGenerator(
                 Gdx.files.internal("fonts/ClearGothic Regular.ttf"));
         FreeTypeFontGenerator generatorStyledBold = new FreeTypeFontGenerator(
-                Gdx.files.internal("fonts/ClearGothic Bold.ttf"));
+                Gdx.files.internal("fonts/Cleargothic Bold.ttf"));
         FreeTypeFontParameter parameter = new FreeTypeFontParameter();
 
         // --- STYLE 1: Standard UI Font (HP, Menus) ---
