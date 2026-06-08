@@ -225,14 +225,14 @@ public class BattleScreen implements Screen {
                 ActorCardUI card = new ActorCardUI(b, skin, new ActorCardUI.Listener() {
                     @Override
                     public void onAllyClicked(Battler clickedAlly) {
-                        if (isSelectingTarget) {
+                        if (isSelectingTarget() && isCurrentSkillAllyTargeted()) {
                             onAllyOk(clickedAlly);
                         }
                     }
 
                     @Override
                     public void onAllyHovered(ActorCardUI hoveredCard) {
-                        if (isSelectingTarget) {
+                        if (isSelectingTarget() && isCurrentSkillAllyTargeted()) {
                             setHoveredAllyTarget(hoveredCard);
                         }
                     }
@@ -365,7 +365,8 @@ public class BattleScreen implements Screen {
                 manaDiamondImage.setColor(1f, 1f, 1f, 1f);
             } else {
                 // EMPTY STATE: Dimmed/translucent backdrop to signify depleted currency
-                // Adjust the 0.25f parameter lower or higher depending on preferred dark backdrop contrast
+                // Adjust the 0.25f parameter lower or higher depending on preferred dark
+                // backdrop contrast
                 manaDiamondImage.setColor(0.2f, 0.2f, 0.2f, 0.25f);
             }
 
@@ -374,9 +375,7 @@ public class BattleScreen implements Screen {
             manaUiRow.add(manaDiamondImage).width(diamondWidth).height(diamondHeight).padRight(rightPad);
         }
 
-
         skillMenuContainer.add(manaUiRow).align(Align.right).padBottom(12).row();
-
 
         Array<Skill> normalSkills = new Array<>();
         Skill ultimateSkill = null;
@@ -679,8 +678,9 @@ public class BattleScreen implements Screen {
         battleManager.update(delta);
 
         if (isVictoryWindowShowing || isDefeatWindowShowing) {
-            if (!isTransitioningOut && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
-                    || Gdx.input.justTouched())) {
+            if (!isTransitioningOut
+                    && (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) || Gdx.input.isKeyJustPressed(Input.Keys.ENTER)
+                            || Gdx.input.justTouched())) {
                 if (isDefeatWindowShowing) {
                     startFadeOutAndGoBack(new Runnable() {
                         @Override
@@ -804,14 +804,14 @@ public class BattleScreen implements Screen {
         EnemyWidget currentWidget = new EnemyWidget(enemy, skin, new EnemyWidget.Listener() {
             @Override
             public void onEnemyClicked(Enemy clickedEnemy) {
-                if (isSelectingTarget()) {
+                if (isSelectingTarget() && !isCurrentSkillAllyTargeted()) {
                     onEnemyOk(clickedEnemy);
                 }
             }
 
             @Override
             public void onEnemyHovered(EnemyWidget widget) {
-                if (isSelectingTarget()) {
+                if (isSelectingTarget() && !isCurrentSkillAllyTargeted()) {
                     setHoveredTarget(widget);
                 }
             }
@@ -828,6 +828,18 @@ public class BattleScreen implements Screen {
 
     public boolean isSelectingTarget() {
         return isSelectingTarget;
+    }
+
+    public boolean isCurrentSkillAllyTargeted() {
+        Battler commanding = getCommandingActor();
+        if (commanding != null) {
+            Action action = commanding.inputtingAction();
+            if (action != null && action.getSkill() != null) {
+                TargetScope scope = action.getSkill().getScope();
+                return scope == TargetScope.ALLY || scope == TargetScope.ALLIES;
+            }
+        }
+        return false;
     }
 
     public void processEnemyDeath(final EnemyWidget deadWidget) {

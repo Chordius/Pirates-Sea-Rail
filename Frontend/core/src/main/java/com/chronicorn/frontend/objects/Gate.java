@@ -71,9 +71,11 @@ public class Gate extends InteractiveObject {
     @Override
     public void interact(Player player, EventManager events) {
         if (isOpen) {
-            events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), false, 5.0f));
-            events.queue(new CmdTransferPlayer(targetMapName, targetX, targetY));
-            events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), true, 5.0f));
+            if (targetMapName != null && !targetMapName.trim().isEmpty()) {
+                events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), false, 5.0f));
+                events.queue(new CmdTransferPlayer(targetMapName, targetX, targetY));
+                events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), true, 5.0f));
+            }
             return;
         };
 

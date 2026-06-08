@@ -22,7 +22,6 @@ import com.chronicorn.frontend.managers.assetManager.ImageManager;
 import com.chronicorn.frontend.managers.eventManagers.EventManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.managers.mapManager.LevelMapManager;
-import com.chronicorn.frontend.playercommands.Dash;
 import com.chronicorn.frontend.playercommands.Move;
 import com.chronicorn.frontend.managers.*;
 import com.chronicorn.frontend.windows.GameHUD;
@@ -52,7 +51,6 @@ public class MapScreen implements Screen {
     // Player Essentials
     private Player player;
     private Move moveCommand;
-    private Dash dashCommand;
 
     // Managers
     private EventManager eventManager;
@@ -112,8 +110,6 @@ public class MapScreen implements Screen {
             LevelMapManager.getInstance().changeLevel("LevelIntro");
         }
 
-        // Setup Input
-        this.dashCommand = new Dash(player);
         this.moveCommand = new Move(player);
 
         inputMultiplexer = new com.badlogic.gdx.InputMultiplexer();
@@ -218,7 +214,6 @@ public class MapScreen implements Screen {
 
     private void handleInput() {
         moveCommand.execute();
-        if (dashCommand != null) dashCommand.execute();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
             SceneManager.getInstance().transitionToMenu(player);

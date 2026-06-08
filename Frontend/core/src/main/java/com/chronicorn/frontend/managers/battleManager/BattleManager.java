@@ -19,6 +19,7 @@ public class BattleManager {
     public enum TurnState {
         TURN_START, NEXT_BATTLER, INPUT, EXECUTE_ACTION, CHECK_BATTLE_END, BATTLE_END
     }
+
     BattleDelegate followUpDelegate;
 
     private ArrayList<Battler> allBattlers;
@@ -154,7 +155,8 @@ public class BattleManager {
 
         activeBattler.triggerActionStart();
 
-        // If a start-of-turn effect killed the battler, skip their input and check for death
+        // If a start-of-turn effect killed the battler, skip their input and check for
+        // death
         if (!activeBattler.isAlive()) {
             currentState = TurnState.CHECK_BATTLE_END;
             return;
@@ -173,6 +175,13 @@ public class BattleManager {
         for (Battler b : allBattlers) {
             if (b.isAlive()) {
                 b.triggerTurnEnd();
+                if (b instanceof Enemy) {
+                    Enemy enemy = (Enemy) b;
+                    if (enemy.isInSignatureLoss()) {
+                        enemy.restoreWeakness();
+                        System.out.println(enemy.getName() + " recovered from Weakness Break!");
+                    }
+                }
             }
         }
         System.out.println("Current Turn: " + turn);
@@ -255,14 +264,17 @@ public class BattleManager {
         boolean enemiesAlive = false;
         for (Battler b : allBattlers) {
             if (b.isAlive()) {
-                if (b.isPlayerControlled()) playersAlive = true;
-                else enemiesAlive = true;
+                if (b.isPlayerControlled())
+                    playersAlive = true;
+                else
+                    enemiesAlive = true;
             }
         }
 
         if (!playersAlive || !enemiesAlive) {
             selectedAction = null;
             currentState = TurnState.BATTLE_END;
+            clearAllStatusEffects();
             return;
         }
 
@@ -304,13 +316,16 @@ public class BattleManager {
 
         for (Battler b : allBattlers) {
             if (b.isAlive()) {
-                if (b.isPlayerControlled()) playersAlive = true;
-                else enemiesAlive = true;
+                if (b.isPlayerControlled())
+                    playersAlive = true;
+                else
+                    enemiesAlive = true;
             }
         }
 
         if (!playersAlive || !enemiesAlive) {
             currentState = TurnState.BATTLE_END;
+            clearAllStatusEffects();
         } else {
             currentState = TurnState.NEXT_BATTLER;
         }
@@ -372,7 +387,27 @@ public class BattleManager {
 
     public void changePartyMana(int amount) {
         this.partyMana += amount;
-        if (this.partyMana < 0) this.partyMana = 0;
-        if (this.partyMana > MAX_MANA) this.partyMana = MAX_MANA;
+        if (this.partyMana < 0)
+            this.partyMana = 0;
+        if (this.partyMana > MAX_MANA)
+            this.partyMana = MAX_MANA;
+    }
+
+    private void clearAllStatusEffects() {
+        if (gameParty != null) {
+            for (Actor actor : gameParty) {
+                actor.getActiveStates().clear();
+            }
+        }
+        if (initialEnemies != null) {
+            for (Enemy enemy : initialEnemies) {
+                enemy.getActiveStates().clear();
+            }
+        }
+        if (allBattlers != null) {
+            for (Battler b : allBattlers) {
+                b.getActiveStates().clear();
+            }
+        }
     }
 }

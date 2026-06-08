@@ -48,9 +48,10 @@ public class EquipMenuTable extends Table {
     private ButtonGroup<Button> slotGroup;
     private Image[] slotIcons = new Image[2];
     private Equippable[] equippedWeapons = new Equippable[2];
+    private Actor currentActor;
 
-    // Track dynamic visibility states for cards using unique IDs
-    private Map<String, Table> statusBadgeMap = new HashMap<>();
+    // Track dynamic visibility states for cards using unique Equippable references
+    private Map<Equippable, Table> statusBadgeMap = new HashMap<>();
 
     public EquipMenuTable() {
         super();
@@ -185,6 +186,7 @@ public class EquipMenuTable extends Table {
     }
 
     public void updateMenu(Actor actor, PlayerInventory inventory) {
+        this.currentActor = actor;
         String elementStr = (actor.getElement() != null) ? actor.getElement().name().toLowerCase() : "none";
 
         String headerName = "equipweapon_" + elementStr;
@@ -248,7 +250,7 @@ public class EquipMenuTable extends Table {
             badgeContainer.add(badgeBg).fillX().expandX();
             badgeContainer.setVisible(false);
 
-            statusBadgeMap.put(equip.getId(), badgeContainer);
+            statusBadgeMap.put(equip, badgeContainer);
 
             Button.ButtonStyle emptyStyle = new Button.ButtonStyle();
             Button clickTarget = new Button(emptyStyle);
@@ -304,11 +306,30 @@ public class EquipMenuTable extends Table {
             badge.setVisible(false);
         }
 
-        // Toggles display tracking metrics matching slot layout configs directly
+        // 1. Show other characters holding this weapon
+        com.chronicorn.frontend.managers.eventManagers.GameSession session = com.chronicorn.frontend.managers.eventManagers.GameSession.getInstance();
+        if (session.getParty() != null && session.getParty().getOwnedCharacters() != null) {
+            for (Map.Entry<String, Actor> entry : session.getParty().getOwnedCharacters().entrySet()) {
+                Actor other = entry.getValue();
+                if (other != currentActor) {
+                    for (Equippable eq : other.getEquipments()) {
+                        Table badgeContainer = statusBadgeMap.get(eq);
+                        if (badgeContainer != null) {
+                            badgeContainer.setVisible(true);
+                            Table badgeBg = (Table) badgeContainer.getChildren().get(0);
+                            Label badgeLabel = (Label) badgeBg.getChildren().get(0);
+                            badgeLabel.setText(other.getName());
+                        }
+                    }
+                }
+            }
+        }
+
+        // 2. Toggles display tracking metrics matching slot layout configs directly
         for (int i = 0; i < 2; i++) {
             Equippable activeWpn = equippedWeapons[i];
             if (activeWpn != null) {
-                Table badgeContainer = statusBadgeMap.get(activeWpn.getId());
+                Table badgeContainer = statusBadgeMap.get(activeWpn);
                 if (badgeContainer != null) {
                     badgeContainer.setVisible(true);
 

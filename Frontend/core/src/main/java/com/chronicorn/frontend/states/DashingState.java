@@ -59,8 +59,4 @@ public class DashingState implements PlayerState {
         // Optional: You can spawn your Ghost trail here if you still want it while running!
     }
 
-    @Override
-    public void onDashCommand(Player player) {
-        // Already running
-    }
 }

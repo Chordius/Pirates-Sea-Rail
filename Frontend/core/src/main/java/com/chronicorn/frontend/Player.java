@@ -11,7 +11,6 @@ import com.chronicorn.frontend.contants.Direction;
 import com.chronicorn.frontend.managers.SoundManager;
 import com.chronicorn.frontend.managers.eventManagers.GameSession;
 import com.chronicorn.frontend.objects.PhysicsObjects;
-import com.chronicorn.frontend.states.DashingState;
 import com.chronicorn.frontend.states.NormalState;
 import com.chronicorn.frontend.states.PlayerState;
 import com.badlogic.gdx.utils.Array;
@@ -33,10 +32,6 @@ public class Player implements PhysicsObjects {
 
     // --- STATE & COOLDOWN ---
     private PlayerState currentState;
-    private float dashCooldownTimer = 0;
-    private final float DASH_COOLDOWN = 1.0f;
-    Map<Direction, Animation<TextureRegion>> runAnimations = new HashMap<>();
-    private Texture runTextureSheet;
 
     private Rectangle collider;
 
@@ -48,7 +43,6 @@ public class Player implements PhysicsObjects {
     private Direction currentDirection = Direction.DOWN;
 
     // --- CONDITION FLAGS ---
-    public boolean dead = false;
     public boolean isBusy = false; // Used to freeze player during events
     private boolean transparent = false;
 
@@ -57,9 +51,9 @@ public class Player implements PhysicsObjects {
     private float strikeTimer = 0f;
     private final float STRIKE_DURATION = 0.2f;
 
-    // --- STATS ---
-    public int hp = 35;
-    private int maxHp = 35;
+    public void recoverAll() {
+        // Overworld character has no stats to recover
+    }
 
     // --- SCORE ---
     private int score = 0;
@@ -71,12 +65,11 @@ public class Player implements PhysicsObjects {
     // --- ANIMATION VARS ---
     Map<Direction, Animation<TextureRegion>> walkAnimations = new HashMap<>();
     Map<Direction, TextureRegion> idleFrames = new HashMap<>();
+    Map<Direction, Animation<TextureRegion>> runAnimations = new HashMap<>();
     private TextureRegion currentFrame;
     private Texture textureSheet;
+    private Texture runTextureSheet;
     private float stateTime;
-
-    // --- GHOST TRAIL ---
-    private Array<Ghost> ghosts = new Array<>();
 
     // --- CUTSCENE MOVEMENT ---
     private Vector2 cutsceneTargetPosition = new Vector2();
@@ -88,21 +81,7 @@ public class Player implements PhysicsObjects {
     }
 
     public boolean isDashing() {
-        // TODO: Make Dash
         return false;
-    }
-
-    private class Ghost {
-        float x, y;
-        TextureRegion texture;
-        float alpha = 1.0f;
-        float lifeTime = 0.5f;
-
-        public Ghost(float x, float y, TextureRegion texture) {
-            this.x = x;
-            this.y = y;
-            this.texture = texture;
-        }
     }
 
     public Player(Vector2 startPosition) {
@@ -130,46 +109,13 @@ public class Player implements PhysicsObjects {
         }
     }
 
-    // --- GHOST TRAIL LOGIC ---
     public void spawnGhost() {
-        if (currentFrame != null) {
-            ghosts.add(new Ghost(position.x, position.y, currentFrame));
-        }
-    }
-
-    private void updateGhosts(float delta) {
-        Iterator<Ghost> iter = ghosts.iterator();
-        while (iter.hasNext()) {
-            Ghost g = iter.next();
-            g.lifeTime -= delta;
-            g.alpha = g.lifeTime / 0.5f;
-
-            if (g.lifeTime <= 0) {
-                iter.remove();
-            }
-        }
-    }
-
-    private void renderGhosts(SpriteBatch batch) {
-        float oldR = batch.getColor().r;
-        float oldG = batch.getColor().g;
-        float oldB = batch.getColor().b;
-        float oldA = batch.getColor().a;
-
-        for (Ghost g : ghosts) {
-            batch.setColor(0.5f, 1f, 1f, g.alpha * 0.5f);
-            batch.draw(g.texture, g.x, g.y, width, height);
-        }
-        batch.setColor(oldR, oldG, oldB, oldA);
+        // Overworld character has no ghost trail
     }
 
     // --- STATE MANAGEMENT ---
     public void changeState(PlayerState newState) {
         this.currentState = newState;
-        if (newState instanceof com.chronicorn.frontend.states.DashingState) {
-            this.dashCooldownTimer = DASH_COOLDOWN;
-            notifyDashObservers();
-        }
     }
 
     public void handleInput() {
@@ -179,53 +125,38 @@ public class Player implements PhysicsObjects {
 
     public Vector2 getVelocity() { return velocity; }
     public float getMaxSpeed() { return maxSpeed; }
-    public boolean isDashReady() { return dashCooldownTimer <= 0; }
-
-    public void attemptDash() {
-        if (isBusy) return;
-        currentState.onDashCommand(this);
-    }
 
     // --- MAIN UPDATE LOOP ---
     public void update(float delta) {
-        if (dashCooldownTimer > 0) {
-            dashCooldownTimer -= delta;
-            if (dashCooldownTimer < 0) dashCooldownTimer = 0;
-            notifyDashObservers();
-        }
-
         // Handle the visual strike cooldown
         if (isStriking) {
             strikeTimer -= delta;
             if (strikeTimer <= 0) isStriking = false;
         }
 
-        if (!dead) {
-            if (isBusy && isCutsceneMoving) {
-                // Smoothly interpolate player position to target during cutscene
-                float dx = cutsceneTargetPosition.x - position.x;
-                float dy = cutsceneTargetPosition.y - position.y;
-                float distance = (float) Math.sqrt(dx * dx + dy * dy);
-                if (distance < cutsceneMoveSpeed * delta) {
-                    position.set(cutsceneTargetPosition);
-                    isCutsceneMoving = false;
-                } else {
-                    position.x += (dx / distance) * cutsceneMoveSpeed * delta;
-                    position.y += (dy / distance) * cutsceneMoveSpeed * delta;
-                }
-                updateCollider();
-            } else if (!isBusy) {
-                currentState.update(this, delta);
-                if (currentState instanceof NormalState) {
-                    currentState.handleInput(this);
-                }
-                position.mulAdd(velocity, delta);
-                handleWalkingSound();
-                updateGhosts(delta);
+        if (isBusy && isCutsceneMoving) {
+            // Smoothly interpolate player position to target during cutscene
+            float dx = cutsceneTargetPosition.x - position.x;
+            float dy = cutsceneTargetPosition.y - position.y;
+            float distance = (float) Math.sqrt(dx * dx + dy * dy);
+            if (distance < cutsceneMoveSpeed * delta) {
+                position.set(cutsceneTargetPosition);
+                isCutsceneMoving = false;
+            } else {
+                position.x += (dx / distance) * cutsceneMoveSpeed * delta;
+                position.y += (dy / distance) * cutsceneMoveSpeed * delta;
             }
+            updateCollider();
+        } else if (!isBusy) {
+            currentState.update(this, delta);
+            if (currentState instanceof NormalState) {
+                currentState.handleInput(this);
+            }
+            position.mulAdd(velocity, delta);
+            handleWalkingSound();
         }
 
-        if (dead || (isBusy && !isCutsceneMoving)) {
+        if (isBusy && !isCutsceneMoving) {
             stopWalkingSound();
             velocity.set(0,0); // Force stop sliding when an event starts
         }
@@ -272,9 +203,6 @@ public class Player implements PhysicsObjects {
 
     public void addObserver(PlayerObserver observer) {
         this.observers.add(observer);
-        observer.onHealthChanged(hp, maxHp);
-        observer.onDashCooldownChanged(dashCooldownTimer, DASH_COOLDOWN);
-        observer.onPlayerStatusChanged(this.dead);
     }
 
     public void removeObserver(PlayerObserver observer) {
@@ -282,21 +210,12 @@ public class Player implements PhysicsObjects {
     }
 
     private void notifyStatusObservers() {
-        for (PlayerObserver o : observers) {
-            o.onPlayerStatusChanged(this.dead);
-        }
     }
 
     private void notifyDashObservers() {
-        for (PlayerObserver o : observers) {
-            o.onDashCooldownChanged(dashCooldownTimer, DASH_COOLDOWN);
-        }
     }
 
     private void notifyHealthObservers() {
-        for (PlayerObserver o : observers) {
-            o.onHealthChanged(hp, maxHp);
-        }
     }
 
     public void limitSpeed() {
@@ -306,7 +225,7 @@ public class Player implements PhysicsObjects {
     // --- GETTERS & SETTERS ---
     public Direction getCurrentDirection() { return currentDirection; }
     public void setCurrentDirection(Direction dir) { this.currentDirection = dir; }
-    public boolean isDead() { return dead; }
+    public boolean isDead() { return false; }
     public boolean isMoving() { return (velocity.len() > 10f) || isCutsceneMoving; }
     public boolean isTransparent() { return transparent; }
     public void setTransparent(boolean transparent) { this.transparent = transparent; }
@@ -358,7 +277,7 @@ public class Player implements PhysicsObjects {
         textureSheet = new Texture(Gdx.files.internal("feschar_big_040.png"));
         TextureRegion[][] tmpFrames = TextureRegion.split(textureSheet, 48, 64);
 
-        // 2. Load Dash Sheet
+        // 2. Load Run Sheet
         runTextureSheet = new Texture(Gdx.files.internal("Hero01_dash.png"));
         int runFrameWidth = runTextureSheet.getWidth() / 3;
         int runFrameHeight = runTextureSheet.getHeight() / 4;
@@ -407,8 +326,7 @@ public class Player implements PhysicsObjects {
         }
 
         if (isMoving()) {
-            // Check which state is active to determine which animation sheet to pull from
-            if (currentState instanceof DashingState && !isCutsceneMoving) {
+            if (currentState instanceof com.chronicorn.frontend.states.DashingState) {
                 currentFrame = runAnimations.get(currentDirection).getKeyFrame(stateTime, true);
             } else {
                 currentFrame = walkAnimations.get(currentDirection).getKeyFrame(stateTime, true);
@@ -427,8 +345,6 @@ public class Player implements PhysicsObjects {
     // --- RENDER ---
     public void render(SpriteBatch batch) {
         if (transparent) return;
-
-        renderGhosts(batch);
 
         if (currentFrame != null) {
             float drawX = position.x;
@@ -476,7 +392,9 @@ public class Player implements PhysicsObjects {
 
     public void dispose() {
         textureSheet.dispose();
-        if (runTextureSheet != null) runTextureSheet.dispose();
+        if (runTextureSheet != null) {
+            runTextureSheet.dispose();
+        }
     }
 
     public void setSpawnPoint(float x, float y) {

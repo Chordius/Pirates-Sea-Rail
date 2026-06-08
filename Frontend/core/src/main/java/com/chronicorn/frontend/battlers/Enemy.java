@@ -180,6 +180,13 @@ public class Enemy extends Battler {
         return this.mark;
     }
 
+    public void restoreWeakness() {
+        this.weaknessbar = this.maxWeakness;
+        this.signature = true;
+        clearElementalMark();
+        notifyObserversOnWeak();
+    }
+
     public void reduceWeaknessBar(int i) {
         this.weaknessbar -= i;
         if (this.weaknessbar <= 0) {

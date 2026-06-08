@@ -164,7 +164,8 @@ public class StatusEffectRegistry {
             public int onReact(Battler attacker, Battler defender, Skill skill, int incomingDamage) {
                 // Find this specific character's unique active state instance
                 StatusEffect localState = null;
-                for (StatusEffect se : defender.getActiveStates()) {
+                for (int i = 0; i < defender.getActiveStates().size; i++) {
+                    StatusEffect se = defender.getActiveStates().get(i);
                     if (se.getId().equals("pristine_health")) {
                         localState = se;
                         break;
@@ -196,17 +197,14 @@ public class StatusEffectRegistry {
             public void onTurnEnd(Battler owner, Battler origin) {
                 System.out.println(owner.getName() + " channels the Hippocratic Oath!");
 
-                // 1. Queue an official out-of-turn Follow-up Attack action across the engine
-                // queue
-                // Passing 'owner' as the target; your Action resolver will expand this to
-                // ALL_ENEMIES based on the JSON scope
                 owner.requestFollowUp("oathbearer_strike", owner);
 
                 // 2. Process Team Heal tick immediately: Restores 25% of Reyna's Max HP to all
                 // allies
                 int outOfTurnHeal = (int) Math.floor(owner.getMaxHp() * 0.25f);
                 boolean healedAlly = false;
-                if (GameSession.getInstance().getParty() != null && GameSession.getInstance().getParty().getActivePartyActors() != null) {
+                if (GameSession.getInstance().getParty() != null
+                        && GameSession.getInstance().getParty().getActivePartyActors() != null) {
                     for (Actor ally : GameSession.getInstance().getParty().getActivePartyActors()) {
                         if (ally != null && ally.isAlive()) {
                             ally.heal(outOfTurnHeal, Elements.WATER);
@@ -238,29 +236,27 @@ public class StatusEffectRegistry {
         });
 
         logicMap.put("dominique_marker", new StatusLogic() {
-            // Global variables stored on the single shared instance memory block
             private Battler currentMarkedTarget = null;
-            private float globalMarkerStacks = 0.0f;
-            private float preWeaknessBarSnapshot = 0.0f;
 
             @Override
             public void onApply(Battler owner, StatusEffect statusEffect) {
-                // If switching targets, safely reset the global stack counter for the new owner
-                if (currentMarkedTarget != owner) {
-                    currentMarkedTarget = owner;
-                    globalMarkerStacks = 0.0f;
-                    System.out.println("Marker ownership shifted to: " + owner.getName() + ". Stacks reset globally.");
+                if (currentMarkedTarget != null && currentMarkedTarget != owner) {
+                    currentMarkedTarget.removeStatusEffect("dominique_marker");
                 }
-                preWeaknessBarSnapshot = 0.0f;
+                currentMarkedTarget = owner;
+                statusEffect.setSavedValue("stacks", 0.0f);
+                statusEffect.setSavedValue("preWeaknessBarSnapshot", 0.0f);
             }
 
             @Override
             public float onModifyHiddenParam(Battler owner, Battler origin, int statId, float currentValue) {
-                // Index 0: ReactionDMGBonus
-                // Only amplify damage if the entity requesting the stat is the TRUE active
-                // marker holder
                 if (statId == 0 && owner == currentMarkedTarget) {
-                    return currentValue + (globalMarkerStacks * 0.01f);
+                    for (int i = 0; i < owner.getActiveStates().size; i++) {
+                        StatusEffect state = owner.getActiveStates().get(i);
+                        if (state.getId().equals("dominique_marker")) {
+                            return currentValue + (state.getSavedValue("stacks") * 0.01f);
+                        }
+                    }
                 }
                 return currentValue;
             }
@@ -268,9 +264,9 @@ public class StatusEffectRegistry {
             @Override
             public int onConfirm(Battler attacker, Battler defender, StatusEffect state, Skill skill,
                     int incomingDamage) {
-                // Snapshot defense data only if processing the true target
                 if (defender == currentMarkedTarget && defender instanceof com.chronicorn.frontend.battlers.Enemy) {
-                    preWeaknessBarSnapshot = ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar();
+                    state.setSavedValue("preWeaknessBarSnapshot",
+                            ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar());
                 }
                 return incomingDamage;
             }
@@ -283,28 +279,27 @@ public class StatusEffectRegistry {
 
                 if (defender instanceof com.chronicorn.frontend.battlers.Enemy) {
                     float currentWeakBar = ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar();
+                    float preWeaknessBarSnapshot = state.getSavedValue("preWeaknessBarSnapshot");
 
                     if (currentWeakBar < preWeaknessBarSnapshot) {
                         float breakdownDelta = preWeaknessBarSnapshot - currentWeakBar;
-                        globalMarkerStacks = Math.min(globalMarkerStacks + breakdownDelta, 100.0f);
-                        System.out.println("Global Marker Stacks updated: " + globalMarkerStacks);
+                        float currentStacks = state.getSavedValue("stacks");
+                        float finalStacks = Math.min(currentStacks + breakdownDelta, 100.0f);
+                        state.setSavedValue("stacks", finalStacks);
+                        System.out.println("Marker Stacks updated: " + finalStacks);
                     }
                 }
 
-                // Wipe the global variables cleanly if a reaction consumed it
                 if (skill.getSkillType().startsWith("reaction_")) {
-                    globalMarkerStacks = 0.0f;
-                    System.out.println("Reaction consumed the mark. Global stacks dropped to 0.");
+                    state.setSavedValue("stacks", 0.0f);
+                    System.out.println("Reaction consumed the mark. Stacks dropped to 0.");
                 }
             }
 
             @Override
             public void onLeave(Battler owner, StatusEffect statusEffect) {
-                // Only clean up the global memory if the target leaving is the actual active
-                // holder
                 if (owner == currentMarkedTarget) {
                     currentMarkedTarget = null;
-                    globalMarkerStacks = 0.0f;
                     System.out.println("True Marker holder left the field. Global memory cleared cleanly.");
                 }
             }
@@ -312,10 +307,53 @@ public class StatusEffectRegistry {
 
         logicMap.put("smothered", new StatusLogic() {
             @Override
+            public int onModifyPrimaryParam(Battler owner, Battler origin, int statId, int currentValue) {
+                if (statId == 0) { // Attack
+                    return Math.round(currentValue * 0.5f);
+                }
+                return currentValue;
+            }
+
+            @Override
             public void onTurnEnd(Battler owner, Battler origin) {
-                // Define what Smothered does (e.g., reduce ATK each turn, or just a visual
-                // marker)
                 System.out.println(owner.getName() + " is smothered!");
+            }
+        });
+
+        logicMap.put("damp", new StatusLogic() {
+            @Override
+            public int onModifyPrimaryParam(Battler owner, Battler origin, int statId, int currentValue) {
+                if (statId == 1) { // Defense
+                    return Math.round(currentValue * 0.67f);
+                }
+                return currentValue;
+            }
+
+            @Override
+            public void onTurnEnd(Battler owner, Battler origin) {
+                System.out.println(owner.getName() + " is damp!");
+            }
+        });
+
+        logicMap.put("muddied", new StatusLogic() {
+            @Override
+            public int onModifyPrimaryParam(Battler owner, Battler origin, int statId, int currentValue) {
+                if (statId == 3) { // Speed
+                    return Math.round(currentValue * 0.67f);
+                }
+                return currentValue;
+            }
+
+            @Override
+            public void onTurnEnd(Battler owner, Battler origin) {
+                System.out.println(owner.getName() + " is muddied!");
+            }
+        });
+
+        logicMap.put("isolate", new StatusLogic() {
+            @Override
+            public void onTurnEnd(Battler owner, Battler origin) {
+                System.out.println(owner.getName() + " is isolated!");
             }
         });
 

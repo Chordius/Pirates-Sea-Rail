@@ -58,8 +58,10 @@ public class LevelMapManager {
     }
 
     private void loadMapData(String level) {
-        if (map != null) map.dispose();
-        if (mapRenderer != null) mapRenderer.dispose();
+        if (map != null)
+            map.dispose();
+        if (mapRenderer != null)
+            mapRenderer.dispose();
         activeBalloons.clear();
         activeVfx.clear();
 
@@ -102,13 +104,15 @@ public class LevelMapManager {
     }
 
     public void renderBackground(OrthographicCamera camera) {
-        if (mapRenderer == null) return;
+        if (mapRenderer == null)
+            return;
         mapRenderer.setView(camera);
         mapRenderer.render(backgroundLayers);
     }
 
     public void renderForeground(OrthographicCamera camera) {
-        if (mapRenderer == null) return;
+        if (mapRenderer == null)
+            return;
         mapRenderer.render(foregroundLayers);
     }
 
@@ -127,7 +131,8 @@ public class LevelMapManager {
     }
 
     public EventManager getEventManager() {
-        if (this.eventManager == null) return null;
+        if (this.eventManager == null)
+            return null;
         return this.eventManager;
     }
 
@@ -152,7 +157,8 @@ public class LevelMapManager {
     }
 
     public void checkWallCollisions(float delta, Array<? extends PhysicsObjects> objects) {
-        if (objects == null || objects.isEmpty()) return;
+        if (objects == null || objects.isEmpty())
+            return;
         for (PhysicsObjects m : objects) {
             mapManager.checkWallCollisions(delta, m);
         }
@@ -173,15 +179,18 @@ public class LevelMapManager {
     }
 
     public void checkInteractableTriggers(float delta, EventManager events) {
-        if (events.isBusy()) return;
+        if (events.isBusy())
+            return;
 
         com.badlogic.gdx.math.Rectangle playerBounds = player.getBounds();
         Array<InteractiveObject> interactables = mapManager.getInteractiveObjects();
 
-        if (interactables == null) return;
+        if (interactables == null)
+            return;
 
         for (InteractiveObject obj : interactables) {
-            if (!obj.isConditionMet()) continue;
+            if (!obj.isConditionMet())
+                continue;
 
             // 1. TOUCH TRIGGER (Floor plates, cutscene zones)
             if (!obj.isSolid() && playerBounds.overlaps(obj.getBounds())) {
@@ -204,15 +213,16 @@ public class LevelMapManager {
         }
     }
 
-    private boolean isPlayerNear(com.badlogic.gdx.math.Rectangle playerBounds, com.badlogic.gdx.math.Rectangle objBounds) {
-        // Expand the object's hitbox by 15 pixels in all directions to create a "proximity zone"
+    private boolean isPlayerNear(com.badlogic.gdx.math.Rectangle playerBounds,
+            com.badlogic.gdx.math.Rectangle objBounds) {
+        // Expand the object's hitbox by 15 pixels in all directions to create a
+        // "proximity zone"
         // This allows the player to interact without needing pixel-perfect overlap
         com.badlogic.gdx.math.Rectangle interactZone = new com.badlogic.gdx.math.Rectangle(
-            objBounds.x - 24,
-            objBounds.y - 24,
-            objBounds.width + 32,
-            objBounds.height + 32
-        );
+                objBounds.x - 24,
+                objBounds.y - 24,
+                objBounds.width + 32,
+                objBounds.height + 32);
         return interactZone.overlaps(playerBounds);
     }
 
@@ -223,7 +233,7 @@ public class LevelMapManager {
     }
 
     public void checkHazardTile(float delta) {
-        mapManager.parseHazardCollisions(map,player);
+        mapManager.parseHazardCollisions(map, player);
     }
 
     public void spawnPlayer() {
@@ -255,9 +265,11 @@ public class LevelMapManager {
     }
 
     public InteractiveObject getObjectByName(String name) {
+        if (name == null)
+            return null;
         Array<InteractiveObject> interactiveObjects = mapManager.getInteractiveObjects();
         for (InteractiveObject obj : interactiveObjects) {
-            if (obj.getName().equals(name)) {
+            if (obj.getName() != null && obj.getName().equals(name)) {
                 return obj;
             }
         }
@@ -265,8 +277,10 @@ public class LevelMapManager {
     }
 
     public void reset() {
-        if (map != null) map.dispose();
-        if (mapRenderer != null) mapRenderer.dispose();
+        if (map != null)
+            map.dispose();
+        if (mapRenderer != null)
+            mapRenderer.dispose();
 
         map = null;
         mapRenderer = null;
@@ -287,28 +301,36 @@ public class LevelMapManager {
 
     public void handlePlayerOverworldStrike(float delta, EventManager events) {
         // Only trigger on the exact frame Z is pressed
-        if (!Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z)) return;
-        if (events.isBusy()) return;
+        if (!Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.Z))
+            return;
+        if (events.isBusy())
+            return;
 
         com.badlogic.gdx.math.Rectangle playerBounds = player.getBounds();
         com.badlogic.gdx.math.Rectangle strikeBox = new com.badlogic.gdx.math.Rectangle();
 
         // 1. Position the Strike Box based on player direction
-        // (Assuming you have an enum or int for facing direction: 0=Up, 1=Down, 2=Left, 3=Right)
+        // (Assuming you have an enum or int for facing direction: 0=Up, 1=Down, 2=Left,
+        // 3=Right)
         float reach = 40f; // How far the weapon reaches
         float thickness = 40f; // How wide the weapon swing is
 
         // Example logic (you will need to adapt this to how you store player direction)
         /*
-        switch(player.getDirection()) {
-            case UP:    strikeBox.set(playerBounds.x, playerBounds.y + playerBounds.height, thickness, reach); break;
-            case DOWN:  strikeBox.set(playerBounds.x, playerBounds.y - reach, thickness, reach); break;
-            case LEFT:  strikeBox.set(playerBounds.x - reach, playerBounds.y, reach, thickness); break;
-            case RIGHT: strikeBox.set(playerBounds.x + playerBounds.width, playerBounds.y, reach, thickness); break;
-        }
-        */
+         * switch(player.getDirection()) {
+         * case UP: strikeBox.set(playerBounds.x, playerBounds.y + playerBounds.height,
+         * thickness, reach); break;
+         * case DOWN: strikeBox.set(playerBounds.x, playerBounds.y - reach, thickness,
+         * reach); break;
+         * case LEFT: strikeBox.set(playerBounds.x - reach, playerBounds.y, reach,
+         * thickness); break;
+         * case RIGHT: strikeBox.set(playerBounds.x + playerBounds.width,
+         * playerBounds.y, reach, thickness); break;
+         * }
+         */
 
-        // Let's just do a generic box around the player for this example if you don't have directions yet
+        // Let's just do a generic box around the player for this example if you don't
+        // have directions yet
         strikeBox.set(playerBounds.x - 20, playerBounds.y - 20, playerBounds.width + 40, playerBounds.height + 40);
 
         // 2. Play the weapon swing animation/sound (VFX only, no physics objects!)
@@ -329,8 +351,8 @@ public class LevelMapManager {
     }
 
     public void showBalloon(PhysicsObjects target, String balloonType) {
-        com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> anim = 
-            com.chronicorn.frontend.managers.assetManager.ImageManager.getBalloonAnimation(balloonType);
+        com.badlogic.gdx.graphics.g2d.Animation<com.badlogic.gdx.graphics.g2d.TextureRegion> anim = com.chronicorn.frontend.managers.assetManager.ImageManager
+                .getBalloonAnimation(balloonType);
         if (anim != null && target != null) {
             for (int i = activeBalloons.size - 1; i >= 0; i--) {
                 if (activeBalloons.get(i).getTarget() == target) {
@@ -373,7 +395,8 @@ public class LevelMapManager {
         return 0f;
     }
 
-    public boolean isAreaBlocked(float targetX, float targetY, float targetWidth, float targetHeight, InteractiveObject self) {
+    public boolean isAreaBlocked(float targetX, float targetY, float targetWidth, float targetHeight,
+            InteractiveObject self) {
         Rectangle targetRect = new Rectangle(targetX, targetY, targetWidth, targetHeight);
 
         // 1. Check tile map walls
@@ -409,10 +432,12 @@ public class LevelMapManager {
     public void updateObjects(float delta) {
         Array<InteractiveObject> interactables = mapManager.getInteractiveObjects();
         if (interactables != null) {
-            // MapEvent movement/animation must tick every frame, independent of EventManager command lifetime.
+            // MapEvent movement/animation must tick every frame, independent of
+            // EventManager command lifetime.
             for (int i = 0; i < interactables.size; i++) {
                 InteractiveObject obj = interactables.get(i);
-                if (!obj.isConditionMet()) continue;
+                if (!obj.isConditionMet())
+                    continue;
                 if (obj instanceof MapEvent) {
                     ((MapEvent) obj).update(delta);
                 }
@@ -439,10 +464,12 @@ public class LevelMapManager {
     }
 
     public void renderYSorted(com.badlogic.gdx.graphics.g2d.SpriteBatch batch, Player player) {
-        if (mapManager == null) return;
+        if (mapManager == null)
+            return;
 
         com.badlogic.gdx.utils.Array<InteractiveObject> objects = mapManager.getInteractiveObjects();
-        if (objects == null) return;
+        if (objects == null)
+            return;
 
         // 1. Sort all map objects from highest Y to lowest Y (Top to Bottom)
         // LibGDX Array sorting is highly optimized for this.
@@ -464,8 +491,10 @@ public class LevelMapManager {
             obj.render(batch);
         }
 
-        // 3. If the player has the lowest Y of all (standing closest to the bottom edge of the screen),
-        // the loop will finish without drawing them. Draw them last so they overlap everything!
+        // 3. If the player has the lowest Y of all (standing closest to the bottom edge
+        // of the screen),
+        // the loop will finish without drawing them. Draw them last so they overlap
+        // everything!
         if (!playerDrawn) {
             player.render(batch);
         }

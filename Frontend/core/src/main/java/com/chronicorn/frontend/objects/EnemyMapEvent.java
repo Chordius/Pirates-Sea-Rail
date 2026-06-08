@@ -55,6 +55,14 @@ public class EnemyMapEvent extends MapEvent {
     }
 
     @Override
+    public boolean isConditionMet() {
+        if (isDefeated) {
+            return false;
+        }
+        return super.isConditionMet();
+    }
+
+    @Override
     public void render(SpriteBatch batch) {
         if (isDefeated)
             return;
@@ -197,6 +205,8 @@ public class EnemyMapEvent extends MapEvent {
     // Normal encounter (They touched you, or you walked into them)
     @Override
     public void interact(Player player, EventManager events) {
+        if (isDefeated)
+            return;
         if (events.isBusy())
             return;
 

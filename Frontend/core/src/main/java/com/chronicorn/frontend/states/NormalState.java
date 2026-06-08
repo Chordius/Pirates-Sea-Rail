@@ -53,10 +53,4 @@ public class NormalState implements PlayerState {
         // kita tidak perlu memanggil applyFriction() atau limitSpeed() di sini.
     }
 
-    @Override
-    public void onDashCommand(Player player) {
-        if (player.isDashReady()) { // You might need to change this if isDashReady() is removed
-            player.changeState(new DashingState());
-        }
-    }
 }

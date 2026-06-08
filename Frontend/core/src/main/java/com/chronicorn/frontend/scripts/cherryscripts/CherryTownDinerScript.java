@@ -457,6 +457,7 @@ public class CherryTownDinerScript implements MapScript {
                 events.queue(new CmdBattle(
                     "soldier", "soldier", "soldier"
                 ));
+                events.queue(new CmdRecoverAll());
                 events.queue(new CmdSetSteppingAnimation("Porter", false));
                 events.queue(new CmdSetSteppingAnimation("Player", false));
                 events.queue(new CmdShowAnimation("NPC_Guard_1", "hit", false));

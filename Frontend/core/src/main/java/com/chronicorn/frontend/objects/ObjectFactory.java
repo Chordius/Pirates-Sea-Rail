@@ -3,6 +3,7 @@ package com.chronicorn.frontend.objects;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.objects.TiledMapTileMapObject;
 import com.badlogic.gdx.math.Rectangle;
 
@@ -46,9 +47,9 @@ public class ObjectFactory {
                     }
                     String targetMapName = (String) rectObj.getProperties().get("mapName");
                     return new Gate(name, bounds.getX(), bounds.getY())
-                        .setTargetX(targetX)
-                        .setTargetY(targetY)
-                        .setMapName(targetMapName);
+                            .setTargetX(targetX)
+                            .setTargetY(targetY)
+                            .setMapName(targetMapName);
 
                 case "Lever":
                     String target = (String) rectObj.getProperties().get("target");
@@ -113,13 +114,21 @@ public class ObjectFactory {
                                 moveRoute[i] = 2;
                             } else if (token.equals("UP") || token.equals("3") || token.equals("U")) {
                                 moveRoute[i] = 3;
-                            } else if (token.equals("LOOK_DOWN") || token.equals("LD") || token.equals("FACE_DOWN") || token.equals("FD") || token.equals("TURN_DOWN") || token.equals("TD") || token.equals("4")) {
+                            } else if (token.equals("LOOK_DOWN") || token.equals("LD") || token.equals("FACE_DOWN")
+                                    || token.equals("FD") || token.equals("TURN_DOWN") || token.equals("TD")
+                                    || token.equals("4")) {
                                 moveRoute[i] = 4;
-                            } else if (token.equals("LOOK_LEFT") || token.equals("LL") || token.equals("FACE_LEFT") || token.equals("FL") || token.equals("TURN_LEFT") || token.equals("TL") || token.equals("5")) {
+                            } else if (token.equals("LOOK_LEFT") || token.equals("LL") || token.equals("FACE_LEFT")
+                                    || token.equals("FL") || token.equals("TURN_LEFT") || token.equals("TL")
+                                    || token.equals("5")) {
                                 moveRoute[i] = 5;
-                            } else if (token.equals("LOOK_RIGHT") || token.equals("LR") || token.equals("FACE_RIGHT") || token.equals("FR") || token.equals("TURN_RIGHT") || token.equals("TR") || token.equals("6")) {
+                            } else if (token.equals("LOOK_RIGHT") || token.equals("LR") || token.equals("FACE_RIGHT")
+                                    || token.equals("FR") || token.equals("TURN_RIGHT") || token.equals("TR")
+                                    || token.equals("6")) {
                                 moveRoute[i] = 6;
-                            } else if (token.equals("LOOK_UP") || token.equals("LU") || token.equals("FACE_UP") || token.equals("FU") || token.equals("TURN_UP") || token.equals("TU") || token.equals("7")) {
+                            } else if (token.equals("LOOK_UP") || token.equals("LU") || token.equals("FACE_UP")
+                                    || token.equals("FU") || token.equals("TURN_UP") || token.equals("TU")
+                                    || token.equals("7")) {
                                 moveRoute[i] = 7;
                             } else {
                                 System.err.println("Warning: Invalid direction in move route: " + token);
@@ -134,18 +143,18 @@ public class ObjectFactory {
                     }
 
                     return new MapEvent(name, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight())
-                        .scriptId(scriptId)
-                        .solid(isSolid)
-                        .spriteSheetName(spriteSheet)
-                        .isStatic(isStatic)
-                        .characterIndex(characterIndex)
-                        .initialDirection(initialDirection)
-                        .baseSpeed(baseSpeed)
-                        .moveRouteType(moveRouteType)
-                        .moveRoute(moveRoute)
-                        .stepDelay(moveDelay)
-                        .steppingAnimation(isStepping)
-                        .fixedDirection(fixedDirection);
+                            .scriptId(scriptId)
+                            .solid(isSolid)
+                            .spriteSheetName(spriteSheet)
+                            .isStatic(isStatic)
+                            .characterIndex(characterIndex)
+                            .initialDirection(initialDirection)
+                            .baseSpeed(baseSpeed)
+                            .moveRouteType(moveRouteType)
+                            .moveRoute(moveRoute)
+                            .stepDelay(moveDelay)
+                            .steppingAnimation(isStepping)
+                            .fixedDirection(fixedDirection);
 
                 case "EnemyMapEvent":
                     // Parse EnemyMapEvent properties
@@ -162,7 +171,10 @@ public class ObjectFactory {
                         enemySpriteSheet = new java.io.File(enemyRawPath).getName();
                     }
 
-                    boolean isEnemyStatic = getBooleanProperty(rectObj.getProperties(), "is_static", false); // default false so they animate/move!
+                    boolean isEnemyStatic = getBooleanProperty(rectObj.getProperties(), "is_static", false); // default
+                                                                                                             // false so
+                                                                                                             // they
+                                                                                                             // animate/move!
 
                     int enemyCharacterIndex = getIntProperty(rectObj.getProperties(), "character_index", 0);
 
@@ -199,13 +211,21 @@ public class ObjectFactory {
                                 enemyMoveRoute[i] = 2;
                             } else if (token.equals("UP") || token.equals("3") || token.equals("U")) {
                                 enemyMoveRoute[i] = 3;
-                            } else if (token.equals("LOOK_DOWN") || token.equals("LD") || token.equals("FACE_DOWN") || token.equals("FD") || token.equals("TURN_DOWN") || token.equals("TD") || token.equals("4")) {
+                            } else if (token.equals("LOOK_DOWN") || token.equals("LD") || token.equals("FACE_DOWN")
+                                    || token.equals("FD") || token.equals("TURN_DOWN") || token.equals("TD")
+                                    || token.equals("4")) {
                                 enemyMoveRoute[i] = 4;
-                            } else if (token.equals("LOOK_LEFT") || token.equals("LL") || token.equals("FACE_LEFT") || token.equals("FL") || token.equals("TURN_LEFT") || token.equals("TL") || token.equals("5")) {
+                            } else if (token.equals("LOOK_LEFT") || token.equals("LL") || token.equals("FACE_LEFT")
+                                    || token.equals("FL") || token.equals("TURN_LEFT") || token.equals("TL")
+                                    || token.equals("5")) {
                                 enemyMoveRoute[i] = 5;
-                            } else if (token.equals("LOOK_RIGHT") || token.equals("LR") || token.equals("FACE_RIGHT") || token.equals("FR") || token.equals("TURN_RIGHT") || token.equals("TR") || token.equals("6")) {
+                            } else if (token.equals("LOOK_RIGHT") || token.equals("LR") || token.equals("FACE_RIGHT")
+                                    || token.equals("FR") || token.equals("TURN_RIGHT") || token.equals("TR")
+                                    || token.equals("6")) {
                                 enemyMoveRoute[i] = 6;
-                            } else if (token.equals("LOOK_UP") || token.equals("LU") || token.equals("FACE_UP") || token.equals("FU") || token.equals("TURN_UP") || token.equals("TU") || token.equals("7")) {
+                            } else if (token.equals("LOOK_UP") || token.equals("LU") || token.equals("FACE_UP")
+                                    || token.equals("FU") || token.equals("TURN_UP") || token.equals("TU")
+                                    || token.equals("7")) {
                                 enemyMoveRoute[i] = 7;
                             } else {
                                 System.err.println("Warning: Invalid direction in move route: " + token);
@@ -214,23 +234,25 @@ public class ObjectFactory {
                         }
                     }
 
-                    int enemyInitialDirection = parseDirectionProperty(rectObj.getProperties(), "initial_direction", -1);
+                    int enemyInitialDirection = parseDirectionProperty(rectObj.getProperties(), "initial_direction",
+                            -1);
                     if (enemyInitialDirection == -1) {
                         enemyInitialDirection = parseDirectionProperty(rectObj.getProperties(), "direction", 0);
                     }
 
-                    EnemyMapEvent enemyEvent = new EnemyMapEvent(name, bounds.getX(), bounds.getY(), bounds.getWidth(), bounds.getHeight(), enemyGroupId);
+                    EnemyMapEvent enemyEvent = new EnemyMapEvent(name, bounds.getX(), bounds.getY(), bounds.getWidth(),
+                            bounds.getHeight(), enemyGroupId);
                     enemyEvent.solid(isEnemySolid)
-                        .spriteSheetName(enemySpriteSheet)
-                        .isStatic(isEnemyStatic)
-                        .characterIndex(enemyCharacterIndex)
-                        .initialDirection(enemyInitialDirection)
-                        .baseSpeed(enemyBaseSpeed)
-                        .moveRouteType(enemyMoveRouteType)
-                        .moveRoute(enemyMoveRoute)
-                        .stepDelay(enemyMoveDelay)
-                        .steppingAnimation(isEnemyStepping)
-                        .fixedDirection(enemyFixedDirection);
+                            .spriteSheetName(enemySpriteSheet)
+                            .isStatic(isEnemyStatic)
+                            .characterIndex(enemyCharacterIndex)
+                            .initialDirection(enemyInitialDirection)
+                            .baseSpeed(enemyBaseSpeed)
+                            .moveRouteType(enemyMoveRouteType)
+                            .moveRoute(enemyMoveRoute)
+                            .stepDelay(enemyMoveDelay)
+                            .steppingAnimation(isEnemyStepping)
+                            .fixedDirection(enemyFixedDirection);
                     return enemyEvent;
 
                 default:
@@ -241,32 +263,70 @@ public class ObjectFactory {
             TiledMapTileMapObject tileObj = (TiledMapTileMapObject) mapObj;
 
             // Extract the visual data from Tiled!
-            String type = (String) tileObj.getProperties().get("type");
+            String type = tileObj.getProperties().get("class", String.class);
+            if (type == null) {
+                type = tileObj.getProperties().get("type", String.class);
+            }
             TextureRegion region = tileObj.getTile().getTextureRegion();
             String name = tileObj.getName();
 
             // Create bounds based on where the tile was placed
             float x = tileObj.getX();
             float y = tileObj.getY();
-            // Note: Tiled objects scale based on properties, but defaulting to region size is safe usually
-            float w = region.getRegionWidth();
-            float h = region.getRegionHeight();
-            Rectangle bounds = new Rectangle(x, y, w, h);
+            
+            // Tiled tile objects can be scaled, check properties or default to region size
+            float w = getFloatProperty(tileObj.getProperties(), "width",
+                    region != null ? region.getRegionWidth() : 0);
+            float h = getFloatProperty(tileObj.getProperties(), "height",
+                    region != null ? region.getRegionHeight() : 0);
 
-            switch (type) {
-                case "Vase":
-                    return new Vase(name, bounds.getX(), bounds.getY(), region);
+            if ("Vase".equals(type)) {
+                return new Vase(name, x, y, region);
+            } else if ("TilePictureObject".equals(type) || "TilePicture".equals(type) || "PictureWall".equals(type)) {
+                boolean isSolid = getBooleanProperty(tileObj.getProperties(), "is_solid", true);
+                if (tileObj.getProperties().containsKey("isSolid")) {
+                    isSolid = getBooleanProperty(tileObj.getProperties(), "isSolid", true);
+                }
+                return new TilePictureObject(name, x, y, w, h, region, isSolid);
+            } else {
+                System.out.println("Unknown object type: " + type);
+                return null;
+            }
+        } else if (mapObj instanceof TextureMapObject) {
+            TextureMapObject textureObj = (TextureMapObject) mapObj;
+            String name = textureObj.getName();
+            TextureRegion region = textureObj.getTextureRegion();
 
-                default:
-                    System.out.println("Unknown object type: " + type);
-                    return null;
+            float x = textureObj.getX();
+            float y = textureObj.getY();
+
+            float w = getFloatProperty(textureObj.getProperties(), "width",
+                    region != null ? region.getRegionWidth() : 0);
+            float h = getFloatProperty(textureObj.getProperties(), "height",
+                    region != null ? region.getRegionHeight() : 0);
+
+            String type = textureObj.getProperties().get("class", String.class);
+            if (type == null) {
+                type = textureObj.getProperties().get("type", String.class);
+            }
+            if (type == null) {
+                type = "TilePictureObject";
+            }
+
+            if ("TilePictureObject".equals(type) || "TilePicture".equals(type) || "PictureWall".equals(type)) {
+                boolean isSolid = getBooleanProperty(textureObj.getProperties(), "is_solid", true);
+                if (textureObj.getProperties().containsKey("isSolid")) {
+                    isSolid = getBooleanProperty(textureObj.getProperties(), "isSolid", true);
+                }
+                return new TilePictureObject(name, x, y, w, h, region, isSolid);
             }
         }
 
         return null;
     }
 
-    private static float getFloatProperty(com.badlogic.gdx.maps.MapProperties properties, String key, float defaultValue) {
+    private static float getFloatProperty(com.badlogic.gdx.maps.MapProperties properties, String key,
+            float defaultValue) {
         Object value = properties.get(key);
         if (value == null) {
             return defaultValue;
@@ -296,7 +356,8 @@ public class ObjectFactory {
         }
     }
 
-    private static boolean getBooleanProperty(com.badlogic.gdx.maps.MapProperties properties, String key, boolean defaultValue) {
+    private static boolean getBooleanProperty(com.badlogic.gdx.maps.MapProperties properties, String key,
+            boolean defaultValue) {
         Object value = properties.get(key);
         if (value == null) {
             return defaultValue;
@@ -307,7 +368,8 @@ public class ObjectFactory {
         return Boolean.parseBoolean(value.toString());
     }
 
-    private static int parseDirectionProperty(com.badlogic.gdx.maps.MapProperties properties, String key, int defaultValue) {
+    private static int parseDirectionProperty(com.badlogic.gdx.maps.MapProperties properties, String key,
+            int defaultValue) {
         Object value = properties.get(key);
         if (value == null) {
             return defaultValue;

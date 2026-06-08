@@ -50,7 +50,6 @@ public class SaveManager {
                 saveData.playerX = player.getPosition().x / 48f;
                 saveData.playerY = mapManager.getMapHeight() - 1 - (player.getPosition().y / 48f);
                 saveData.playerDirection = player.getCurrentDirection().name();
-                saveData.playerHp = player.hp;
             }
 
             GameSession session = GameSession.getInstance();
@@ -287,7 +286,6 @@ public class SaveManager {
                     } catch (Exception ignored) {
                     }
                 }
-                player.hp = saveData.playerHp;
             }
 
             // 3. Restore Inventory Consumables
@@ -430,7 +428,6 @@ public class SaveManager {
                     } catch (Exception ignored) {
                     }
                 }
-                player.hp = saveData.playerHp;
             }
 
             // Revive/heal party member actors

@@ -45,7 +45,8 @@ public class StatusEffect {
         this.savedValue.put(key, newValue);
     }
     public float getSavedValue(String key) {
-        return this.savedValue.get(key);
+        Float val = this.savedValue.get(key);
+        return val != null ? val : 0.0f;
     }
     public void setOrigin(Battler origin) {
         this.origin = origin;

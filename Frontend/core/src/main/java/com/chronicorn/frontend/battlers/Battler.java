@@ -389,6 +389,19 @@ public abstract class Battler {
         addStatusEffect(status, this);
     }
 
+    public void removeStatusEffect(String statusId) {
+        String finalString = statusId.toLowerCase();
+        for (int i = activeStates.size - 1; i >= 0; i--) {
+            StatusEffect state = activeStates.get(i);
+            if (state.getId().equals(finalString)) {
+                state.getLogic().onLeave(this, state);
+                activeStates.removeIndex(i);
+                notifyObserversOnStatus();
+                System.out.println(this.name + "'s " + state.getName() + " was removed.");
+            }
+        }
+    }
+
     // Follow-up & Request Functions
     public void setBattleDelegate(BattleDelegate delegate) {
         this.battleDelegate = delegate;

@@ -1,11 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="47" height="23" tilewidth="48" tileheight="48" infinite="0" nextlayerid="8" nextobjectid="11">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="47" height="23" tilewidth="48" tileheight="48" infinite="0" nextlayerid="11" nextobjectid="28">
  <tileset firstgid="1" source="../TSMap/collision.tsx"/>
  <tileset firstgid="5" source="../tilesets/new tilesets/fes_Dungeon_B_MV.tsx"/>
+ <tileset firstgid="261" source="../tilesets/new tilesets/Dungeon.tsx"/>
+ <tileset firstgid="702" source="../tilesets/new tilesets/fes_Outside_B_MV.tsx"/>
  <group id="2" name="UNDER PLAYER">
   <imagelayer id="4" name="Map">
    <image source="../TSMap/Jail-1.png" width="2256" height="1104"/>
   </imagelayer>
+  <layer id="9" name="Tile Layer 3" width="47" height="23">
+   <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+  </layer>
   <layer id="1" name="Collision" width="47" height="23" visible="0">
    <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -67,6 +96,14 @@
   <object id="1" name="Spawn" x="960" y="528">
    <point/>
   </object>
+  <object id="26" name="Gate" x="960" y="384" width="47.9694" height="47.9091">
+   <properties>
+    <property name="mapName" value="Jail-2B"/>
+    <property name="targetX" type="float" value="14"/>
+    <property name="targetY" type="float" value="34"/>
+    <property name="type" value="Gate"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup id="6" name="Objects">
   <object id="5" name="Cellmate" type="MapEvent" x="1296" y="432" width="48" height="48">
@@ -113,12 +150,62 @@
     <property name="type" value="MapEvent"/>
    </properties>
   </object>
-  <object id="10" name="Chest_Cell_1" x="1056" y="432" width="48" height="48">
+  <object id="17" name="BREAKABLEWALL1" type="TilePictureObject" gid="844" x="624" y="384" width="48" height="48">
    <properties>
-    <property name="currency_amount" type="int" value="30"/>
-    <property name="item_count" type="int" value="1"/>
-    <property name="item_id" value="ITEM_POTION"/>
-    <property name="type" value="Chest"/>
+    <property name="type" value="TilePictureObject"/>
+    <property name="visibility_flag" value="PORTER_JAILBREAK_1"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="19" name="BREAKABLEWALL1" type="TilePictureObject" gid="860" x="624" y="432" width="48" height="48">
+   <properties>
+    <property name="type" value="TilePictureObject"/>
+    <property name="visibility_flag" value="PORTER_JAILBREAK_1"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="20" name="BREAKABLEWALL2" type="TilePictureObject" gid="844" x="960" y="384" width="48" height="48">
+   <properties>
+    <property name="type" value="TilePictureObject"/>
+    <property name="visibility_flag" value="PORTER_JAILBREAK_2"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="21" name="BREAKABLEWALL2" type="TilePictureObject" gid="860" x="960" y="432" width="48" height="48">
+   <properties>
+    <property name="type" value="TilePictureObject"/>
+    <property name="visibility_flag" value="PORTER_JAILBREAK_2"/>
+    <property name="visibility_flag_is" type="bool" value="true"/>
+   </properties>
+  </object>
+  <object id="22" name="Target_1" type="MapEvent" x="624" y="384" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="0"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value=""/>
+    <property name="type" value="MapEvent"/>
+   </properties>
+  </object>
+  <object id="23" name="Target_2" type="MapEvent" x="960" y="384" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value=""/>
+    <property name="autonomous_move_type" value="STATIC"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="0"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value=""/>
+    <property name="type" value="MapEvent"/>
    </properties>
   </object>
  </objectgroup>

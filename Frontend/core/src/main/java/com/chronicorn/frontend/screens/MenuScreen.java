@@ -138,6 +138,26 @@ public class MenuScreen implements Screen {
                                 if (currentSelectedActor != null) {
                                     Equippable[] selected = ((EquipMenuTable) equipMenuTable)
                                             .getEquippedWeapons();
+
+                                    // Remove selected weapons from any other character's equipment list
+                                    if (GameSession.getInstance().getParty() != null && GameSession.getInstance().getParty().getOwnedCharacters() != null) {
+                                        for (java.util.Map.Entry<String, Actor> entry : GameSession.getInstance().getParty().getOwnedCharacters().entrySet()) {
+                                            Actor other = entry.getValue();
+                                            if (other != currentSelectedActor) {
+                                                boolean changed = false;
+                                                if (selected[0] != null && other.getEquipments().removeValue(selected[0], true)) {
+                                                    changed = true;
+                                                }
+                                                if (selected[1] != null && other.getEquipments().removeValue(selected[1], true)) {
+                                                    changed = true;
+                                                }
+                                                if (changed) {
+                                                    other.calculateParams(other.getLevel());
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     currentSelectedActor.getEquipments().clear();
                                     if (selected[0] != null)
                                         currentSelectedActor.getEquipments().add(selected[0]);

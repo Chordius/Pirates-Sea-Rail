@@ -16,10 +16,6 @@ import com.chronicorn.frontend.observers.PlayerObserver;
 
 public class GameHUD extends Table implements PlayerObserver {
 
-    private ProgressBar healthBar;
-    private Label healthLabel;
-    private DashWidget dashWidget;
-
     // Komponen Atas
     private Image dividerLine;
     private Label countdownLabel;
@@ -48,42 +44,6 @@ public class GameHUD extends Table implements PlayerObserver {
 
         // --- 2. SPACER ---
         this.add().expand().fill().row();
-
-        // --- 3. BAGIAN BAWAH KIRI (MENGGUNAKAN STACK) ---
-        Stack bottomStack = new Stack();
-
-        // A. Setup HP Group (Label + Bar)
-        Table hpGroup = new Table();
-        healthLabel = new Label("HP 35/35", ImageManager.skin);
-        healthLabel.setFontScale(1.25f);
-        healthLabel.setColor(Color.WHITE);
-        healthLabel.setAlignment(Align.left);
-
-        healthBar = new ProgressBar(0, 35, 1, false, ImageManager.skin, "hp-bar");
-        healthBar.setValue(35);
-        healthBar.setAnimateDuration(0.25f);
-
-        hpGroup.add(healthLabel).left().padLeft(20).padBottom(2).row();
-        hpGroup.add(healthBar).width(396).height(20).left();
-
-        // B. Setup Dash Icon
-        dashWidget = new DashWidget();
-
-        // --- PENYUSUNAN LAYER ---
-
-        // LAYER 1 (Belakang): HP Group
-        Container<Table> hpContainer = new Container<>(hpGroup);
-        hpContainer.align(Align.bottomLeft); // Rata kiri bawah
-        hpContainer.padLeft(75).padBottom(12);
-        bottomStack.add(hpContainer);
-
-        // LAYER 2 (Depan): Dash Icon
-        Container<DashWidget> iconContainer = new Container<>(dashWidget);
-        iconContainer.align(Align.bottomLeft);
-        iconContainer.size(90, 88);
-        bottomStack.add(iconContainer);
-
-        this.add(bottomStack).bottom().left().pad(20);
     }
 
     @Override
@@ -93,18 +53,6 @@ public class GameHUD extends Table implements PlayerObserver {
         countdownLabel.setText(String.valueOf(count));
         if (count <= 3) countdownLabel.setColor(Color.RED);
         else countdownLabel.setColor(Color.WHITE);
-    }
-
-    @Override
-    public void onHealthChanged(int currentHp, int maxHp) {
-        healthBar.setRange(0, maxHp);
-        healthBar.setValue(currentHp);
-        healthLabel.setText("HP " + currentHp + "/" + maxHp);
-    }
-
-    @Override
-    public void onDashCooldownChanged(float currentTimer, float maxTime) {
-        dashWidget.updateCooldown(currentTimer, maxTime);
     }
 
     @Override
