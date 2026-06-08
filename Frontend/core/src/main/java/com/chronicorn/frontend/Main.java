@@ -25,8 +25,10 @@ import com.chronicorn.frontend.managers.networkManager.dto.UserAuthResponse;
 public class Main extends Game {
     public static String currentLocalId = null;
 
-    private float connectionCheckTimer = 5.0f;
-    private static final float CONNECTION_CHECK_INTERVAL = 5.0f;
+    private float connectionCheckTimer = 30.0f;
+    private static final float CONNECTION_CHECK_INTERVAL = 30.0f;
+    private int failedConnectionChecks = 0;
+    private static final int MAX_FAILED_CHECKS = 3;
 
     @Override
     public void create() {
@@ -60,16 +62,22 @@ public class Main extends Game {
         NetworkManager.getUserInfo(currentLocalId, new NetworkCallback<UserAuthResponse>() {
             @Override
             public void onSuccess(UserAuthResponse result) {
-                // Connection is maintained
+                // Connection is maintained, reset failure count
+                failedConnectionChecks = 0;
             }
 
             @Override
             public void onError(String errorMessage) {
                 Gdx.app.postRunnable(() -> {
-                    if (getScreen() != null && !(getScreen() instanceof TitleScreen)) {
-                        System.err.println("Backend connection lost: " + errorMessage);
-                        currentLocalId = null; // Clear login session
-                        SceneManager.getInstance().changeScreen(new TitleScreen());
+                    failedConnectionChecks++;
+                    System.err.println("Backend connection check failed (" + failedConnectionChecks + "/" + MAX_FAILED_CHECKS + "): " + errorMessage);
+                    if (failedConnectionChecks >= MAX_FAILED_CHECKS) {
+                        if (getScreen() != null && !(getScreen() instanceof TitleScreen)) {
+                            System.err.println("Backend connection permanently lost. Booting to TitleScreen.");
+                            currentLocalId = null; // Clear login session
+                            failedConnectionChecks = 0;
+                            SceneManager.getInstance().changeScreen(new TitleScreen());
+                        }
                     }
                 });
             }

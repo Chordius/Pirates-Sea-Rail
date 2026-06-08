@@ -58,7 +58,7 @@ configure(subprojects) {
 
 subprojects {
   version = "$projectVersion"
-  ext.appName = 'ChronicornFrontend'
+  ext.appName = 'Pirates-Sea-Rail'
   repositories {
     mavenCentral()
     maven { url 'https://s01.oss.sonatype.org' }
@@ -70,4 +70,4 @@ subprojects {
   }
 }
 
-eclipse.project.name = 'ChronicornFrontend' + '-parent'
+eclipse.project.name = 'Pirates-Sea-Rail' + '-parent'

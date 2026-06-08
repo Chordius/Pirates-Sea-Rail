@@ -261,7 +261,7 @@ public class GachaTable extends Table {
                         ? ImageManager.skin.getDrawable("icon-doubloon")
                         : ImageManager.skin.newDrawable("white-pixel", Color.GOLD));
 
-        int currentCurrency = 4500;
+        int currentCurrency = 0;
         currencyLabel = new Label(String.valueOf(currentCurrency), ImageManager.skin, "menu2");
 
         currencyWrapper.add(coinIcon).size(32, 32).padRight(10);
