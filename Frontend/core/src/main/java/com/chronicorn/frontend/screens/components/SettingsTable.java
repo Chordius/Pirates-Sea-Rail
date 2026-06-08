@@ -44,20 +44,20 @@ public class SettingsTable extends Table {
         // 3. Audio Control Rows using label-darkbrown-bg
         // CHANGED: Removed width() and padLeft(). Added expandX() and fillX().
         container.add(createAudioRow("Music Volume", createMusicSlider()))
-            .expandX().fillX().height(65).padBottom(15).row();
+                .expandX().fillX().height(65).padBottom(15).row();
 
         container.add(createAudioRow("SFX Volume", createSFXSlider()))
-            .expandX().fillX().height(65).padBottom(15).row();
+                .expandX().fillX().height(65).padBottom(15).row();
 
         container.add(createAudioRow("Ambient Volume", createAmbientSlider()))
-            .expandX().fillX().height(65).padBottom(35).row();
+                .expandX().fillX().height(65).padBottom(35).row();
 
         // 4. Log Out Button
         TextButton btnLogout = new TextButton("Log Out", ImageManager.skin, "boxed-button");
         btnLogout.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+                Preferences prefs = Gdx.app.getPreferences("PiratesSeaRailSession");
                 prefs.remove("localUserId");
                 prefs.flush();
 
@@ -69,7 +69,8 @@ public class SettingsTable extends Table {
         });
         container.add(btnLogout).width(220).height(70).row();
 
-        // CHANGED: Increased width to 800, decreased height to 450 to make it wider and shorter.
+        // CHANGED: Increased width to 800, decreased height to 450 to make it wider and
+        // shorter.
         this.add(container).width(1000).height(500).padTop(40);
     }
 
@@ -130,8 +131,7 @@ public class SettingsTable extends Table {
         this.setScale(0.9f);
         this.setOrigin(Align.center);
         this.addAction(Actions.parallel(
-            Actions.fadeIn(0.25f, Interpolation.fade),
-            Actions.scaleTo(1f, 1f, 0.25f, Interpolation.swingOut)
-        ));
+                Actions.fadeIn(0.25f, Interpolation.fade),
+                Actions.scaleTo(1f, 1f, 0.25f, Interpolation.swingOut)));
     }
 }
