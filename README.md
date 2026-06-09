@@ -21,6 +21,7 @@ The codebase is split into two core modules:
 10. [Backend Proxy Architecture & Wallet Integration](#10-backend-proxy-architecture--wallet-integration)
 11. [Save/Reset System & Local Data Integrity Check](#11-savereset-system--local-data-integrity-check)
 12. [Spring Boot Backend Architecture & Database ERD](#12-spring-boot-backend-architecture--database-erd)
+13. [Gacha Instantiation (Factory Pattern)](#13-gacha-instantiation-factory-pattern)
 
 ---
 
@@ -552,3 +553,64 @@ erDiagram
 *   **player_characters**: Tracks character levels and duplicates acquired via gacha.
 *   **user_pity**: Stores user gacha pity counters per banner type (e.g. standard).
 *   **local_orders**: Logs purchase transaction statuses (`PENDING`, `COMPLETED`, `FAILED`, `ERROR`).
+
+---
+
+## 13. Gacha Instantiation (Factory Pattern)
+
+Creating and maintaining gameplay actors in a multi-platform JVM game client requires a reliable, decoupled connection between state data stored on the backend and polymorphic classes running on the client. To achieve this, the game combines a Spring Boot transactional database flow with a client-side **Factory Pattern** implemented via [ActorFactory](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Frontend/core/src/main/java/com/chronicorn/frontend/battlers/ActorFactory.java).
+
+### The Instantiation Pipeline
+
+When a user pulls characters on a banner, the data flows through client UI triggers, asynchronous REST proxy controllers, database updates, and finally polymorphic instantiation:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as GachaTable (Client UI)
+    participant NM as NetworkManager (Client API)
+    participant Controller as GachaController (Backend)
+    participant Service as GachaService (Backend)
+    participant Factory as ActorFactory (Client Factory)
+    participant Party as PlayerParty (Client State)
+
+    UI->>NM: pullGacha(userId, bannerId)
+    NM->>Controller: POST /api/gacha/pull/{userId}
+    Controller->>Service: performPull(userId, bannerId)
+    Note over Service: 1. Deduct 160 Premium Currency<br/>2. Update & check pity count<br/>3. Select item from Banner Pool
+    Service-->>Controller: Return GachaResultDTO (pulledCharId = "C001", isNew = true)
+    Controller-->>NM: JSON Response
+    NM-->>UI: onSuccess(GachaResult)
+    alt Result is a Character (e.g., charId = "C001")
+        UI->>Factory: createActor("C001")
+        Note over Factory: Instantiate concrete Sailor class
+        Factory-->>UI: return Actor (new Sailor())
+        UI->>Party: unlockCharacter("C001", actor)
+    else Result is a Weapon (e.g., weaponId starts with "W")
+        UI->>UI: Add to inventory
+    end
+```
+
+### Component Details
+
+1. **Client Trigger**: In [GachaTable.java](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Frontend/core/src/main/java/com/chronicorn/frontend/screens/components/GachaTable.java#L272-L392), clicking the "1x Recruit" or "10x Recruit" button triggers a network call using the [NetworkManager](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Frontend/core/src/main/java/com/chronicorn/frontend/managers/networkManager/NetworkManager.java#L85-L142).
+2. **Backend Resolution**: The [GachaController](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Backend/src/main/java/com/chronicorn/backend/controller/GachaController.java) delegating to [GachaService](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Backend/src/main/java/com/chronicorn/backend/services/GachaService.java) executes a transactional workflow:
+   * Deducts the currency from the user account.
+   * Increments the user pity count.
+   * Queries the database banner pools to select a character/weapon depending on pity counters and random rates.
+   * Saves character ownership record in the `player_characters` table.
+   * Sends the resulting identifier code (e.g., `"C001"`, `"C002"`) back to the client.
+3. **Factory Instantiation**: The client receives the character code and calls the factory:
+   ```java
+   Actor actor = ActorFactory.createActor(result.pulledCharId);
+   ```
+   Inside [ActorFactory.java](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Frontend/core/src/main/java/com/chronicorn/frontend/battlers/ActorFactory.java#L10-L28), a simple switch matches the string ID and returns a new subclass of `Actor`:
+   * `"C001"` $\rightarrow$ `new Sailor()`
+   * `"C002"` $\rightarrow$ `new Porter()`
+   * `"C003"` $\rightarrow$ `new Reyna()`
+   * `"C004"` $\rightarrow$ `new Deal()`
+
+### Benefits of the Factory Pattern here
+* **Decoupling Data from Logic**: The database and API only need to understand flat string codes (like `"C001"`), while the client-side game logic handles the highly complex JVM class hierarchies, assets, and combat parameters.
+* **Polymorphism**: The `GachaTable` and `PlayerParty` code can treat all recruits uniformly as the abstract `Actor` base class without knowing their exact subclass type, rendering behaviors, elements, or combat actions.
+* **Maintainability**: Adding a new character class is as simple as defining the new actor subclass and registering it in [ActorFactory](file:///c:/Users/Jesaya/Documents/OOP/Final%20Project/Finpro-OOP-kelompok-5/Frontend/core/src/main/java/com/chronicorn/frontend/battlers/ActorFactory.java)'s switch statement.
