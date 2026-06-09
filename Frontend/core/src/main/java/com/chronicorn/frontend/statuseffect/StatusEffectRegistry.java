@@ -285,7 +285,7 @@ public class StatusEffectRegistry {
                 if (defender != currentMarkedTarget)
                     return;
 
-                if (defender instanceof Enemy) {
+                if (defender instanceof com.chronicorn.frontend.battlers.Enemy) {
                     StatusEffect state = null;
                     for (StatusEffect se : defender.getActiveStates()) {
                         if (se.getId().equals("dominique_marker")) {
@@ -295,7 +295,7 @@ public class StatusEffectRegistry {
                     }
 
                     if (state != null) {
-                        float currentWeakBar = ((Enemy) defender).getWeaknessBar();
+                        float currentWeakBar = ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar();
                         float preWeaknessBarSnapshot = state.getSavedValue("preWeaknessBarSnapshot");
 
                         if (currentWeakBar < preWeaknessBarSnapshot) {

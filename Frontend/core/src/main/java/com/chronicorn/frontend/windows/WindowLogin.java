@@ -126,7 +126,7 @@ public class WindowLogin extends WindowBase {
                 Main.currentLocalId = result.localUserId;
                 
                 // Save to LibGDX persistent preferences so the user stays logged in
-                com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+                com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("PiratesSeaRailSession");
                 prefs.putString("localUserId", result.localUserId);
                 prefs.flush();
                 
