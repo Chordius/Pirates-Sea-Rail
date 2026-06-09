@@ -154,8 +154,11 @@ public class TitleScreen implements Screen {
     private void handleStartGameNewGame() {
         SoundManager.getInstance().playSound("gate.wav");
 
-        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("PiratesSeaRailSession");
         String savedId = prefs.getString("localUserId", null);
+        if ("offline_user".equals(savedId) && !com.chronicorn.frontend.managers.networkManager.NetworkConfigure.isOffline()) {
+            savedId = null;
+        }
 
         if (savedId != null && !savedId.isEmpty()) {
             com.chronicorn.frontend.Main.currentLocalId = savedId;
@@ -169,8 +172,11 @@ public class TitleScreen implements Screen {
     private void handleResumeGame() {
         SoundManager.getInstance().playSound("gate.wav");
 
-        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("PiratesSeaRailSession");
         String savedId = prefs.getString("localUserId", null);
+        if ("offline_user".equals(savedId) && !com.chronicorn.frontend.managers.networkManager.NetworkConfigure.isOffline()) {
+            savedId = null;
+        }
 
         if (savedId != null && !savedId.isEmpty()) {
             com.chronicorn.frontend.Main.currentLocalId = savedId;
@@ -189,8 +195,11 @@ public class TitleScreen implements Screen {
     private void handleStartGameClick() {
         SoundManager.getInstance().playSound("gate.wav");
 
-        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("ChronicornSession");
+        com.badlogic.gdx.Preferences prefs = Gdx.app.getPreferences("PiratesSeaRailSession");
         String savedId = prefs.getString("localUserId", null);
+        if ("offline_user".equals(savedId) && !com.chronicorn.frontend.managers.networkManager.NetworkConfigure.isOffline()) {
+            savedId = null;
+        }
         boolean hasSave = com.chronicorn.frontend.managers.SaveManager.getInstance().hasSaveFile();
 
         if (savedId != null && !savedId.isEmpty()) {
