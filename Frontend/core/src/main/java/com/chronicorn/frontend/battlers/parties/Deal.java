@@ -12,7 +12,7 @@ public class Deal extends Actor {
             65,
             60,
             90,
-            20
+            21
         );
 
         this.setId("C004");

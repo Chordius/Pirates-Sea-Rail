@@ -212,27 +212,52 @@ public class AnimationManager {
                 && selectedAction.getSkill().getScope() == TargetScope.ALL);
 
         if (isAllScope) {
-            if (enemyWidgets.size > 0) {
-                float minX = Float.MAX_VALUE;
-                float maxX = -Float.MAX_VALUE;
-                float minY = Float.MAX_VALUE;
-                float maxY = -Float.MAX_VALUE;
-                for (int i = 0; i < enemyWidgets.size; i++) {
-                    EnemyWidget widget = enemyWidgets.get(i);
-                    float wX = widget.getX() + widget.getWidth() / 2f;
-                    float wY = widget.getY() + widget.getHeight() / 2f;
-                    if (wX < minX)
-                        minX = wX;
-                    if (wX > maxX)
-                        maxX = wX;
-                    if (wY < minY)
-                        minY = wY;
-                    if (wY > maxY)
-                        maxY = wY;
+            if (primaryTarget instanceof Actor) {
+                if (actorCards.size > 0) {
+                    float minX = Float.MAX_VALUE;
+                    float maxX = -Float.MAX_VALUE;
+                    float minY = Float.MAX_VALUE;
+                    float maxY = -Float.MAX_VALUE;
+                    for (int i = 0; i < actorCards.size; i++) {
+                        ActorCardUI card = actorCards.get(i);
+                        Vector2 stageCoords = card.localToStageCoordinates(
+                                new Vector2(card.getWidth() / 2f, card.getHeight() / 2f + 30));
+                        if (stageCoords.x < minX)
+                            minX = stageCoords.x;
+                        if (stageCoords.x > maxX)
+                            maxX = stageCoords.x;
+                        if (stageCoords.y < minY)
+                            minY = stageCoords.y;
+                        if (stageCoords.y > maxY)
+                            maxY = stageCoords.y;
+                    }
+                    targetX = (minX + maxX) / 2f;
+                    targetY = (minY + maxY) / 2f;
+                    targetLayer = uiVfxLayer;
                 }
-                targetX = (minX + maxX) / 2f;
-                targetY = (minY + maxY) / 2f;
-                targetLayer = enemyLayer;
+            } else {
+                if (enemyWidgets.size > 0) {
+                    float minX = Float.MAX_VALUE;
+                    float maxX = -Float.MAX_VALUE;
+                    float minY = Float.MAX_VALUE;
+                    float maxY = -Float.MAX_VALUE;
+                    for (int i = 0; i < enemyWidgets.size; i++) {
+                        EnemyWidget widget = enemyWidgets.get(i);
+                        float wX = widget.getX() + widget.getWidth() / 2f;
+                        float wY = widget.getY() + widget.getHeight() / 2f;
+                        if (wX < minX)
+                            minX = wX;
+                        if (wX > maxX)
+                            maxX = wX;
+                        if (wY < minY)
+                            minY = wY;
+                        if (wY > maxY)
+                            maxY = wY;
+                    }
+                    targetX = (minX + maxX) / 2f;
+                    targetY = (minY + maxY) / 2f;
+                    targetLayer = enemyLayer;
+                }
             }
         }
 

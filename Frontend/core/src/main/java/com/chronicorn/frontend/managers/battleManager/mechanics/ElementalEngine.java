@@ -115,14 +115,24 @@ public class ElementalEngine {
         switch (getReaction(elements)) {
             case DOUSE:
                 System.out.println("Douse! Damage x1.5");
-                newDamage = (int) (newDamage * 1.5);
-                newDamage = Math.round(newDamage * (1 + target.getEffectiveHiddenParam(0)));
+                int douseBase = (int) (newDamage * 1.5);
+                float douseBonus = target.getEffectiveHiddenParam(0);
+                newDamage = Math.round(douseBase * (1 + douseBonus));
+                System.out.println(String.format("[REACTION DOUSE DEBUG] Target: %s", target.getName()));
+                System.out.println(String.format("  - Base Damage: %d, Douse Multiplier: 1.5x (Base+Mult: %d)", damage, douseBase));
+                System.out.println(String.format("  - Reaction DMG Bonus Modifier: +%.1f%% (Value: %.3f)", douseBonus * 100f, douseBonus));
+                System.out.println(String.format("  - Final Damage: %d", newDamage));
                 target.requestPopup("Doused!", Color.valueOf("82abcd"));
                 break;
             case EVAPORATE:
                 System.out.println("Evaporate! Damage x1.5");
-                newDamage = (int) (newDamage * 1.5);
-                newDamage = Math.round(newDamage * (1 + target.getEffectiveHiddenParam(0)));
+                int evapBase = (int) (newDamage * 1.5);
+                float evapBonus = target.getEffectiveHiddenParam(0);
+                newDamage = Math.round(evapBase * (1 + evapBonus));
+                System.out.println(String.format("[REACTION EVAPORATE DEBUG] Target: %s", target.getName()));
+                System.out.println(String.format("  - Base Damage: %d, Evaporate Multiplier: 1.5x (Base+Mult: %d)", damage, evapBase));
+                System.out.println(String.format("  - Reaction DMG Bonus Modifier: +%.1f%% (Value: %.3f)", evapBonus * 100f, evapBonus));
+                System.out.println(String.format("  - Final Damage: %d", newDamage));
                 target.requestPopup("Evaporate!", Color.CYAN);
                 break;
             case SMOTHERED:
@@ -199,13 +209,18 @@ public class ElementalEngine {
         int mat2 = user2.getEffectivePrimaryParam(2);
         int mdf = target.getEffectivePrimaryParam(1);
 
-        System.out.println("Total Enemy HP: " + target.getMaxHp());
+        double baseReactionDMG = (((double) (level1 + level2) / 5 + 2) * reactionConstant * ((double) (mat1 + mat2) / mdf) * 0.02 + 2);
+        float reactionBonus = target.getEffectiveHiddenParam(0);
+        double finalReactionDMG = Math.round(baseReactionDMG * (1 + reactionBonus));
 
-        double reactionDMG = (((double) (level1 + level2) / 5 + 2) * reactionConstant * ((double) (mat1 + mat2) / mdf) * 0.02 + 2);
-        System.out.println("Reaction Damage Before Modifier: " + reactionDMG);
-        reactionDMG = Math.round(reactionDMG * (1 + target.getEffectiveHiddenParam(0)));
-        System.out.println("Reaction Damage After Modifier: " + reactionDMG);
-        return ((int) reactionDMG);
+        System.out.println(String.format("[REACTION DMG DEBUG] Target: %s", target.getName()));
+        System.out.println(String.format("  - User1 (Level: %d, MAT: %d), User2 (Level: %d, MAT: %d)", level1, mat1, level2, mat2));
+        System.out.println(String.format("  - Target DEF: %d, Reaction Constant: %d", mdf, reactionConstant));
+        System.out.println(String.format("  - Base Reaction Damage: %.2f", baseReactionDMG));
+        System.out.println(String.format("  - Reaction DMG Bonus Modifier: +%.1f%% (Value: %.3f)", reactionBonus * 100f, reactionBonus));
+        System.out.println(String.format("  - Final Reaction Damage: %d", (int) finalReactionDMG));
+
+        return ((int) finalReactionDMG);
     }
 
     // Reaction Functions

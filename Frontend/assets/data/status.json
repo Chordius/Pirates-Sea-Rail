@@ -2,22 +2,30 @@
   "burn": {
     "name": "Burn",
     "iconId": "icon_burn",
-    "turns": 5
+    "turns": 5,
+    "turnType": "turn",
+    "description": "Creates a DoT which deals 20 Base Power (of the Source) DMG for 5 turns."
   },
   "wind_scar": {
     "name": "Wind Scar",
     "iconId": "icon_wind_scar",
-    "turns": 3
+    "turns": 3,
+    "turnType": "turn",
+    "description": "Decreases target's Resistance (RES) by 14%."
   },
   "hawk_eye": {
     "name": "Hawk's Eye",
     "iconId": "icon_hawk_eye",
-    "turns": 3
+    "turns": 3,
+    "turnType": "turn",
+    "description": "Increases user's Reaction DMG Bonus by +20%."
   },
   "hot_talons": {
     "name": "Hot Talons",
     "iconId": "icon_hot_talons",
-    "turns": 2
+    "turns": 2,
+    "turnType": "turn",
+    "description": "Decreases target's Speed by 10."
   },
   "pristine_health": {
     "name": "Pristine Health",
@@ -36,7 +44,9 @@
   "second_wind": {
     "name": "Second Wind",
     "iconId": "icon_second_wind",
-    "turns": 3
+    "turns": 3,
+    "turnType": "turn",
+    "description": "Increases owner's Magic stat by 25% of Sailor's Magic and triggers follow-up 'Super Sonic Slash' when target's Weakness is reduced."
   },
   "dominique_marker": {
     "name": "Marker",
@@ -55,27 +65,35 @@
   "smothered": {
     "name": "Smothered",
     "iconId": "icon_smothered",
-    "turns": 3
+    "turns": 1,
+    "turnType": "turn",
+    "description": "Decreases user's ATK by 50% for one turn."
   },
   "electrocuted": {
     "name": "Electrocuted",
     "iconId": "icon_electrocuted",
-    "turns": 3
+    "turns": 3,
+    "turnType": "turn",
+    "description": "Amplifies the inflicting skill’s DMG by 1.3x, then creates a DoT which deals 10 Base Power for 3 turns."
   },
   "damp": {
     "name": "Damp",
     "iconId": "icon_damp",
-    "turns": 3
+    "turns": 1,
+    "turnType": "turn",
+    "description": "Decreases user's DEF by 33% for one turn."
   },
   "muddied": {
     "name": "Muddied",
     "iconId": "icon_muddied",
-    "turns": 3
+    "turns": 1,
+    "turnType": "turn",
+    "description": "Decreases user's SPE by 33% for one turn."
   },
   "isolate": {
     "name": "Isolate",
     "iconId": "icon_isolate",
-    "turns": 3,
+    "turns": 1,
     "turnType": "turn",
     "description": "Stunned and unable to take action."
   }

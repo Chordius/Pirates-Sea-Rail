@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="37" height="47" tilewidth="48" tileheight="48" infinite="0" nextlayerid="7" nextobjectid="2">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="37" height="47" tilewidth="48" tileheight="48" infinite="0" nextlayerid="9" nextobjectid="9">
+ <properties>
+  <property name="battlebg" value="fes_bg_02"/>
+ </properties>
+ <tileset firstgid="1" source="../TSMap/collision.tsx"/>
  <group id="2" name="UNDER PLAYER">
   <layer id="1" name="Tile Layer 1" width="37" height="47">
    <data encoding="csv">
@@ -55,11 +59,156 @@
   <imagelayer id="4" name="Map">
    <image source="../TSMap/Jail-3.png" width="1776" height="2256"/>
   </imagelayer>
+  <layer id="7" name="Collisions" width="37" height="47" visible="0">
+   <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,0,0,1,0,1,0,0,0,1,1,1,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,1,1,1,1,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,0,1,0,1,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,1,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,0,0,
+0,0,0,0,1,1,1,1,0,0,0,0,1,0,1,0,0,1,0,0,0,0,1,1,1,1,0,0,0,1,0,1,0,0,0,0,0,
+0,0,0,0,1,0,0,1,1,1,1,1,1,0,1,1,1,1,1,0,0,0,1,0,0,0,0,0,0,1,0,1,0,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,1,0,1,1,1,1,1,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,1,1,1,0,0,1,0,0,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,1,1,0,0,0,0,1,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,1,1,0,0,0,0,
+0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+  </layer>
  </group>
  <group id="3" name="ABOVE PLAYER"/>
+ <objectgroup id="8" name="Objects">
+  <object id="4" name="Enemy_3" type="EnemyMapEvent" x="960" y="672" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value="LEFT, DOWN, RIGHT, DOWN, UP, UP"/>
+    <property name="autonomous_move_type" value="CUSTOM"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="2"/>
+    <property name="enemy_group_id" value="snake, seamen, snake"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_046.png"/>
+    <property name="type" value="EnemyMapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="5" name="Enemy_2" type="EnemyMapEvent" x="960" y="1680" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value="LEFT, LEFT, LEFT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, LEFT, LEFT"/>
+    <property name="autonomous_move_type" value="CUSTOM"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="2"/>
+    <property name="enemy_group_id" value="snake, seamen, snake"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_046.png"/>
+    <property name="type" value="EnemyMapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="6" name="Enemy_1" type="EnemyMapEvent" x="432" y="480" width="48" height="48">
+   <properties>
+    <property name="autonomous_move_delay" type="int" value="1"/>
+    <property name="autonomous_move_route" value="LEFT, LEFT, LEFT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, LEFT, LEFT"/>
+    <property name="autonomous_move_type" value="CUSTOM"/>
+    <property name="base_speed" type="float" value="70"/>
+    <property name="character_index" type="int" value="1"/>
+    <property name="enemy_group_id" value="seamen, snake, seamen"/>
+    <property name="fixed_direction" type="bool" value="false"/>
+    <property name="initial_direction" value="UP"/>
+    <property name="is_solid" type="bool" value="true"/>
+    <property name="is_static" type="bool" value="false"/>
+    <property name="is_stepping" type="bool" value="false"/>
+    <property name="script_id" value=""/>
+    <property name="sprite_sheet" type="file" value="../characters/feschar_big_046.png"/>
+    <property name="type" value="EnemyMapEvent"/>
+    <property name="visibility_flag" value=""/>
+    <property name="visibility_flag_is" type="bool" value="false"/>
+   </properties>
+  </object>
+  <object id="7" name="Chest_Cell_1" x="1440" y="2064" width="48" height="48">
+   <properties>
+    <property name="currency_amount" type="int" value="30"/>
+    <property name="item_count" type="int" value="1"/>
+    <property name="item_id" value="ITEM_POTION"/>
+    <property name="type" value="Chest"/>
+   </properties>
+  </object>
+  <object id="8" name="Chest_Cell_1" x="1440" y="432" width="48" height="48">
+   <properties>
+    <property name="currency_amount" type="int" value="30"/>
+    <property name="item_count" type="int" value="1"/>
+    <property name="item_id" value="ITEM_POTION"/>
+    <property name="type" value="Chest"/>
+   </properties>
+  </object>
+ </objectgroup>
  <objectgroup id="6" name="Logic">
   <object id="1" name="Spawn" x="305.648" y="2059.67">
    <point/>
+  </object>
+  <object id="2" name="Gate2" x="240" y="2064" width="143.969" height="47.9091">
+   <properties>
+    <property name="mapName" value="Jail-2B"/>
+    <property name="targetX" type="float" value="31.5"/>
+    <property name="targetY" type="float" value="3"/>
+    <property name="type" value="Gate"/>
+   </properties>
+  </object>
+  <object id="3" name="Gate1" x="1104.04" y="192.068" width="47.7629" height="47.9318">
+   <properties>
+    <property name="mapName" value="Jail-4B"/>
+    <property name="targetX" type="float" value="14.5"/>
+    <property name="targetY" type="float" value="15"/>
+    <property name="type" value="Gate"/>
+   </properties>
   </object>
  </objectgroup>
 </map>

@@ -276,6 +276,7 @@ public class MapScreen implements Screen {
             fadeAlpha = 1.0f;
             fadeColor.set(com.badlogic.gdx.graphics.Color.BLACK);
         }
+        LevelMapManager.getInstance().playMusic();
     }
 
     @Override

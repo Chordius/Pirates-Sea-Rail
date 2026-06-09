@@ -61,7 +61,7 @@
     "defense": 50,
     "magic": 15,
     "speed": 21,
-    "level": 5,
+    "level": 6,
     "maxWeakness": 50,
     "innateElements": [
       "earth",
@@ -125,6 +125,34 @@
     ],
     "skills": [
       "basic_attack"
+    ],
+    "baseExp": 60,
+    "drops": [
+      {
+        "itemId": "ITEM_ELIXIR",
+        "chance": 0.3
+      },
+      {
+        "itemId": "W004",
+        "chance": 0.05
+      }
+    ]
+  },
+  "plesiosaurus": {
+    "name": "Lesser Plesiosaurus",
+    "maxHp": 550,
+    "attack": 40,
+    "defense": 30,
+    "magic": 30,
+    "speed": 20,
+    "level": 7,
+    "maxWeakness": 100,
+    "innateElements": [
+      "water"
+    ],
+    "skills": [
+      "aquatic_breath_vortex",
+      "enemy_crunch_strike"
     ],
     "baseExp": 60,
     "drops": [

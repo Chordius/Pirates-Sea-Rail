@@ -85,6 +85,7 @@ public class BattleScreen implements Screen {
     private Array<String> enemyIds;
     private Actor ultimateCaster = null;
     private String eventName;
+    private String battleMusic = "song_battle.mp3";
 
     // Transition Fade parameters
     private float fadeAlpha = 1.0f; // Start fully black
@@ -107,8 +108,15 @@ public class BattleScreen implements Screen {
     }
 
     public BattleScreen(Array<String> enemyIds, boolean playerAdvantage, String eventName) {
+        this(enemyIds, playerAdvantage, eventName, "song_battle.mp3");
+    }
+
+    public BattleScreen(Array<String> enemyIds, boolean playerAdvantage, String eventName, String battleMusic) {
         this.enemyIds = enemyIds;
         this.eventName = eventName;
+        if (battleMusic != null && !battleMusic.isEmpty()) {
+            this.battleMusic = battleMusic;
+        }
         stage = new Stage(new ScreenViewport());
         Gdx.input.setInputProcessor(stage);
 
@@ -521,7 +529,7 @@ public class BattleScreen implements Screen {
         currentAction.setPrimaryTarget(selectedEnemy); // Direct speak
 
         for (EnemyWidget w : enemyWidgets) {
-            w.setTouchable(Touchable.disabled);
+            w.setTouchable(Touchable.childrenOnly);
             w.setTargeted(false);
             w.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f));
         }
@@ -595,7 +603,7 @@ public class BattleScreen implements Screen {
         }
 
         for (EnemyWidget w : enemyWidgets) {
-            w.setTouchable(Touchable.disabled);
+            w.setTouchable(Touchable.childrenOnly);
             w.setTargeted(false);
         }
 
@@ -625,7 +633,7 @@ public class BattleScreen implements Screen {
         }
 
         for (EnemyWidget w : enemyWidgets) {
-            w.setTouchable(Touchable.disabled);
+            w.setTouchable(Touchable.childrenOnly);
             w.setTargeted(false);
             w.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f));
         }
@@ -788,8 +796,7 @@ public class BattleScreen implements Screen {
 
             if (enemy.isAlive()) {
                 EnemyWidget currentWidget = getEnemyWidget((Enemy) enemy, 0, 0);
-                ;
-                currentWidget.setTouchable(Touchable.disabled);
+                currentWidget.setTouchable(Touchable.childrenOnly);
 
                 // Add the widget to the tracking array
                 enemyWidgets.add(currentWidget);
@@ -912,6 +919,7 @@ public class BattleScreen implements Screen {
 
     @Override
     public void show() {
+        com.chronicorn.frontend.managers.SoundManager.getInstance().playMusic(battleMusic);
     }
 
     @Override
@@ -928,6 +936,7 @@ public class BattleScreen implements Screen {
 
     @Override
     public void hide() {
+        com.chronicorn.frontend.managers.SoundManager.getInstance().stopMusic();
     }
 
     @Override

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="37" height="37" tilewidth="48" tileheight="48" infinite="0" nextlayerid="7" nextobjectid="7">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="37" height="37" tilewidth="48" tileheight="48" infinite="0" nextlayerid="7" nextobjectid="8">
  <properties>
   <property name="battlebg" value="fes_bg_02"/>
  </properties>
@@ -94,7 +94,7 @@
   </object>
   <object id="4" name="Chest_Cell_1" x="288" y="768" width="48" height="48">
    <properties>
-    <property name="currency_amount" type="int" value="1600"/>
+    <property name="currency_amount" type="int" value="30"/>
     <property name="item_count" type="int" value="1"/>
     <property name="item_id" value="ITEM_POTION"/>
     <property name="type" value="Chest"/>
@@ -139,6 +139,14 @@
  <objectgroup id="5" name="Logic">
   <object id="1" name="Spawn" x="663.985" y="1669.63">
    <point/>
+  </object>
+  <object id="7" name="Gate" x="1440" y="95.6667" width="143.969" height="47.9091">
+   <properties>
+    <property name="mapName" value="Jail-3B"/>
+    <property name="targetX" type="float" value="6.5"/>
+    <property name="targetY" type="float" value="42"/>
+    <property name="type" value="Gate"/>
+   </properties>
   </object>
  </objectgroup>
 </map>

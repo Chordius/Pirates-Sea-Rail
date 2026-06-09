@@ -155,7 +155,7 @@ public class SkillLogicRegistry {
         // Reyna's Skill Logic
         // ===================================
         logicMap.put("first_aid", (user, target, baseDamage, elements) -> {
-            int healingBase = (int) Math.floor(user.getMaxHp() * 0.2f);
+            int healingBase = (int) Math.floor(user.getMaxHp() * 0.4f);
             int healingModifier = (int) (1 + target.getEffectiveSpParam(3));
             int healingFlat = 10;
 
@@ -170,7 +170,7 @@ public class SkillLogicRegistry {
             target.takeDamage(baseDamage, elements);
 
             // Calculate 20% lifesteal splash back as general group utility healing
-            int groupHeal = (int) Math.floor(baseDamage * 0.20f);
+            int groupHeal = (int) Math.floor(baseDamage * 0.50f);
 
             // Loop back through active allies to process healing redistribution
             boolean healedAlly = false;
@@ -254,9 +254,13 @@ public class SkillLogicRegistry {
         // First Skill: Ascending Mark
         logicMap.put("ascending_mark", new SkillLogic() {
             @Override
+            public void before(Battler user, Battler target, Skill skill) {
+                applyOrRefreshMarker.accept(user, target);
+            }
+
+            @Override
             public void execute(Battler user, Battler target, int baseDamage, Elements element) {
                 target.takeDamage(baseDamage, element);
-                applyOrRefreshMarker.accept(user, target);
             }
         });
 
@@ -268,14 +272,16 @@ public class SkillLogicRegistry {
         // Ultimate: One-Shot
         logicMap.put("one_shot", new SkillLogic() {
             @Override
+            public void before(Battler user, Battler target, Skill skill) {
+                applyOrRefreshMarker.accept(user, target);
+            }
+
+            @Override
             public void execute(Battler user, Battler target, int baseDamage, Elements element) {
-                // 1. Process base calculation damage registration
+                // Process damage registration
                 target.takeDamage(baseDamage, element);
 
-                // 2. Ensure target possesses the marker framework instance
-                applyOrRefreshMarker.accept(user, target);
-
-                // 3. Locate the status instance to inject overflow bonus damage stacks
+                // Locate the status instance to inject overflow bonus damage stacks
                 for (StatusEffect state : target.getActiveStates()) {
                     if (state.getId().equals("dominique_marker")) {
                         float bonusStacks = (float) Math.floor(baseDamage * 0.30f);

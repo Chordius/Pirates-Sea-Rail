@@ -50,6 +50,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
     private static final float MODIFIER = 0.5F;
 
     private Table statusTable;
+    private StatusEffectTooltip activeTooltip;
     private float statusRotationTimer = 0f;
     private int statusOffset = 0;
     private static final float STATUS_ROTATION_INTERVAL = 2.0f;
@@ -185,7 +186,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
         statusTable = new Table();
         statusTable.left().bottom();
         statusTable.setPosition(barBg.getX(), barBg.getY() + barBg.getHeight());
-        statusTable.setTouchable(Touchable.disabled);
+        statusTable.setTouchable(Touchable.childrenOnly);
         this.addActor(statusTable);
 
         // 5. Interaction Listeners
@@ -200,7 +201,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
-                if (pointer == -1) {
+                if (pointer == -1 && EnemyWidget.this.getTouchable() == Touchable.enabled) {
                     EnemyWidget.this.clearActions();
                     EnemyWidget.this.addAction(Actions.scaleTo(1.05f, 1.05f, 0.1f, Interpolation.fade));
 
@@ -215,7 +216,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
                 super.exit(event, x, y, pointer, toActor);
                 if (isDead) return;
 
-                if (pointer == -1) {
+                if (pointer == -1 && EnemyWidget.this.getTouchable() == Touchable.enabled) {
                     EnemyWidget.this.clearActions();
                     EnemyWidget.this.addAction(Actions.scaleTo(1.0f, 1.0f, 0.1f, Interpolation.fade));
                 }
@@ -349,6 +350,7 @@ public class EnemyWidget extends Group implements BattlerObserver {
     // --- Status Effect Logic ---
 
     public void refreshStatusIcons() {
+        hideStatusTooltip();
         System.out.println("Status!");
         statusTable.clearChildren();
 
@@ -366,15 +368,61 @@ public class EnemyWidget extends Group implements BattlerObserver {
         // Draw up to 3 icons starting from the current offset
         int count = 0;
         for (int i = statusOffset; i < states.size && count < 3; i++) {
-            StatusEffect state = states.get(i);
+            final StatusEffect state = states.get(i);
 
             // Generate the icon. Assumes StatusEffect has a getIconId() method
-            Image icon = new Image(skin.getDrawable(state.getIconId()));
+            final Image icon = new Image(skin.getDrawable(state.getIconId()));
+            icon.setTouchable(Touchable.enabled);
+            icon.addListener(new ClickListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                    super.enter(event, x, y, pointer, fromActor);
+                    if (pointer == -1) {
+                        hideStatusTooltip();
+                        com.badlogic.gdx.scenes.scene2d.Stage stage = getStage();
+                        if (stage != null) {
+                            activeTooltip = new StatusEffectTooltip(state, skin);
+                            com.badlogic.gdx.math.Vector2 localPos = new com.badlogic.gdx.math.Vector2();
+                            icon.localToStageCoordinates(localPos);
+
+                            float tooltipWidth = activeTooltip.getWidth();
+                            float tooltipHeight = activeTooltip.getHeight();
+
+                            // Align above the icon
+                            float targetX = localPos.x + (icon.getWidth() / 2f) - (tooltipWidth / 2f);
+                            float targetY = localPos.y + icon.getHeight() + 8;
+
+                            targetX = Math.max(10, Math.min(com.badlogic.gdx.Gdx.graphics.getWidth() - tooltipWidth - 10, targetX));
+                            targetY = Math.max(10, Math.min(com.badlogic.gdx.Gdx.graphics.getHeight() - tooltipHeight - 10, targetY));
+
+                            activeTooltip.setPosition(targetX, targetY);
+                            activeTooltip.getColor().a = 0f;
+                            activeTooltip.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn(0.15f));
+                            stage.addActor(activeTooltip);
+                        }
+                    }
+                }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+                    super.exit(event, x, y, pointer, toActor);
+                    if (pointer == -1) {
+                        hideStatusTooltip();
+                    }
+                }
+            });
             statusTable.add(icon).size(32, 32).pad(2);
             count++;
         }
 
         statusTable.pack();
+    }
+
+    private void hideStatusTooltip() {
+        if (activeTooltip != null) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
     }
 
     @Override
@@ -534,5 +582,20 @@ public class EnemyWidget extends Group implements BattlerObserver {
 
     public void dispose() {
         enemy.removeObserver(this);
+        hideStatusTooltip();
+    }
+
+    @Override
+    public boolean remove() {
+        hideStatusTooltip();
+        return super.remove();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (!visible) {
+            hideStatusTooltip();
+        }
     }
 }

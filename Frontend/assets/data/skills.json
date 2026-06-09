@@ -270,7 +270,7 @@
     "energyBonus": 30,
     "tag": "support",
     "skill_type": "Skill",
-    "description": "Restores ally's HP by 20% of Reyna's Health plus 200 HP and applies Pristine Health, lasting for 5 turns. Pristine Health provides +30% Incoming Healing to the user. Upon the user falling below 33% HP, dying, or this status decaying, Reyna immediately heals the user equal to 40% of her Health.",
+    "description": "Restores ally's HP by 40% of Reyna's Health plus 200 HP and applies Pristine Health, lasting for 5 turns. Pristine Health provides +30% Incoming Healing to the user. Upon the user falling below 33% HP, dying, or this status decaying, Reyna immediately heals the user equal to 40% of her Health.",
     "sequence": [
       "PERFORM START",
       "WAIT: 0.1",
@@ -292,7 +292,7 @@
     "toughnessDMG": 20,
     "energyBonus": 30,
     "skill_type": "Skill",
-    "description": "Deals 60 Base Power Magical Water DMG to a group of enemies and heals the party back by 20% of the total DMG done by this skill.",
+    "description": "Deals 60 Base Power Magical Water DMG to a group of enemies and heals the party back by 50% of the total DMG done by this skill.",
     "sequence": [
       "PERFORM START",
       "CAMERA ZOOM: 1.12: 0.15",
@@ -383,6 +383,7 @@
     "toughnessDMG": 45,
     "energyBonus": 30,
     "skill_type": "Enhanced Basic Attack",
+    "scaling": "MAG",
     "description": "Deals 75 Base Power Lightning DMG to a single enemy scaling off MAG. This skill does not consume nor produce Skill Points.",
     "sequence": [
       "PERFORM START",
@@ -463,6 +464,50 @@
       "ANIMATION: oneshot_lightning_pillar",
       "ACTION EFFECT",
       "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "aquatic_breath_vortex": {
+    "name": "Tidal Breath",
+    "scope": "ALL",
+    "basePower": 85,
+    "element": "WATER",
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.2",
+      "WAIT: 0.1",
+
+      "ANIMATION: water_breath_charge",
+      "WAIT: 0.75",
+
+      "ANIMATION: water_breath_torrent",
+      "ANIMATION: water_breath_torrent_mirror",
+      "WAIT: 0.36",
+
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+      "CAMERA RESET",
+      "PERFORM FINISH"
+    ]
+  },
+  "enemy_crunch_strike": {
+    "name": "Crunch",
+    "scope": "SINGLE",
+    "element": "NONE",
+    "basePower": 65,
+    "sequence": [
+      "PERFORM START",
+      "CAMERA ZOOM: 1.12: 0.15",
+      "WAIT: 0.05",
+
+      "ANIMATION: crunch_fang_clamp",
+      "WAIT: 0.15",
+
+      "ANIMATION: crunch_shatter_flash",
+      "ACTION EFFECT",
+      "WAIT FOR ANIMATION",
+
       "CAMERA RESET",
       "PERFORM FINISH"
     ]

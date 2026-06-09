@@ -37,6 +37,10 @@ public class StatusEffect {
     public String getIconId() { return iconId; }
     public String getName() { return name; }
     public String getTurnType() { return turnType; }
+    public String getDescription() { return description; }
+    public boolean hasSavedValue(String key) {
+        return this.savedValue.containsKey(key);
+    }
     public void setSavedValue(String key, float value) {
         this.savedValue.put(key, value);
     }

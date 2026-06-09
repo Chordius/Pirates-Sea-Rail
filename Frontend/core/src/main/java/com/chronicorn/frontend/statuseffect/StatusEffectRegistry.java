@@ -245,7 +245,12 @@ public class StatusEffectRegistry {
                 }
                 currentMarkedTarget = owner;
                 statusEffect.setSavedValue("stacks", 0.0f);
-                statusEffect.setSavedValue("preWeaknessBarSnapshot", 0.0f);
+                if (owner instanceof Enemy) {
+                    statusEffect.setSavedValue("preWeaknessBarSnapshot",
+                            (float) ((Enemy) owner).getWeaknessBar());
+                } else {
+                    statusEffect.setSavedValue("preWeaknessBarSnapshot", 0.0f);
+                }
             }
 
             @Override
@@ -262,37 +267,50 @@ public class StatusEffectRegistry {
             }
 
             @Override
-            public int onConfirm(Battler attacker, Battler defender, StatusEffect state, Skill skill,
-                    int incomingDamage) {
+            public int onReact(Battler attacker, Battler defender, Skill skill, int incomingDamage) {
                 if (defender == currentMarkedTarget && defender instanceof com.chronicorn.frontend.battlers.Enemy) {
-                    state.setSavedValue("preWeaknessBarSnapshot",
-                            ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar());
+                    for (StatusEffect state : defender.getActiveStates()) {
+                        if (state.getId().equals("dominique_marker")) {
+                            state.setSavedValue("preWeaknessBarSnapshot",
+                                    ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar());
+                            break;
+                        }
+                    }
                 }
                 return incomingDamage;
             }
 
             @Override
-            public void onEstablish(Battler attacker, Battler defender, StatusEffect state, Skill skill,
-                    int damageDealt) {
+            public void onRespond(Battler attacker, Battler defender, Skill skill, int damageTaken) {
                 if (defender != currentMarkedTarget)
                     return;
 
-                if (defender instanceof com.chronicorn.frontend.battlers.Enemy) {
-                    float currentWeakBar = ((com.chronicorn.frontend.battlers.Enemy) defender).getWeaknessBar();
-                    float preWeaknessBarSnapshot = state.getSavedValue("preWeaknessBarSnapshot");
-
-                    if (currentWeakBar < preWeaknessBarSnapshot) {
-                        float breakdownDelta = preWeaknessBarSnapshot - currentWeakBar;
-                        float currentStacks = state.getSavedValue("stacks");
-                        float finalStacks = Math.min(currentStacks + breakdownDelta, 100.0f);
-                        state.setSavedValue("stacks", finalStacks);
-                        System.out.println("Marker Stacks updated: " + finalStacks);
+                if (defender instanceof Enemy) {
+                    StatusEffect state = null;
+                    for (StatusEffect se : defender.getActiveStates()) {
+                        if (se.getId().equals("dominique_marker")) {
+                            state = se;
+                            break;
+                        }
                     }
-                }
 
-                if (skill.getSkillType().startsWith("reaction_")) {
-                    state.setSavedValue("stacks", 0.0f);
-                    System.out.println("Reaction consumed the mark. Stacks dropped to 0.");
+                    if (state != null) {
+                        float currentWeakBar = ((Enemy) defender).getWeaknessBar();
+                        float preWeaknessBarSnapshot = state.getSavedValue("preWeaknessBarSnapshot");
+
+                        if (currentWeakBar < preWeaknessBarSnapshot) {
+                            float breakdownDelta = preWeaknessBarSnapshot - currentWeakBar;
+                            float currentStacks = state.getSavedValue("stacks");
+                            float finalStacks = Math.min(currentStacks + breakdownDelta, 100.0f);
+                            state.setSavedValue("stacks", finalStacks);
+                            System.out.println("Marker Stacks updated: " + finalStacks);
+                        }
+
+                        if (skill.getSkillType().startsWith("reaction_")) {
+                            state.setSavedValue("stacks", 0.0f);
+                            System.out.println("Reaction consumed the mark. Stacks dropped to 0.");
+                        }
+                    }
                 }
             }
 

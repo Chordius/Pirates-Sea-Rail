@@ -42,6 +42,7 @@ public class ActorCardUI extends Group implements BattlerObserver {
 
     private Skin skin;
     private Table statusTable;
+    private StatusEffectTooltip activeTooltip;
     private float statusRotationTimer = 0f;
     private int statusOffset = 0;
     private static final float STATUS_ROTATION_INTERVAL = 2.0f;
@@ -81,11 +82,13 @@ public class ActorCardUI extends Group implements BattlerObserver {
         activeIndicator.setVisible(false);
         // Continuous rotation
         activeIndicator.addAction(Actions.forever(Actions.rotateBy(-90f, 1f)));
+        activeIndicator.setTouchable(Touchable.disabled);
         this.addActor(activeIndicator);
 
         // LAYER 5 (Bottom): Brown PNG background base
         Image baseBg = new Image(skin.getDrawable("brown_base"));
         baseBg.setFillParent(true); // Fills the 160x140 area
+        baseBg.setTouchable(Touchable.disabled);
         this.addActor(baseBg);
 
         // LAYER 4: Ultimate Bar Background & Foreground (Circular)
@@ -145,6 +148,7 @@ public class ActorCardUI extends Group implements BattlerObserver {
         portrait.setOrigin(100, 0);
         portrait.setPosition(-50, -50 + PORTRAIT_OFFSET_Y * MODIFIER);
         portrait.setSize(200, 200);
+        portrait.setTouchable(Touchable.disabled);
         this.addActor(portrait);
 
         // Layer 2.5: HP Catch-Up Bar
@@ -155,6 +159,7 @@ public class ActorCardUI extends Group implements BattlerObserver {
 
         // This tells the bar to take 0.5 seconds to visually tween to the new value
         hpCatchupBar.setAnimateDuration(2f);
+        hpCatchupBar.setTouchable(Touchable.disabled);
         this.addActor(hpCatchupBar);
 
         // LAYER 2: HP Foreground/Background
@@ -163,19 +168,21 @@ public class ActorCardUI extends Group implements BattlerObserver {
         hpBar.setPosition(3, -5);
         hpBar.setSize(HP_SIZE_X * 0.5f, HP_SIZE_Y * 0.5f);
         hpBar.setAnimateDuration(0f);
+        hpBar.setTouchable(Touchable.disabled);
         this.addActor(hpBar);
 
         statusTable = new Table();
         statusTable.left().bottom();
         // Position X matches HP bar (3), Position Y sits just above the HP bar
         statusTable.setPosition(3, 20);
-        statusTable.setTouchable(Touchable.disabled);
+        statusTable.setTouchable(Touchable.childrenOnly);
         this.addActor(statusTable);
 
         // LAYER 1 (Top): Numbers
         String hpNumbers = String.valueOf(battler.getHp());
         hpLabel = new Label((CharSequence) hpNumbers, skin, "number-style");
         hpLabel.setPosition(124, 18); // Placed over the right side of the HP bar
+        hpLabel.setTouchable(Touchable.disabled);
         this.addActor(hpLabel);
 
         // LAYER 0: Target
@@ -380,6 +387,7 @@ public class ActorCardUI extends Group implements BattlerObserver {
     // --- Status Effect Logic ---
 
     public void refreshStatusIcons() {
+        hideStatusTooltip();
         statusTable.clearChildren();
 
         // Assuming your Battler class holds the active states array
@@ -396,15 +404,61 @@ public class ActorCardUI extends Group implements BattlerObserver {
         // Draw up to 3 icons starting from the current offset
         int count = 0;
         for (int i = statusOffset; i < states.size && count < 3; i++) {
-            StatusEffect state = states.get(i);
+            final StatusEffect state = states.get(i);
 
             // Generate the icon
-            Image icon = new Image(skin.getDrawable(state.getIconId()));
+            final Image icon = new Image(skin.getDrawable(state.getIconId()));
             // Sized slightly smaller than enemies (24x24 instead of 32x32) to fit the card UI better
+            icon.setTouchable(Touchable.enabled);
+            icon.addListener(new ClickListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+                    super.enter(event, x, y, pointer, fromActor);
+                    if (pointer == -1) {
+                        hideStatusTooltip();
+                        com.badlogic.gdx.scenes.scene2d.Stage stage = getStage();
+                        if (stage != null) {
+                            activeTooltip = new StatusEffectTooltip(state, skin);
+                            com.badlogic.gdx.math.Vector2 localPos = new com.badlogic.gdx.math.Vector2();
+                            icon.localToStageCoordinates(localPos);
+
+                            float tooltipWidth = activeTooltip.getWidth();
+                            float tooltipHeight = activeTooltip.getHeight();
+
+                            // Align above the icon
+                            float targetX = localPos.x + (icon.getWidth() / 2f) - (tooltipWidth / 2f);
+                            float targetY = localPos.y + icon.getHeight() + 8;
+
+                            targetX = Math.max(10, Math.min(com.badlogic.gdx.Gdx.graphics.getWidth() - tooltipWidth - 10, targetX));
+                            targetY = Math.max(10, Math.min(com.badlogic.gdx.Gdx.graphics.getHeight() - tooltipHeight - 10, targetY));
+
+                            activeTooltip.setPosition(targetX, targetY);
+                            activeTooltip.getColor().a = 0f;
+                            activeTooltip.addAction(com.badlogic.gdx.scenes.scene2d.actions.Actions.fadeIn(0.15f));
+                            stage.addActor(activeTooltip);
+                        }
+                    }
+                }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+                    super.exit(event, x, y, pointer, toActor);
+                    if (pointer == -1) {
+                        hideStatusTooltip();
+                    }
+                }
+            });
             statusTable.add(icon).size(24, 24).padRight(4);
             count++;
         }
         statusTable.pack();
+    }
+
+    private void hideStatusTooltip() {
+        if (activeTooltip != null) {
+            activeTooltip.remove();
+            activeTooltip = null;
+        }
     }
 
     @Override
@@ -471,5 +525,20 @@ public class ActorCardUI extends Group implements BattlerObserver {
 
     public void dispose() {
         battler.removeObserver(this);
+        hideStatusTooltip();
+    }
+
+    @Override
+    public boolean remove() {
+        hideStatusTooltip();
+        return super.remove();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (!visible) {
+            hideStatusTooltip();
+        }
     }
 }

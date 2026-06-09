@@ -24,6 +24,7 @@ public class Skill {
     private String skillType;
     private String description;
     private int manaCost;
+    private String scaling;
 
     private Array<String> actionSequence;
     private SkillLogic mechanics;
@@ -35,6 +36,7 @@ public class Skill {
         this.id = id;
         this.name = data.getString("name", "Unknown Skill");
         this.iconId = data.getString("iconId", "default_icon");
+        this.scaling = data.getString("scaling", "ATK");
 
         this.scope = TargetScope.valueOf(data.getString("scope", "SINGLE_ENEMY"));
         this.element = Elements.valueOf(data.getString("element", "NONE"));
@@ -177,10 +179,10 @@ public class Skill {
     }
 
     private int calcDMG(Battler user, Battler target) {
-        int atk = user.getEffectivePrimaryParam(0);
+        int offenseStat = "MAG".equalsIgnoreCase(scaling) ? user.getEffectivePrimaryParam(2) : user.getEffectivePrimaryParam(0);
         int def = target.getEffectivePrimaryParam(1);
 
-        double rawDamage = (((double) (2 * user.getLevel()) / 5 + 2) * basePower * ((double) atk / def) * 0.02 + 2);
+        double rawDamage = (((double) (2 * user.getLevel()) / 5 + 2) * basePower * ((double) offenseStat / def) * 0.02 + 2);
 
         // Fetch the 1.2x (Weak), 1.0x (Neutral), or 0.8x (Resist) modifier based on innate elements
         double elementRate = calcElement(target);

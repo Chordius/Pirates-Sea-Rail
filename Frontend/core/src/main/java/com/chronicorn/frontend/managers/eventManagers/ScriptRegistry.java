@@ -5,6 +5,7 @@ import com.chronicorn.frontend.scripts.cherryscripts.*;
 import com.chronicorn.frontend.scripts.jailscripts.Jail1BScript;
 import com.chronicorn.frontend.scripts.jailscripts.Jail2BScript;
 import com.chronicorn.frontend.scripts.jailscripts.Jail3BScript;
+import com.chronicorn.frontend.scripts.jailscripts.Jail4BScript;
 import com.chronicorn.frontend.scripts.legacyscripts.Level1Script;
 import com.chronicorn.frontend.scripts.legacyscripts.Level2Script;
 import com.chronicorn.frontend.scripts.legacyscripts.LevelBossScript;
@@ -24,6 +25,7 @@ public class ScriptRegistry {
             case "Jail-1B": return new Jail1BScript();
             case "Jail-2B": return  new Jail2BScript();
             case "Jail-3B": return new Jail3BScript();
+            case "Jail-4B": return new Jail4BScript();
             case "CherryTownInnRoom": return new CherryTownInnRoomScript();
             case "CherryTownInn": return new CherryTownInnScript();
             case "CherryTownDiner": return new CherryTownDinerScript();

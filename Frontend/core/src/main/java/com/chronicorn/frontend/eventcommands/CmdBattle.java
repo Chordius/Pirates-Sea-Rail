@@ -8,13 +8,14 @@ public class CmdBattle implements EventCommand {
     private Array<String> enemyIds;
     private boolean playerAdvantage = false;
     private String eventName;
+    private String battleMusic = "song_battle.mp3";
 
     /**
      * Creates a new battle transition command.
      * @param enemyIds The list of enemy database IDs to face in battle.
      */
     public CmdBattle(Array<String> enemyIds) {
-        this.enemyIds = enemyIds;
+        this(enemyIds, false, null, "song_battle.mp3");
     }
 
     /**
@@ -23,8 +24,7 @@ public class CmdBattle implements EventCommand {
      * @param playerAdvantage True if player touches from side/behind.
      */
     public CmdBattle(Array<String> enemyIds, boolean playerAdvantage) {
-        this.enemyIds = enemyIds;
-        this.playerAdvantage = playerAdvantage;
+        this(enemyIds, playerAdvantage, null, "song_battle.mp3");
     }
 
     /**
@@ -34,9 +34,23 @@ public class CmdBattle implements EventCommand {
      * @param eventName Name of the MapEvent triggering the battle.
      */
     public CmdBattle(Array<String> enemyIds, boolean playerAdvantage, String eventName) {
+        this(enemyIds, playerAdvantage, eventName, "song_battle.mp3");
+    }
+
+    /**
+     * Creates a new battle transition command with advantage flag, event name, and custom battle music.
+     * @param enemyIds The list of enemy database IDs to face in battle.
+     * @param playerAdvantage True if player touches from side/behind.
+     * @param eventName Name of the MapEvent triggering the battle.
+     * @param battleMusic The filename of the custom battle music track.
+     */
+    public CmdBattle(Array<String> enemyIds, boolean playerAdvantage, String eventName, String battleMusic) {
         this.enemyIds = enemyIds;
         this.playerAdvantage = playerAdvantage;
         this.eventName = eventName;
+        if (battleMusic != null && !battleMusic.isEmpty()) {
+            this.battleMusic = battleMusic;
+        }
     }
 
     /**
@@ -45,6 +59,18 @@ public class CmdBattle implements EventCommand {
      */
     public CmdBattle(String... enemyIds) {
         this.enemyIds = new Array<>(enemyIds);
+    }
+
+    /**
+     * Creates a new battle transition command with custom music.
+     * @param enemyId The enemy database ID.
+     * @param battleMusic The filename of the custom battle music track.
+     */
+    public CmdBattle(String enemyId, String battleMusic) {
+        this.enemyIds = new Array<>(new String[] { enemyId });
+        if (battleMusic != null && !battleMusic.isEmpty()) {
+            this.battleMusic = battleMusic;
+        }
     }
 
     private float elapsedTime = 0f;
@@ -109,7 +135,7 @@ public class CmdBattle implements EventCommand {
                 mapScreen.autoFadeInOnShow = true;
             }
             // Trigger the transition to the battle screen
-            SceneManager.getInstance().pushScreen(new BattleScreen(enemyIds, playerAdvantage, eventName));
+            SceneManager.getInstance().pushScreen(new BattleScreen(enemyIds, playerAdvantage, eventName, battleMusic));
             isFinished = true;
         }
     }

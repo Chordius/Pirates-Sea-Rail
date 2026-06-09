@@ -64,5 +64,11 @@ public class Jail2BScript implements MapScript {
                 selectedActor.energyChange(100);
             }
         }
+
+        else if (triggerName.equals("Gate")) {
+            events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), false, 5.0f));
+            events.queue(new CmdTransferPlayer("Jail-3B"));
+            events.queue(new CmdFade(LevelMapManager.getInstance().getMapScreen(), true, 5.0f));
+        }
     }
 }

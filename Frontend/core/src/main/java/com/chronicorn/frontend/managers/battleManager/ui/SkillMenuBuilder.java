@@ -19,6 +19,7 @@ public class SkillMenuBuilder {
 
     public interface Listener {
         void onSkillClicked(Skill skill, Group buttonGroup);
+
         boolean isSelected(Group buttonGroup);
     }
 
@@ -56,10 +57,12 @@ public class SkillMenuBuilder {
 
         // 2.5. Skill Icon
         String iconName = skill.getIconId();
-        if (iconName != null && !iconName.isEmpty() && skin.has(iconName, com.badlogic.gdx.scenes.scene2d.utils.Drawable.class)) {
+        if (iconName != null && !iconName.isEmpty() &&
+                (skin.has(iconName, com.badlogic.gdx.scenes.scene2d.utils.Drawable.class) ||
+                        skin.has(iconName, com.badlogic.gdx.graphics.g2d.TextureRegion.class))) {
             Image iconImg = new Image(skin.getDrawable(iconName));
             float iconSize = 42f;
-            float iconX = (SKILL_BG_X * MODIFIER) - iconSize - 16;
+            float iconX = (SKILL_BG_X * MODIFIER) - iconSize - 8;
             float iconY = ((SKILL_BG_Y * MODIFIER) / 2f) - (iconSize / 2f);
             iconImg.setSize(iconSize, iconSize);
             iconImg.setPosition(iconX, iconY);
@@ -70,7 +73,8 @@ public class SkillMenuBuilder {
         buttonGroup.setSize(SKILL_BG_X * MODIFIER, SKILL_BG_Y * MODIFIER);
 
         // 3. Set Origin for Scaling
-        // Align.right pushes the scale outward to the left, keeping it anchored to the right menu edge
+        // Align.right pushes the scale outward to the left, keeping it anchored to the
+        // right menu edge
         buttonGroup.setOrigin(Align.right);
 
         // 4. Add Hover Actions
@@ -83,7 +87,8 @@ public class SkillMenuBuilder {
             }
 
             @Override
-            public void enter(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
+            public void enter(InputEvent event, float x, float y, int pointer,
+                    com.badlogic.gdx.scenes.scene2d.Actor fromActor) {
                 super.enter(event, x, y, pointer, fromActor);
                 // pointer == -1 ensures this only triggers on mouse movement, not clicks
                 if (pointer == -1) {
@@ -93,7 +98,8 @@ public class SkillMenuBuilder {
             }
 
             @Override
-            public void exit(InputEvent event, float x, float y, int pointer, com.badlogic.gdx.scenes.scene2d.Actor toActor) {
+            public void exit(InputEvent event, float x, float y, int pointer,
+                    com.badlogic.gdx.scenes.scene2d.Actor toActor) {
                 super.exit(event, x, y, pointer, toActor);
                 if (pointer == -1 && (listener == null || !listener.isSelected(buttonGroup))) {
                     buttonGroup.clearActions();
